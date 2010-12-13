@@ -49,6 +49,7 @@ void Tree::copy_rec(Node *to, Node *from)
 
 Tree::~Tree()
 {
+  cout << "in ~Tree()" << endl;
   del(root);
 }
 
@@ -109,7 +110,7 @@ void Tree::subdivide()
 	for (int c=num_children-1; c>=0; c--)
 	{
 	  int id = num_children*i+c;
-	  cout << "adding node " << id << " to old node " << i << endl;
+	  //	  cout << "adding node " << id << " to old node " << i << endl;
 	  data.set_node(id,data.node(i)->addchild(dim,c,id)); // add and wire simultaneously
 
 	  box.v = data.corner_vector(i);			// ith corner vec
@@ -118,7 +119,13 @@ void Tree::subdivide()
   }
   fulldepth++;
 }  
-	  
+
+void Tree::set_depth(int depth)
+{
+  if (depth < fulldepth)
+	cerr << "Tree.set_depth: cannot go to a lower depth.  Use Tree.clear() first." << endl;
+  fulldepth = depth;
+}
   
 // find box by point, returning its id or -1 if not found
 int Tree::search(const Point &v)
@@ -140,7 +147,7 @@ int Tree::search(const Point &v)
 int Tree::insert(const Point &v)
 {
   if (!rootbox.contains(v))
-	return -1;
+	return -2;
 
   top();						// reset recnode, recbox
 
@@ -155,7 +162,7 @@ int Tree::insert(const Point &v)
 	}
   }
 
-  if (inserted)					// add the new box!
+  if (inserted || fulldepth==0)	// add the new box! if depth==0, add the root box
   {
 	data.add(recnode,recboxes.back().v);
 	return recnode->id;
@@ -166,6 +173,8 @@ int Tree::insert(const Point &v)
 
 vector<int> Tree::search(const Box &b)
 {
+  //  cout << "C++: tree.search(" << b << ")" << endl;
+
   vector<int> nums;
 
   if (fulldepth==0)
@@ -186,14 +195,24 @@ void Tree::search_rec(const Box &b, vector<int> &nums)
 {
   if (recdepth == fulldepth)               // base case: at a leaf
   {
+// 	cout << "C++: at leaf node ["
+// 		 << recdepth << ","
+// 		 << recnode->id << "]"
+// 		 << endl;
     nums.push_back(recnode->id);
     return;
   }
 
   vector<int> children = recboxes.back().children_hit(b);
+
+//   cout << "C++: children of node ["
+// 	   << recdepth << ","
+// 	   << recnode->id << "]:  "
+// 	   << children << endl;
+
   for (int i=0; i<children.size(); i++)
   {
-	if (down(i))
+	if (down(children[i]))		// descend into children[i]th child
 	{
 	  search_rec(b,nums);
 	  up();
@@ -212,30 +231,31 @@ vector<int> Tree::insert(const Box &b)
   return nums;
 }
  
-void Tree::insert_rec(const Box &b, vector<int> &nums, bool inserted)
+// bool inserted - whether this node was just inserted
+void Tree::insert_rec(const Box &box, vector<int> &nums, bool inserted)
 {
   if (recdepth == fulldepth)               // base case: at a leaf
   {
-	if (inserted)
+	if (inserted || fulldepth==0) // a child was added to a node, or at root
 	{
 	  data.add(recnode,recboxes.back().v);
-	  nums.push_back(recnode->id);
+      //	  nums.push_back(recnode->id);
 	}
     return;
   }
 
-  vector<int> children = recboxes.back().children_hit(b);
+  vector<int> children = recboxes.back().children_hit(box);
   for (int i=0; i<children.size(); i++)
   {
-	inserted = false;
-	if (!down(i))
-	{
-	  recnode->addchild(dim,i);
-	  inserted = true;
+   	inserted = false;			// IMPORTANT: reset to false each time
+	if (!down(children[i]))		// try to go to children[i]th child
+	{							
+	  recnode->addchild(dim,children[i]); // failed, so add the child
+	  inserted = true;					  // just inserted this child
+	  down(children[i]);		// now go to children[i]th child
 	}
 
-	down(i);
-	insert_rec(b,nums,inserted);
+	insert_rec(box,nums,inserted);
 	up();
   }
 }
@@ -249,6 +269,8 @@ int Tree::remove(int id)
 
 int Tree::remove(vector<int> idvec)
 {
+  if (idvec.size() == 0)
+	return 0;					// successfully removed nothing!
   sort(idvec.begin(),idvec.end());
   if (idvec.back() > count())
 	return -1;		// exit softly if ids are out of range

@@ -28,14 +28,17 @@ public:
   Tree(const Tree &t);
   ~Tree();
 
-  // increase the depth by one
+  // increase the depth by one, subdividing all boxes
   void subdivide();
+  void set_depth(int depth);
   
   // find box(es), by point or interval
   int search(const Point &v);
   vector<int> search(const Box &b);
 
   // insert box(es), by point or interval
+  // TODO: the Point could hit multiple boxes, but currently only one
+  // will be inserted
   int insert(const Point &v);
   vector<int> insert(const Box &b);
 
@@ -43,7 +46,6 @@ public:
   int remove(int box);
   int remove(vector<int> boxvec);
 
-  void print();
 
   // tree state info
   int dimension() { return dim; };
@@ -51,6 +53,7 @@ public:
   int count() { return data.count(); };  // number of leaves
   UniformBoxSet boxes() { return data.get_boxes(); }		   // the leaf boxes
   Box bounding_box() { return rootbox; };   // size of the leaf boxes
+  void print();
 
   // input / output
   //  void save(FILE *out);

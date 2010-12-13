@@ -1,0 +1,179 @@
+[[Home]]
+
+## Misc links
+
+* [[CAPD|http://capd.ii.uj.edu.pl/index.php]] -- since this is a library, no awkward data files and parsing for homcubes!!!  Also, they might have a fast box mapper, need to check the tutorial Rodrigo sent
+* [[gnu profiler!|http://www.cs.utah.edu/dept/old/texinfo/as/gprof.html]]
+* [[gnu debugger (in emacs)|http://tedlab.mit.edu/~dr/gdbintro.html]]
+
+## Sparse matrix options
+* [[PySparse|http://pysparse.sourceforge.net/contents.html]] -- fastest (1), but not so compatible...
+* [[SciPy.Sparse|http://docs.scipy.org/doc/scipy/reference/sparse.html]] -- compatible, but slow (8?)...
+* [[NetworkX|http://networkx.lanl.gov/index.html]] -- very compatible (see [[this|http://networkx.lanl.gov/reference/convert.html#numpy]]), but not so fast (2)
+* [[igraph|http://igraph.wikidot.com/]] -- still need to test
+* [[python-graph|http://code.google.com/p/python-graph/]] -- still need to test
+* [[graph_tool|http://projects.skewed.de/graph-tool/]] -- another contender
+* **nope:** [[APGL|http://packages.python.org/apgl/]] -- built on SciPy.Sparse, but has some useful algs. **Note**: seems sketchy, don't bother...
+* **nope:** [[BGL-Python|http://www.osl.iu.edu/~dgregor/bgl-python/]] -- analogy to matlab-bgl which we were previously using... 5 years old and dead, though!
+
+### simple update performance (adding edges):
+```python
+matrix loaded... 1000 nodes
+...all 2041 edges translated
+performing 1000 trials each
+rand_row(10) networkx 84.15 usec/pass
+rand_row(10) pysparse 20.71 usec/pass
+rand_row(10) scipy 232.18 usec/pass
+rand_row(10) pygraph 102.39 usec/pass
+rand_row(10) graph_tool 177.62 usec/pass
+rand_row(10) igraph 1566.61 usec/pass
+MATLAB: 200 usec/pass
+
+rand_row(100) networkx 695.91 usec/pass
+rand_row(100) pysparse 56.17 usec/pass
+rand_row(100) scipy 2406.19 usec/pass
+rand_row(100) pygraph 2046.91 usec/pass
+rand_row(100) graph_tool 2634.01 usec/pass
+rand_row(100) igraph 11445.63 usec/pass
+MATLAB: 3800 usec/pass
+
+rand_col(10) networkx 42.67 usec/pass
+rand_col(10) pysparse 6.58 usec/pass
+rand_col(10) scipy 131.98 usec/pass
+rand_col(10) pygraph 107.21 usec/pass
+rand_col(10) graph_tool 178.79 usec/pass
+rand_col(10) igraph 1275.87 usec/pass
+MATLAB: 200 usec/pass
+
+rand_col(100) networkx 477.75 usec/pass
+rand_col(100) pysparse 36.24 usec/pass
+rand_col(100) scipy 944.18 usec/pass
+rand_col(100) pygraph 1103.12 usec/pass
+rand_col(100) graph_tool 1752.70 usec/pass
+rand_col(100) igraph 8042.28 usec/pass
+MATLAB: 3800 usec/pass
+
+rand_entry() networkx 7.45 usec/pass
+rand_entry() pysparse 2.34 usec/pass
+rand_entry() scipy 31.53 usec/pass
+rand_entry() pygraph 17.37 usec/pass
+rand_entry() graph_tool 26.30 usec/pass
+rand_entry() igraph 486.14 usec/pass
+MATLAB: 130 usec/pass
+matrix loaded... 10000 nodes
+...all 40247 edges translated
+performing 1000 trials each
+rand_row(100) networkx 392.36 usec/pass
+rand_row(100) pysparse 23.71 usec/pass
+rand_row(100) scipy 1511.65 usec/pass
+rand_row(100) pygraph 1358.34 usec/pass
+rand_row(100) graph_tool 1788.53 usec/pass
+
+rand_row(1000) networkx 3986.29 usec/pass
+rand_row(1000) pysparse 704.27 usec/pass
+rand_row(1000) scipy 13258.92 usec/pass
+rand_row(1000) pygraph 23520.08 usec/pass
+rand_row(1000) graph_tool 17100.06 usec/pass
+
+rand_col(100) networkx 386.77 usec/pass
+rand_col(100) pysparse 21.55 usec/pass
+rand_col(100) scipy 951.98 usec/pass
+rand_col(100) pygraph 1039.45 usec/pass
+rand_col(100) graph_tool 1673.78 usec/pass
+
+rand_col(1000) networkx 3927.62 usec/pass
+rand_col(1000) pysparse 627.34 usec/pass
+rand_col(1000) scipy 9474.15 usec/pass
+rand_col(1000) pygraph 12062.26 usec/pass
+rand_col(1000) graph_tool 16548.65 usec/pass
+
+rand_entry() networkx 8.31 usec/pass
+rand_entry() pysparse 2.60 usec/pass
+rand_entry() scipy 31.31 usec/pass
+rand_entry() pygraph 11.28 usec/pass
+rand_entry() graph_tool 25.80 usec/pass
+```
+
+### subgraphs (note: nx and gt are implicit, hence the speedup)
+```python
+matrix loaded... 1000 nodes
+...all 2041 edges translated
+performing 1000 trials each
+subgraph(50) networkx 30.46 usec/pass
+subgraph(50) pysparse 92.36 usec/pass
+subgraph(50) scipy 981.32 usec/pass
+subgraph(50) graph_tool 216.20 usec/pass
+MATLAB: 3100 usec/pass
+
+matrix loaded... 10000 nodes
+...all 40247 edges translated
+performing 1000 trials each
+subgraph(500) networkx 141.32 usec/pass
+subgraph(500) pysparse 8100.42 usec/pass
+subgraph(500) scipy 6623.46 usec/pass
+subgraph(500) graph_tool 243.91 usec/pass
+
+matrix loaded... 10000 nodes
+...all 40247 edges translated
+performing 1000 trials each
+subgraph(5000) networkx 1513.81 usec/pass
+subgraph(5000) pysparse 1104167.23 usec/pass
+subgraph(5000) scipy 61959.55 usec/pass
+subgraph(5000) graph_tool 539.73 usec/pass
+```
+
+### algorithm performance (dfs? components? something they all have in common?)
+```python
+matrix loaded... 1000 nodes
+...all 2041 edges translated
+performing 100 trials each
+scc() networkx 9260.05 usec/pass
+scc() pygraph 19291.47 usec/pass
+scc() graph_tool 577.69 usec/pass
+scc() igraph 980399.76 usec/pass
+MATLAB: 3100 usec/pass
+
+matrix loaded... 10000 nodes
+...all 40247 edges translated
+performing 10 trials each
+scc() networkx 154569.51 usec/pass
+scc() pygraph 1718555.28 usec/pass
+scc() graph_tool 5629.21 usec/pass
+
+matrix loaded... 100000 nodes
+...all 498962 edges translated
+performing 10 trials each
+scc() networkx 2169549.70 usec/pass
+scc() graph_tool 155938.51 usec/pass
+```
+
+## Python side
+
+* [[Python packaging tips|http://docs.python.org/tutorial/modules.html#intra-package-references]]
+* [[Cython docs|http://docs.cython.org/]]; one should begin with the [[user guide|http://docs.cython.org/src/userguide/]] and the [[NumPy tutorial|http://wiki.cython.org/tutorials/numpy]]
+* [[Sage scripting options|http://www.neurohost.org/programming/sage/script.html]]
+
+## Plotting
+* [[Silent plotting|http://matplotlib.sourceforge.net/users/shell.html]], for avoiding redraws during huge plots
+
+## Performance technique comparison
+
+* [[c vs cython vs ctypes|http://stackoverflow.com/questions/1942298/wrapping-a-c-library-in-python-c-cython-or-ctypes]] -- useful comments!
+* [[PerformancePython|http://www.scipy.org/PerformancePython]] -- awesome comparison with sample code
+
+The options:
+
+* Weave -- see [[Weave in Sage|http://www.sagemath.org/doc/numerical_sage/weave.html]] or this [[tutorial|http://projects.scipy.org/scipy/scipy/browser/trunk/scipy/weave/doc/tutorial.txt]].
+  * Inline -- Noticeable overhead to look up compiled code, so not good for map defs.
+  * Blitz -- No pow(), useless for map defs. Poor error messages, so unfit for user consumption. Could be useful for large matrix computations within the code though.
+* ctypes -- too clunky, not enough speedup
+* Cython
+  * wrapping C/C++ -- simple, effective, but redundant code (use for Tree, Reducers)
+  * pure Cython -- simpler, less redundant, but less reusable (use for Mapper, PhaseSpace)
+* C API -- too ugly!
+
+**Conclusion:**
+
+Mapper, PhaseSpace, BoxSet, ImageSet, etc -- pure Cython [[extension types|http://docs.cython.org/src/userguide/extension_types.html]], with [[numpy indexing|http://wiki.cython.org/tutorials/numpy#Efficientindexing]]
+
+Tree, Reducers -- C++, [[wrapped|http://docs.cython.org/src/userguide/wrapping_CPlusPlus.html]] in Cython

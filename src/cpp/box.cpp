@@ -10,7 +10,7 @@ Box::Box(int dimension)
   w = Point(dimension);
 }
 
-inline Box::Box(const Point &_v, const Point &_w)
+Box::Box(const Point &_v, const Point &_w)
 {
   v = _v;
   w = _w;
@@ -37,7 +37,7 @@ Box::operator IPoint()
 inline double Box::beg(int i) const { return v[i]; }
 inline double Box::mid(int i) const { return v[i]+w[i]/2; }
 inline double Box::end(int i) const { return v[i]+w[i]; }
-inline int Box::size() const { return v.size(); }
+int Box::size() const { return v.size(); }
 
 // convention: the ith coordinate of child number c is
 // (v[i],v[i]+w[i]/2) iff the ith bit of c is 0

@@ -16,6 +16,7 @@ public:
   PointBase(int size) : v(size) {};
   PointBase(int size, const T &t) : v(size,t) {};
   T& operator[] (int i) { return v[i]; };
+  void set (int i, const T& t) { v[i]=t; };
   const T& operator[] (int i) const { return v[i]; };
   int size() const { return v.size(); };
 

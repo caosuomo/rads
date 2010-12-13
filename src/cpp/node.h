@@ -20,6 +20,12 @@ public:
 	children = 0;
   }
 
+  ~Node()
+  {
+	if (children != 0)
+	  delete [] children;
+  }
+
   void expand(int dim)
   {
 	children = new Node *[1<<dim];

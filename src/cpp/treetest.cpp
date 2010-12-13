@@ -6,6 +6,9 @@
 
 void test_boxes()
 {
+//   vector<int> v(4);
+//   cout << v[8] << endl;
+
   int dim = 2;
   Point v1(dim),v2(dim),w1(dim),w2(dim);
 
@@ -139,10 +142,11 @@ void test_tree_box(Tree &tree, int trials, int verbosity)
 
 int main()
 {
+  cout << "hello, world" << endl;
 
   test_boxes();
 
-  const int dim = 3;
+  const int dim = 2;
   const int depth = 4;
   Point corner(dim,0), size(dim,pow(2,depth));
   Box bbox(corner,size);
