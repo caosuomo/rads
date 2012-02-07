@@ -3,13 +3,14 @@
 from fabricate import *
 import sys, os, stat, commands
 
-cython_path = '/usr/local/share/sage-4.2-linux-ubuntu9.10-i686-Linux/local/bin/cython'
+cython_path = 'cython'
 sage_cython_include = '/usr/local/share/sage-4.2-linux-ubuntu9.10-i686-Linux/devel/sage-main/'
 sage_c_include = '/usr/local/share/sage-4.2-linux-ubuntu9.10-i686-Linux/devel/sage-main/c_lib/include/'
 
 comp1 = """gcc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv
 -O2 -Wall -fPIC
 -I/home/raf/projects/rads/Profil-2.0.8/include/
+-I/usr/local/lib/python2.6/dist-packages/numpy/core/include/
 -I/usr/local/lib/python2.6/dist-packages/Cython/Includes/libc/
 -I/usr/local/lib/python2.6/dist-packages/Cython/Includes/libcpp/
 -I/home/raf/projects/rads/src/rads/maps/
@@ -42,6 +43,7 @@ def link_cpp(inputs,output):
 	run(clink1,inputs,clink2,output,clink3)
 
 cydeps = {
+	'graphs': [],
 	'cyboxset': ['box','boxset'],
 	'cytree': ['tree','box','boxset','treedata'],
 	'cyutils': ['box'],

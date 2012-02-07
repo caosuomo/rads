@@ -1,0 +1,65 @@
+#!/usr/bin/python
+
+from fabricate import *
+import sys
+
+sys.path.append("/home/raf/rads/Cython-0.13/bin")
+
+setup(dirs=['cpp', 'cython'])
+cpp_sources = ['tree', 'box', 'treedata', 'boxset']
+
+cydeps = {
+	'cyboxset': ['box'],
+	'cytree': ['tree','box','treedata'],
+	'cyutils': [],
+#	'point': [],
+#	'box': ['box'],
+#	'tree': ['tree','box','treedata']
+	}
+
+flags = {
+	'cpp': ['-pg','-I/home/raf/projects/rads/Profil-2.0.8/include/'],
+	'cython': ['-I/usr/local/lib/python2.6/dist-packages/Cython/Includes/libcpp/',
+			   '-I/home/raf/projects/rads/Profil-2.0.8/include/', '-pthread',
+			   '-fPIC', '-DNDEBUG', '-g', '-fwrapv', '-O2',# '-Wall',
+			   '-fno-strict-aliasing', '-I/usr/include/python2.6', '-Icpp']
+}
+link_flags = {
+	'cpp': ['-L/home/raf/projects/rads/Profil-2.0.8/lib/', '-lProfil', '-llr', '-lBias'],
+	'cython': ['-L/home/raf/projects/rads/Profil-2.0.8/lib/', '-lProfil', '-llr', '-lBias']
+}
+cpp_programs = ['treetest','mapper']
+
+def build():
+	compile()
+	cython()
+	link()
+
+def source_path(module,obj):
+	return module+'/'+obj
+def build_path(module,obj):
+	return module+'/build/'+obj
+
+def compile():
+	for source in cpp_sources + cpp_programs:
+		run('g++', '-c', flags['cpp'], source_path('cpp',source+'.cpp'), '-o', build_path('cpp',source+'.o'))
+
+def cython():
+	for cyfile in cydeps.keys():
+		run('cython', '-a', '--cplus', source_path('cython',cyfile+'.pyx'), '-o', source_path('cython',cyfile+'.cpp'))
+		for dep in cydeps[cyfile]:
+			run('g++', '-c', flags['cython'], source_path('cpp',dep+'.cpp'), '-o', build_path('cython',dep+'.o'))
+		run('g++', '-c', flags['cython'], source_path('cython',cyfile+'.cpp'), '-o', build_path('cython',cyfile+'.o'))
+		run('g++', '-shared', flags['cython'], [build_path('cython',s+'.o') for s in cydeps[cyfile]+[cyfile]],
+			link_flags['cython'], '-o', build_path('cython',cyfile+'.so'))
+
+def link():
+	for prog in cpp_programs:
+		objects = [build_path('cpp',s+'.o') for s in cpp_sources+[prog]]
+		run('g++', flags['cpp'], objects, link_flags['cpp'], '-o', build_path('cpp',prog))
+
+def clean():
+	autoclean()
+
+main()
+

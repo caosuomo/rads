@@ -1,0 +1,11 @@
+#!/usr/bin/python
+
+from fabricate import *
+import sys
+
+def build():
+	print "in buildme_test"
+#	run('python setup.py build --force'.split())
+	
+main()
+

@@ -2,6 +2,6 @@ from distutils.core import setup
 
 setup(
   name="rads",
-  packages=['rads','rads.maps'],
+  packages=['rads','rads.maps','rads.sparsetest'],
 )
 
