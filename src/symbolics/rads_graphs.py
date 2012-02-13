@@ -7,6 +7,7 @@ Parameters
 idx_map : 
 """
 import networkx as nx
+import numpy as np
 from collections import deque
 
 
@@ -111,7 +112,7 @@ class Index_Map( DiGraph ):
             self.generators = fargs['generators']
         else:
             DiGraph.__init__( self,  **fargs )
-            if fargs['generators']:
+            #if fargs['generators']:
                 
 
            
@@ -206,7 +207,8 @@ class Index_Map( DiGraph ):
             # This is broken. Throws the following exception:
             # AttributeError: 'Index_Map' object has no attribute 'succ'  ??
             self.reduced = self.subgraph( return_nodes )
-            
+
+
     # def trim_generators( self, generators=None ):
     #     """
     #     Remove regions that do not coorespond to k-recurrent paths in
@@ -255,14 +257,17 @@ if __name__ == "__main__":
     graph=False
 
     G = nx.binomial_graph(20,0.1,directed=True)
-    genfile =  '/Users/jberwald/Dropbox/Projects/entropy/ds.bak/gens.mat'
 
+    genfile =  '/Users/jberwald/Dropbox/Projects/entropy/ds.bak/gens.mat'
+        
+    
     if matlab:
         matfile = '/Users/jberwald/Dropbox/Projects/entropy/ds.bak/hom_map.mat'
         genfile =  '/Users/jberwald/Dropbox/Projects/entropy/ds.bak/gens.mat'
         IM = Index_Map( matfile=matfile, genfile=genfile )     
     elif npy:
         idxfile = '/Users/jberwald/Dropbox/Projects/entropy/rads/src/symbolics/debug/index_map.npy'
+        #mapfile = 'debug/henon_map'
         IM = Index_Map( npyfile=idxfile, genfile=genfile )
     elif graph:
         IM = Index_Map( graph=G )
@@ -273,5 +278,4 @@ if __name__ == "__main__":
     IM.trim_index_map( 5 )
 
     #G = nx.binomial_graph(20,0.1,directed=True)
-
 
