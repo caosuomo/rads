@@ -1,14 +1,19 @@
 """
-Base class for holding index map information and subroutines. Mostly a convenience wrapper with (probably) some conversion methods.
+rads_graphs.py
 
-Parameters
----------
+Opened: Feb. 10, 2012
 
-idx_map : 
+Author: Jesse Berwald
+
+Module containing graph wrappers and algorithms for index map
+information and subroutines. DiGraph is mostly a convenience wrapper
+around NetworkX's DiGraph class, with (probably) some conversion
+methods.
 """
 import networkx as nx
 import numpy as np
-from collections import deque
+#from rads.src.symbolics import utils
+import utils
 
 
 class DiGraph( nx.DiGraph ):
@@ -16,22 +21,40 @@ class DiGraph( nx.DiGraph ):
     Base class for graph algorithms. Inherit all of NetworkX DiGraph's
     methods.
     """
-    def __init__( self, **args ):
-        #nx.DiGraph.__init__( self )
+    def __init__( self, **kwargs ):
+        """
+        Initialize a NetworkX DiGraph from one of the following formats:
+
+        numpy adjacency array
+
+        Matlab adjacency array, possibly sparse.
+
+        edge bunch (NOT IMPLEMENTED)
         
+        args:
+        ----
+
+        *file : path to appropriate file
+
+        Note: The orientation of the map should be stored in the array
+        values. Eg., (i,j) = -1 => directed edge from i -> j. The
+        value -1 is stored as an edge weight. 
+        """
         fargs = { 'matfile' : None,
                  'pklfile' : None,
                  'npyfile' : None,
                  'name' : '',
-                 'ebunch' : None
+                 'ebunch' : None,
                  }
-        fargs.update( args )
-        
+        fargs.update( kwargs )
+
         # load edge set/index map from possible file
         if fargs['npyfile']:
             # adjacency matrix, weighted edges 
             self.adj_matrix = np.load( fargs['npyfile'] )
+            fargs['data'] = self.adj_matrix
             nx.DiGraph.__init__( self, data=self.adj_matrix, name=fargs['name'] )
+            #super( DiGraph, self ).__init__( **fargs ) #data=self.adj_matrix, name=fargs['name'] )
         elif fargs['pklfile']:
             print "not implemented"
         elif fargs['matfile']:
@@ -40,9 +63,11 @@ class DiGraph( nx.DiGraph ):
             nx.DiGraph.__init__( self, data=self.adj_matrix, name=fargs['name'] )
         elif fargs['ebunch']:
             self.add_weighted_edges_from( fargs['ebunch'] )
+        else:
+            nx.DiGraph.__init__( self )
             
-    def __repr__( self ):
-        return str("RADS DiGraph")
+    # def __repr__( self ):
+    #     return str("RADS DiGraph")
      
     def _loadmat( self, fname ):
         try:
@@ -56,6 +81,8 @@ class DiGraph( nx.DiGraph ):
         keys.sort()
         mat_name = keys[-1]
         self.adj_matrix = mat[mat_name].toarray()
+
+    
 
     def mat2graph( self ):
         """
@@ -77,10 +104,10 @@ class DiGraph( nx.DiGraph ):
         # self.add_weighted_edges_from( ebunch )
 
 
-        ####################
+####################
 # INDEX_MAP
 ####################
-class Index_Map( DiGraph ):
+class Index_Map( DiGraph, utils.Utils ):
     """
     A representation of the map induced on homology. That is,
 
@@ -98,26 +125,48 @@ class Index_Map( DiGraph ):
 
     See DiGraph class
     """
-    def __init__( self, **args ):        
+    def __init__( self, **kwargs ):        
         fargs = {'graph' : None,
                  'generators' : None,
+                 'genfile' : None,
                  'name' : 'Index Map on homology'
                  }
-        fargs.update( args )
+        fargs.update( kwargs )
 
         # user-supplied NetworkX Digraph
         if fargs['graph']:
             DiGraph.__init__( self, **fargs )
+            utils.Utils.__init__( self )
             self.add_weighted_edges_from( fargs['graph'] )
             self.generators = fargs['generators']
         else:
-            DiGraph.__init__( self,  **fargs )
-            #if fargs['generators']:
-                
+            DiGraph.__init__( self, **fargs )
+            utils.Utils.__init__( self )
+
+            
+        if fargs['genfile'] is None or fargs['generators'] is None:
+            self.generators = None
+        else:
+            if fargs['genfile']:
+                self.generators = self._load_generators( fargs['genfile'] )
+            else:
+                if not type( fargs['generators'] ) == dict:
+                    raise TypeError( "generators should be a dictionary keyed by region!" )
+                else:
+                    self.generators = fargs['generators']
 
            
     def __repr__( self ):
-        return str( "Index_Map graph" )
+        return self.name
+
+    def list_subgraph_nodes( self ):
+        try:
+            for g in self.subgraph_list:
+                print g.nodes()
+        except AttributeError:
+            print "No attribute 'subgraph_list'. Have you called "\
+                "self.shift_equivalence()?"
+            
     
     def first_return_times( self, k=None, backwards=False ):
         """
@@ -178,35 +227,49 @@ class Index_Map( DiGraph ):
         orig_nodes = set( self.nodes() )
         self.non_invariant = orig_nodes - self.k_cycles
 
-    def trim_index_map( self, k, copy=False ):
+    def shift_equivalence( self, k=-1, copy=False ):
         """
-        Remove nodes that are not k-recurrent. A k-recurrent
-        vertex is a vertex v for which the path v -> v is of length <=
-        k.
+        Construct a graph that is asymtotically 'similar' to the
+        original. If the index map F is represented by a matrix, we
+        seek a change of basis that yields a matrix that is shift
+        equivalent to the orginal index map F. Graphically, this is
+        equivalent to 1) finding the strongly connected components; 2)
+        trimming the nodes that are not both forward and backward
+        invariant. (This uses the graph algorithms developed in Lemmas
+        3.2-3.4 of Day, et al., to arrive at a graph representation of
+        the matrix A.
 
         Parameters
         ---------
 
-        k : maximum length of path (lengths are k+1)
+        k : maximum length of path forward and backward paths to
+        search. Default=-1, corresponds to infintiy.
 
-        new_graph : return a new DiGraph object with the trimmed representation of the index map. 
+        copy : return a new DiGraph object with the trimmed
+        representation of the index map. Default=False.
         """
         self.k_recurrence = k
-        # find generators that are k-recurrent
-        self.first_return_times()  # forwards
-        self.first_return_times( backwards=True )  # backwards
+
+        # first find the strongly connected components
+        self.scc = nx.strongly_connected_components( self )
 
         if not copy:
-            # separate the k-recurrent from the non-invariant nodes
-            self._partition_nodes()
-            # reduce the index graph size
-            self.remove_nodes_from( [u for u in self if u not in self.k_cycles] )
-            # To keep things kosher with else below 
-            self.reduced = self
-        else:
-            # This is broken. Throws the following exception:
-            # AttributeError: 'Index_Map' object has no attribute 'succ'  ??
-            self.reduced = self.subgraph( return_nodes )
+            self.condensed = nx.condensation( self, self.scc )
+        
+         
+        # # find  that are k-recurrent
+        # self.first_return_times()  # forwards
+        # self.first_return_times( backwards=True )  # backwards
+
+        # else:
+        #     # This is broken. Throws the following exception:
+        #     # AttributeError: 'Index_Map' object has no attribute 'succ'  ??
+        #     self.reduced = self.subgraph( return_nodes )
+
+    # def trim_generators( self ):
+    #     """
+        
+    #     """
 
 
     # def trim_generators( self, generators=None ):
@@ -268,6 +331,7 @@ if __name__ == "__main__":
     elif npy:
         idxfile = '/Users/jberwald/Dropbox/Projects/entropy/rads/src/symbolics/debug/index_map.npy'
         #mapfile = 'debug/henon_map'
+        print "using numpy file"
         IM = Index_Map( npyfile=idxfile, genfile=genfile )
     elif graph:
         IM = Index_Map( graph=G )
@@ -275,7 +339,7 @@ if __name__ == "__main__":
 
     k = 5
     # IM.first_return_times( k )
-    IM.trim_index_map( 5 )
+    #IM.shift_equivalence()
 
     #G = nx.binomial_graph(20,0.1,directed=True)
 
