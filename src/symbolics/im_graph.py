@@ -63,6 +63,7 @@ class DiGraph( nx.DiGraph ):
             # init graph with index map matrix. Weights pulled from matrix entries.
             nx.DiGraph.__init__( self, data=self.adj_matrix, name=fargs['name'] )
         elif fargs['ebunch']:
+            nx.DiGraph.__init__( self )
             self.add_weighted_edges_from( fargs['ebunch'] )
         else:
             nx.DiGraph.__init__( self )
@@ -155,16 +156,7 @@ class Index_Map( DiGraph, utils.Utils ):
                     self.generators = fargs['generators']
 
     def __repr__( self ):
-        return self.name
-
-    # def list_subgraph_nodes( self ):
-    #     try:
-    #         for g in self.subgraph_list:
-    #             print g.nodes()
-    #     except AttributeError:
-    #         print "No attribute 'subgraph_list'. Have you called "\
-    #             "self.shift_equivalence()?"
-            
+        return self.name            
     
     def first_return_times( self, k=None, backwards=False ):
         """
@@ -267,16 +259,6 @@ class Index_Map( DiGraph, utils.Utils ):
 	cnodes = forward & backward
 	cnodes.remove( n )
 	self.mis_nodes = list(itertools.chain(*[sccs[c] for c in cnodes]))
-
-    # def construct_mis( self, copy=False ):
-    #     """
-    #     Trim the nodes of the graph down to yield only those contained
-    #     in the maximal invariant set.
-    #     """
-    #     if copy:
-    #         self.mis = Index_Map( graph=self.subgraph( self.mis_nodes ) )
-
-
 
     def shift_equivalence( self, k=-1, copy=False,  only_scc=False ):
         """
