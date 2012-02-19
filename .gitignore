@@ -1,0 +1,40 @@
+# taken from:
+# https://github.com/github/gitignore/blob/master/LaTeX.gitignore
+#
+
+*.aux
+*.bbl
+*.blg
+*.dvi
+*.fdb_latexmk
+*.glg
+*.glo
+*.gls
+*.idx
+*.ilg
+*.ind
+*.ist
+*.lof
+*.log
+*.lot
+*.nav
+*.nlo
+*.out
+*.pdfsync
+*.ps
+*.snm
+*.synctex.gz
+*.toc
+*.vrb
+*.maf
+*.mtc
+*.mtc0
+
+# plus some extras:
+
+*~
+*.py[co]
+
+# for fabricate
+.deps
+build
