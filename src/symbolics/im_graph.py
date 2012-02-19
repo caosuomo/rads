@@ -1,5 +1,5 @@
 """
-rads_graphs.py
+im_graphs.py
 
 Opened: Feb. 10, 2012
 
@@ -144,11 +144,11 @@ class Index_Map( DiGraph, utils.Utils ):
             utils.Utils.__init__( self )
 
             
-        if fargs['genfile'] is None or fargs['generators'] is None:
+        if fargs['genfile'] is None and fargs['generators'] is None:
             self.generators = None
         else:
             if fargs['genfile']:
-                self.generators = self._load_generators( fargs['genfile'] )
+                self.generators = self.convert_matlab_gens( fargs['genfile'] )
             else:
                 if not type( fargs['generators'] ) == dict:
                     raise TypeError( "generators should be a dictionary keyed by region!" )
@@ -156,7 +156,7 @@ class Index_Map( DiGraph, utils.Utils ):
                     self.generators = fargs['generators']
 
     def __repr__( self ):
-        return self.name            
+        return self.name
     
     def first_return_times( self, k=None, backwards=False ):
         """
@@ -240,24 +240,20 @@ class Index_Map( DiGraph, utils.Utils ):
         Maximal invariant set for the map on homology. Determined
         using the strongly connected components of Index_Map, and
         trimming off the nodes that cannot be verified to 'return'.
-
-        Parameters:
-        ---------
-
-        debug : Optional, will probably be removed at a later date.
         """
 	sccs,rsccs = GM.scc_raf( self )
-	self.condensed = self.condensation( sccs )
+ 	self.condensed = self.condensation( sccs )
 	# JJB - Descendant generators converted to lists to slice off
 	# last (source) index. Then convert back to sets for intersection.
         C = self.condensed
 	n = len( C )
 	forward = set( list( GM.descendants( C,rsccs ) ) )
+        # JJB - reset C: descendants() add a 'star' node
 	C.remove_node( n )
 	backward = set( list( GM.descendants( C.reverse(copy=False),rsccs ) ) )
 	C.remove_node( n )
 	cnodes = forward & backward
-	cnodes.remove( n )
+        cnodes.remove( n )
 	self.mis_nodes = list(itertools.chain(*[sccs[c] for c in cnodes]))
 
     def shift_equivalence( self, k=-1, copy=False,  only_scc=False ):
@@ -278,8 +274,7 @@ class Index_Map( DiGraph, utils.Utils ):
         k : maximum length of path forward and backward paths to
         search. Default=-1, corresponds to infintiy.
 
-        copy : return a new DiGraph object with the trimmed
-        representation of the index map. Default=False.
+        copy : copy the old index map graph to self.full_index_map prior to 
 
         only_scc : Only find the strongly conected components and list
         of indices with single nodes removed.
@@ -287,33 +282,66 @@ class Index_Map( DiGraph, utils.Utils ):
         # first find the strongly connected components
         if only_scc:
             self.scc_list, self.scc_idx = GM.scc_raf( self )
-        else:
-            self.graph_mis()
-            self.mis_nodes
-            self.remove_nodes_from( [u for u in self
-                                     if u not in self.mis_nodes] )
-
-    
+        elif copy:
+            # store the original, full index map before performing
+            # shift equivalence reduction
+            self.full_index_map = IM.copy()
+        # use graph algorithms to find the invariant regions and
+        # corresponding shift equivalence
+        self.graph_mis()
+        # trim off noninvariant nodes
+        self.non_mis_nodes = set( [u for u in self
+                                   if u not in self.mis_nodes] )
+        self.remove_nodes_from( self.non_mis_nodes )
      
-    # def trim_generators( self, generators=None ):
-    #     """
-    #     Remove regions that do not coorespond to k-recurrent paths in
-    #     the Index_Map graph.
+    def trim_generators( self, genfile=None ):
+        """
+        Trim generators to get rid of those that have been removed
+        (i.e. the non-invariant generators).  Generators are stored in
+        a dictionary keyed by region. Each region is a disjoint index
+        pair that is a component of the isolating neighborhood
+        computed by the analysis on the original map F on phase space.
 
-    #     Parameters
-    #     ---------
+        Eg.,
 
-    #     generators : (optional) dictionary of generators on homology
-    #     of the r'th region.
-    #     """
-    #     if not generators:
+        {0: set([1]),
+        1: set([2, 3]),
+        2: set([4])}
+
+        lists a potential generators 1,2,3,4, that are supported on
+        regions N_0, N_1, and N_2.
+
+        Parameters
+        ---------
+
+        genfile : path to a dictionary or matlab cell array containing
+        the generator hash.
+        """
+        # fill this in later
+        if not self.generators:
+            pass
+        # generators have already been initialized
+        else:
+            for k in self.generators:
+                try:
+                    self.generators[k] = self.generators[k].difference( self.non_mis_nodes )
+                # quietly pass over regions with
+                except AttributeError:
+                    continue
+
+
+    def contract_index_map( self ):
+        """
+        
+        """
+        pass        
             
     def draw_graph( self, **kwargs ):
         """
         Draw graph using NetworkX. See nx.draw_networkx and friends
         for kwargs.
         """
-        nx.draw_networkx( self )
+        nx.draw_networkx( self, **kwargs )
 
 # class Error( Exception ):
 #     """
@@ -337,11 +365,7 @@ class Index_Map( DiGraph, utils.Utils ):
 if __name__ == "__main__":
 
     import numpy as np
-
-    d = {(38,1) :       -1,
-         (68,2) :      -1,
-         (69,2) :      -1
-         }
+    from pylab import *
 
     matlab = False
     npy = True
@@ -360,9 +384,29 @@ if __name__ == "__main__":
         idxfile = '/Users/jberwald/Dropbox/Projects/entropy/rads/src/'\
             'symbolics/debug/index_map.npy'
         #mapfile = 'debug/henon_map'
-        print "using numpy file"
+        print "creating Index_Map object from", idxfile
+        print ""
         IM = Index_Map( npyfile=idxfile, genfile=genfile )
     elif graph:
+        print "creating Index_Map object from", G
+        print ""
         IM = Index_Map( graph=G )
 
+    make_plot = False
+    print "graphical index map has", len(IM), "nodes"
+    if make_plot:
+        fig = figure()
+        ax = fig.gca()
+        #IM.draw_graph( ax=ax )
+        pos = nx.spectral_layout( IM )
+        G = IM.copy()
+        nx.draw_networkx( G, pos=pos, ax=ax, alpha=0.7 )
+    # Compute shift equivalence here
     IM.shift_equivalence( copy=True )
+    print "graphical index map after shift equivalence computation, now has", len(IM), "nodes"
+    if make_plot:
+        # fig2 = figure()
+        # ax2 = ax #fig2.gca()
+        #IM.draw_graph( ax=ax2, nodelist=IM.nodes(), alpha=0.7 )
+        nx.draw_networkx_nodes( G, pos=pos, nodelist=IM.nodes(), node_color='g', alpha=0.8 )
+        show()
