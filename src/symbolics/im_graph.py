@@ -322,12 +322,19 @@ class Index_Map( DiGraph, utils.Utils ):
             pass
         # generators have already been initialized
         else:
+            pop = []
             for k in self.generators:
                 try:
-                    self.generators[k] = self.generators[k].difference( self.non_mis_nodes )
+                    gens = self.generators[k].difference( self.non_mis_nodes )
+                    # record transient gen keys; can't pop them here
+                    # or it changes dict length mid-loop
+                    if len( gens )==0:
+                        pop.append( k )
                 # quietly pass over regions with
                 except AttributeError:
                     continue
+            # Get rid of keys associated with transient generators
+            for k in pop: self.generators.pop( k )
 
 
     def contract_index_map( self ):
@@ -370,11 +377,7 @@ if __name__ == "__main__":
     matlab = False
     npy = True
     graph=False
-
-    G = nx.binomial_graph(10,0.2,directed=True)
-
-    genfile =  '/Users/jberwald/Dropbox/Projects/entropy/ds.bak/gens.mat'
-        
+    make_plot = False
     
     if matlab:
         matfile = '/Users/jberwald/Dropbox/Projects/entropy/ds.bak/hom_map.mat'
@@ -383,7 +386,7 @@ if __name__ == "__main__":
     elif npy:
         idxfile = '/Users/jberwald/Dropbox/Projects/entropy/rads/src/'\
             'symbolics/debug/index_map.npy'
-        #mapfile = 'debug/henon_map'
+        genfile =  '/Users/jberwald/Dropbox/Projects/entropy/ds.bak/gens.mat'
         print "creating Index_Map object from", idxfile
         print ""
         IM = Index_Map( npyfile=idxfile, genfile=genfile )
@@ -392,8 +395,7 @@ if __name__ == "__main__":
         print ""
         IM = Index_Map( graph=G )
 
-    make_plot = False
-    print "graphical index map has", len(IM), "nodes"
+    print "index map constructed with", len(IM), "generators"
     if make_plot:
         fig = figure()
         ax = fig.gca()
@@ -401,9 +403,12 @@ if __name__ == "__main__":
         pos = nx.spectral_layout( IM )
         G = IM.copy()
         nx.draw_networkx( G, pos=pos, ax=ax, alpha=0.7 )
-    # Compute shift equivalence here
+
+    # Compute shift equivalence 
     IM.shift_equivalence( copy=True )
-    print "graphical index map after shift equivalence computation, now has", len(IM), "nodes"
+    IM.trim_generators()
+    print "index map after shift equivalence, now has", len(IM), "generators"
+    
     if make_plot:
         # fig2 = figure()
         # ax2 = ax #fig2.gca()

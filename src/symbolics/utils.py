@@ -43,9 +43,12 @@ class Utils( object ):
         gdict = {}
         for r,gen in enumerate( gens ):
             if gen.shape == (0,0):
-                gdict[r] = None
+                #gdict[r] = None
+                continue
             else:
                 # shift to align with 0-index
-                g = gen[0] -1 
+                g = gen[0] -1
+                if len( g )==0:
+                    continue
                 gdict[r] = set( g )
         return gdict
