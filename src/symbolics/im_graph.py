@@ -14,7 +14,7 @@ import networkx as nx
 import numpy as np
 import graph_mis_raf as GM
 import utils
-import itertools
+from itertools import chain
 
 
 class DiGraph( nx.DiGraph ):
@@ -65,6 +65,8 @@ class DiGraph( nx.DiGraph ):
         elif fargs['ebunch']:
             nx.DiGraph.__init__( self )
             self.add_weighted_edges_from( fargs['ebunch'] )
+        elif fargs['graph']:
+            nx.DiGraph.__init__( self, data=fargs['graph'] )
         else:
             nx.DiGraph.__init__( self )
             
@@ -84,26 +86,7 @@ class DiGraph( nx.DiGraph ):
         mat_name = keys[-1]
         self.adj_matrix = mat[mat_name].toarray()
 
-    def mat2graph( self ):
-        """
-        Convert a sparse matrix loaded from MatLab (R) format to a
-        directed graph.
-
-        Note: Indices automatically shifted to 0-based by loadmat().
-
-        TODO: test me!
-        """
-        # nonzero indices
-        arr = self.mat.toarray()
-        
-        # w = np.where( arr != 0 )
-        # nz = map( zip( w[0], w[1] ), self.mat )
-        # ebunch = deque()
-        # for u,v in nnz:
-        #     ebunch.append( (u,v,self.mat[u,v]) ) 
-        # self.add_weighted_edges_from( ebunch )
-
-
+  
 ####################
 # INDEX_MAP
 ####################
@@ -129,15 +112,18 @@ class Index_Map( DiGraph, utils.Utils ):
         fargs = {'graph' : None,
                  'generators' : None,
                  'genfile' : None,
-                 'name' : 'Index Map on homology'
+                 'name' : 'Index Map on homology',
+                 'debug' : False
                  }
         fargs.update( kwargs )
 
+        self.debug = fargs['debug']
+        
         # user-supplied NetworkX Digraph
         if fargs['graph']:
             DiGraph.__init__( self, **fargs )
             utils.Utils.__init__( self )
-            self.add_weighted_edges_from( fargs['graph'] )
+            # self.add_weighted_edges_from( fargs['graph'] )
             #self.generators = fargs['generators']
         else:
             DiGraph.__init__( self, **fargs )
@@ -151,7 +137,8 @@ class Index_Map( DiGraph, utils.Utils ):
                 self.generators = self.convert_matlab_gens( fargs['genfile'] )
             else:
                 if not type( fargs['generators'] ) == dict:
-                    raise TypeError( "generators should be a dictionary keyed by region!" )
+                    raise TypeError( "generators "\
+                                     "should be a dictionary keyed by region!" )
                 else:
                     self.generators = fargs['generators']
 
@@ -223,7 +210,6 @@ class Index_Map( DiGraph, utils.Utils ):
 	-----
 	After contracting all strongly connected components to a single node,
 	the resulting graph is a directed acyclic graph.
-
 	"""
 	mapping = dict([(n,c) for c in range(len(sccs)) for n in sccs[c]])
 	#cG = nx.DiGraph()
@@ -240,6 +226,9 @@ class Index_Map( DiGraph, utils.Utils ):
         Maximal invariant set for the map on homology. Determined
         using the strongly connected components of Index_Map, and
         trimming off the nodes that cannot be verified to 'return'.
+
+        Note: We may get more 'bang for the buck' using two calls to
+        nx.attracting_components()
         """
 	sccs,rsccs = GM.scc_raf( self )
  	self.condensed = self.condensation( sccs )
@@ -254,9 +243,9 @@ class Index_Map( DiGraph, utils.Utils ):
 	C.remove_node( n )
 	cnodes = forward & backward
         cnodes.remove( n )
-	self.mis_nodes = list(itertools.chain(*[sccs[c] for c in cnodes]))
+	self.mis_nodes = list(chain(*[sccs[c] for c in cnodes]))
 
-    def shift_equivalence( self, k=-1, copy=False,  only_scc=False ):
+    def remove_transient_generators( self, k=-1, copy=False,  only_scc=False ):
         """
         Construct a graph that is asymtotically 'similar' to the
         original. If the index map F is represented by a matrix, we
@@ -330,18 +319,41 @@ class Index_Map( DiGraph, utils.Utils ):
                     # or it changes dict length mid-loop
                     if len( gens )==0:
                         pop.append( k )
-                # quietly pass over regions with
+                # quietly pass over regions with no generators. 
                 except AttributeError:
                     continue
             # Get rid of keys associated with transient generators
             for k in pop: self.generators.pop( k )
 
+    def _generators2regions( self ):
+        """
+        Map the region number that each generator/node resides in to a
+        node property. This maps the keys of self.generators to the
+        nodes.
+        """
+        for region in self.generators:
+            for gen in self.generators[region]:
+                self.node[gen] = {'region': region}
+                
 
     def contract_index_map( self ):
         """
-        
+        Create a block model of the Index Map by contracting
+        nodes/generators based on regions in which they reside. I.e.,
+        if generators i and j are both from region r, contract nodes i
+        and j to a single node.
         """
-        pass        
+        # map the regions to the nodes
+        self._generators2regions()
+        node_map = nx.get_node_attributes( self, 'region' )
+        inv_map = {}
+        for k, v in node_map.iteritems():
+            inv_map[v] = inv_map.get(v, [])
+            inv_map[v].append(k)
+        blocks = list( chain(inv_map.itervalues()) )
+        # use modified blockmodel in utils.Utils()
+        return Index_Map( graph=nx.blockmodel( self, blocks ), name='Contracted Map' )
+            
             
     def draw_graph( self, **kwargs ):
         """
@@ -349,6 +361,7 @@ class Index_Map( DiGraph, utils.Utils ):
         for kwargs.
         """
         nx.draw_networkx( self, **kwargs )
+        
 
 # class Error( Exception ):
 #     """
@@ -400,18 +413,24 @@ if __name__ == "__main__":
         fig = figure()
         ax = fig.gca()
         #IM.draw_graph( ax=ax )
-        pos = nx.spectral_layout( IM )
+        pos = nx.spring_layout( IM )
         G = IM.copy()
         nx.draw_networkx( G, pos=pos, ax=ax, alpha=0.7 )
 
     # Compute shift equivalence 
-    IM.shift_equivalence( copy=True )
+    IM.remove_transient_generators( copy=True )
     IM.trim_generators()
-    print "index map after shift equivalence, now has", len(IM), "generators"
+    cim = IM.contract_index_map()
+    print "index map after shift equivalence now has", len(IM), "generators"
     
     if make_plot:
-        # fig2 = figure()
-        # ax2 = ax #fig2.gca()
-        #IM.draw_graph( ax=ax2, nodelist=IM.nodes(), alpha=0.7 )
         nx.draw_networkx_nodes( G, pos=pos, nodelist=IM.nodes(), node_color='g', alpha=0.8 )
+        fig2 = figure()
+        ax2 = fig2.gca()
+        IM.draw_graph( ax=ax2, nodelist=IM.nodes(), node_color='g', alpha=0.7 )
+
+        figure()
+        
+
+        
         show()
