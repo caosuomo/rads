@@ -18,7 +18,7 @@ import utils
 ####################
 ## INDEX_MAP
 ####################
-class Index_Map( digraph.DiGraph, utils.Utils ):
+class Index_Map( digraph.DiGraph ):
     """
     A representation of the map induced on homology. That is,
 
@@ -48,19 +48,19 @@ class Index_Map( digraph.DiGraph, utils.Utils ):
         self.debug = fargs['debug']
 
         # initialize DiGraph
-        DiGraph.__init__( self, **fargs )
+        digraph.DiGraph.__init__( self, **fargs )
         # load generator mapping if available
-        if fargs['genfile'] is None and fargs['generators'] is None:
-            self.generators = None
-        else:
-            if fargs['genfile']:
-                self.generators = self.convert_matlab_gens( fargs['genfile'] )
-            else:
-                if not type( fargs['generators'] ) == dict:
-                    raise TypeError( "generators "\
-                                     "should be a dictionary keyed by region!" )
-                else:
-                    self.generators = fargs['generators']
+        # if fargs['genfile'] is None and fargs['generators'] is None:
+        #     self.generators = None
+        # else:
+        #     if fargs['genfile']:
+        #         self.generators = self.convert_matlab_gens( fargs['genfile'] )
+        #     else:
+        #         if not type( fargs['generators'] ) == dict:
+        #             raise TypeError( "generators "\
+        #                              "should be a dictionary keyed by region!" )
+        #         else:
+        #             self.generators = fargs['generators']
 
         # set the info attribute
         self._update_info()
@@ -184,16 +184,6 @@ class Index_Map( digraph.DiGraph, utils.Utils ):
         # use modified blockmodel() from utils
         return DiGraph( graph=utils.blockmodel( self, self.blocks ),
                         name='Contracted Map' )
-
-# class Transition_Map( Index_Map ):
-#     """
-#     Directed graph associated to the symbol transition graph on the
-#     disjoint regions in the isolating neighborhood N. Computed from 
-#     """
-#     def __init__( self, **kwargs ):
-#         Index_Map
-
-
     
 
 if __name__ == "__main__":

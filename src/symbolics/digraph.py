@@ -1,7 +1,7 @@
 import networkx as nx
 import graph_mis_raf as GM
 from itertools import chain
-
+import utils
 
 ####################
 ## DiGraph
@@ -59,6 +59,20 @@ class DiGraph( nx.DiGraph, utils.Utils ):
             nx.DiGraph.__init__( self, data=fargs['graph'] )
         else:
             nx.DiGraph.__init__( self )
+
+        # load generator mapping if available
+        if fargs['genfile'] is None and fargs['generators'] is None:
+            self.generators = None
+        else:
+            if fargs['genfile']:
+                self.generators = self.convert_matlab_gens( fargs['genfile'] )
+            else:
+                if not type( fargs['generators'] ) == dict:
+                    raise TypeError( "generators "\
+                                     "should be a dictionary keyed by region!" )
+                else:
+                    self.generators = fargs['generators']
+        # inherit from utils
         utils.Utils.__init__( self )
      
     def _loadmat( self, fname ):
@@ -132,7 +146,7 @@ class DiGraph( nx.DiGraph, utils.Utils ):
 	C.remove_node( n )
 	cnodes = forward & backward
         cnodes.remove( n )
-	return = list(chain(*[sccs[c] for c in cnodes]))
+	return list(chain(*[sccs[c] for c in cnodes]))
 
     def first_return_times( self, k, backwards=False ):
         """
