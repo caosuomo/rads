@@ -10,12 +10,12 @@ sage_c_include = '/usr/local/share/sage-4.2-linux-ubuntu9.10-i686-Linux/devel/sa
 comp1 = """gcc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv
 -O2 -Wall -fPIC
 -I/home/raf/projects/rads/Profil-2.0.8/include/
--I/usr/local/lib/python2.6/dist-packages/numpy/core/include/
--I/usr/local/lib/python2.6/dist-packages/Cython/Includes/libc/
--I/usr/local/lib/python2.6/dist-packages/Cython/Includes/libcpp/
--I/home/raf/projects/rads/src/rads/maps/
--I/home/raf/projects/rads/src/rads/ -I/home/raf/projects/rads/src/cpp/
--I. -I/usr/include/python2.6
+-I/usr/local/lib/python2.7/dist-packages/numpy/core/include/
+-I/usr/local/lib/python2.7/dist-packages/Cython/Includes/libc/
+-I/usr/local/lib/python2.7/dist-packages/Cython/Includes/libcpp/
+-I/home/raf/projects/rads/src-old/rads/maps/
+-I/home/raf/projects/rads/src-old/rads/ -I/home/raf/projects/rads/src-old/cpp/
+-I. -I/usr/include/python2.7
 -I/usr/local/share/sage-4.2-linux-ubuntu9.10-i686-Linux/devel/sage-main/c_lib/include/
 -c""".split()
 comp2 = ["-o"]
@@ -76,12 +76,13 @@ def scandir(dir, files=[]):
     return files
 
 
-tmp_dir = 'build/temp.linux-i686-2.6/'
-lib_dir = 'build/lib.linux-i686-2.6/'
+tmp_dir = 'build/temp.linux-i686-2.7/'
+lib_dir = 'build/lib.linux-i686-2.7/'
 
 def build_deps(f):
 	deps = cpp_deps(f)
 	for cpp in deps:
+		run(['mkdir',tmp_dir+cpp])
 		compile_cpp(cpp+'.cpp',tmp_dir+cpp+'.o')
 	return deps
 
@@ -104,12 +105,15 @@ def build_cpp(name):
 
 def build():
 	run('python buildpy.py build'.split())
-	extNames = scandir("rads")
-	for name in extNames:
+	files = scandir("rads")
+	for name in files:
 		build_cyfile(name)
 	for name in cpp_progs:
 		build_cpp(name)
-	
+
+def makedirs():
+	run(['mkdir',tmp_dir,tmp_dir+'cpp/',tmp_dir+'rads/',tmp_dir+'rads/maps/'])
+
 def test():
 	os.chdir(lib_dir)
 	run('ipython', '-pylab', 'rads/test_tree.py')

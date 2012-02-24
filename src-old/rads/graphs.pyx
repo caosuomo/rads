@@ -115,7 +115,7 @@ cdef list descendents(G,S):
 	G.add_node(n)
 	for s in S:
 		G.add_edge(n,s)
-	cdef list d = nx.algorithms.dfs_postorder(G,n)
+	cdef list d = list(nx.algorithms.dfs_postorder_nodes(G,n))
 	G.remove_node(n)
 	return d[:-1]
 

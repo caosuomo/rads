@@ -13,7 +13,7 @@ class DiGraph( nx.DiGraph, utils.Utils ):
     """
     def __init__( self, **kwargs ):
         """
-        Initialize a NetworkX DiGraph from one of the following formats:
+        Initialize a DiGraph from one of the following formats:
 
         numpy adjacency array
 
