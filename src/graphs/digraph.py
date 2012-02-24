@@ -1,7 +1,9 @@
 import networkx as nx
-import graph_mis_raf as GM
+import numpy as np
 from itertools import chain
-import utils
+from graphs import utils
+from graphs import graph_mis_raf as GM
+
 
 ####################
 ## DiGraph
@@ -45,22 +47,19 @@ class DiGraph( nx.DiGraph, utils.Utils ):
             self.adj_matrix = np.load( fargs['npyfile'] )
             fargs['data'] = self.adj_matrix
             nx.DiGraph.__init__( self, data=self.adj_matrix, name=fargs['name'] )
-            #super( DiGraph, self ).__init__( **fargs ) #data=self.adj_matrix, name=fargs['name'] )
         elif fargs['pklfile']:
             print "not implemented"
         elif fargs['matfile']:
             self._loadmat( fargs['matfile'] )
             # init graph with index map matrix. Weights pulled from matrix entries.
             nx.DiGraph.__init__( self, data=self.adj_matrix, name=fargs['name'] )
-        elif fargs['ebunch']:
-            nx.DiGraph.__init__( self )
-            self.add_weighted_edges_from( fargs['ebunch'] )
         elif fargs['graph']:
             nx.DiGraph.__init__( self, data=fargs['graph'] )
         else:
             nx.DiGraph.__init__( self )
 
         # load generator mapping if available
+        #try
         if fargs['genfile'] is None and fargs['generators'] is None:
             self.generators = None
         else:

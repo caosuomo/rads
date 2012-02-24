@@ -5,14 +5,12 @@ Opened: Feb. 10, 2012
 
 Author: Jesse Berwald
 
-Module containing graph wrappers and algorithms for index map
-information and subroutines. DiGraph is mostly a convenience wrapper
-around NetworkX's DiGraph class, with (probably) some conversion
-methods.
+Module containing wrappers and algorithms for index map information
+and subroutines. Index_Map is a wrapper around the DiGraph class,
+which inherits from NetworkX's DiGraph class, with (probably) some
+conversion methods.
 """
-import digraph
-import numpy as np
-import utils
+from graphs import digraph
 
   
 ####################
@@ -45,22 +43,9 @@ class Index_Map( digraph.DiGraph ):
                  }
         fargs.update( kwargs )
 
-        self.debug = fargs['debug']
-
         # initialize DiGraph
         digraph.DiGraph.__init__( self, **fargs )
-        # load generator mapping if available
-        # if fargs['genfile'] is None and fargs['generators'] is None:
-        #     self.generators = None
-        # else:
-        #     if fargs['genfile']:
-        #         self.generators = self.convert_matlab_gens( fargs['genfile'] )
-        #     else:
-        #         if not type( fargs['generators'] ) == dict:
-        #             raise TypeError( "generators "\
-        #                              "should be a dictionary keyed by region!" )
-        #         else:
-        #             self.generators = fargs['generators']
+        self.debug = fargs['debug']
 
         # set the info attribute
         self._update_info()
