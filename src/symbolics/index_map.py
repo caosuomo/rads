@@ -85,13 +85,39 @@ class IndexMap( IP.IndexMapProcessor ):
             self.adj_matrix = convert.load_index_map( fargs['indexmap'] )
             self.graph = digraph.DiGraph( data=self.adj_matrix )
 
-    def shift_equivalence( self ):
+    def shift_equivalent_map( self ):
         """
-        The index map, f, 
+        Graphical representation of the shift equivalence proved in
+        Theorem 3.1 and Lemmas 3.2-3.4.
+
+        The required sets of nodes V1, V2, and V3 are computed as
+        follows:
+            Given G = (V,E), with V = {V1,V2,V3},
+
+            1. Find strongly connected components (scc) of G. Labeled
+            by nodes V2.
+
+            2. Perform a forward depth-first search; then perform
+            backward depth-first search by reversing the orientation
+            on the edges. This locates generators that are not
+            connected to cycles. Labeled by nodes V1 \cup V3.
+
+            3. Trim self.graph to include only those nodes in
+                     V2 = V\(V1 \cup V3)
+
+            4. The nodes in V1 \cup V3 are stored in the attrribute
+            'non_mis_nodes'.
+
+        args:
+        -----
+
+        copy : store the shift equivalent map in a new graph
+        """
+        
+
+    def verify_cycles( self, max_length=10 ):
+        """
         """
         pass
-
-    def 
-
 
 

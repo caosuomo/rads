@@ -95,4 +95,18 @@ class DiGraph(graph.Graph):
             A dictionary with nodes as keys and out-degree as values or
             a number if a single node is specified.
         """
-		return self.graph.out_degree(nbunch,weighted)
+        return self.graph.out_degree(nbunch,weighted)
+    
+    def remove_nodes_from(self, nbunch):
+        """
+        Remove multiple nodes.
+
+        Parameters :	
+        ------------
+
+        nodes : iterable container
+
+        A container of nodes (list, dict, set, etc.). If a node in the
+        container is not in the graph it is silently ignored.
+        """
+        self.graph.remove_nodes_from( nbunch )
