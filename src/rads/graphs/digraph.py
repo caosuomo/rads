@@ -20,6 +20,11 @@ class DiGraph(graph.Graph):
         """
 		self.graph = nx.DiGraph(**kwargs)
 
+    def is_directed(self):
+        """Returns True."""
+        return True
+        
+
     def has_successor(self, u, v):
         """Return True if node u has successor v.
 
@@ -41,6 +46,14 @@ class DiGraph(graph.Graph):
     def predecessors(self, n):
         """Return a list of predecessor nodes of n."""
         return self.graph.predecessors(n)
+
+    def number_of_nodes(self):
+        """Return the number nodes in a graph."""
+        return self.graph.number_of_nodes()
+
+    def number_of_edges(self):
+        """Return number of edges in a graph."""
+        return self.graph.number_of_edges()
 
     def in_edges(self, nbunch=None, data=False):
         """Return a list of the incoming edges.
@@ -74,7 +87,7 @@ class DiGraph(graph.Graph):
         --------
         degree, out_degree
         """
-		return self.graph.in_degree(nbunch,weighted)
+	return self.graph.in_degree(nbunch,weighted)
 
     def out_degree(self, nbunch=None, weighted=False):
         """Return the out-degree of a node or nodes.

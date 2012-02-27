@@ -1,4 +1,5 @@
 import networkx as nx
+from rads.graphs import graph, digraph
 import itertools
 
 def condense( G, components ):
@@ -174,17 +175,19 @@ def descendants(G,S):
 	G.add_node(n)
 	for s in S:
 		G.add_edge(n,s)
-	d = list(nx.algorithms.dfs_postorder_nodes(G,n)
+	d = list(nx.algorithms.dfs_postorder_nodes(G,n))
 	# JJB - since dfs_postorder_nodes return a generator, we must
 	# keep the 'star' node n in until the generator is complete
 	# RMF - casting to a list for now, for simplicity
+	# JJB - when casting to a list, make sure to close your parens ;)
 	G.remove_node(n)
 	return d
                 
-
+	
 def blockmodel(G,partitions,multigraph=False):
-    """Returns a reduced graph constructed using the generalized block modeling
-    technique.
+    """
+    Returns a reduced graph constructed using the generalized block
+    modeling technique.
 
     The blockmodel technique collapses nodes into blocks based on a
     given partitioning of the node set.  Each partition of nodes
@@ -193,8 +196,8 @@ def blockmodel(G,partitions,multigraph=False):
     Edges between nodes in the block graph are added according to the
     edges in the original graph.  If the parameter multigraph is False
     (the default) a single edge is added with a weight equal to the
-    sum of the edge weights between nodes in the original graph
-    The default is a weight of 1 if weights are not specified.  If the
+    sum of the edge weights between nodes in the original graph The
+    default is a weight of 1 if weights are not specified.  If the
     parameter multigraph is True then multiple edges are added each
     with the edge data from the original graph.
 
@@ -206,13 +209,13 @@ def blockmodel(G,partitions,multigraph=False):
         The partition of the nodes.  Must be non-overlapping.
     multigraph : bool, optional
         If True return a MultiGraph with the edge data of the original
-        graph applied to each corresponding edge in the new graph.
-        If False return a Graph with the sum of the edge weights, or a
+        graph applied to each corresponding edge in the new graph.  If
+        False return a Graph with the sum of the edge weights, or a
         count of the edges if the original graph is unweighted.
 
     Returns
     -------
-    blockmodel : a Networkx graph object
+    blockmodel : (a Networkx graph object) -> JJB -- a digraph.Digraph object
     
     Examples
     --------
@@ -244,9 +247,11 @@ def blockmodel(G,partitions,multigraph=False):
             M=nx.MultiGraph() 
     else:
         if G.is_directed():
-            M=nx.DiGraph() 
+	    # JJB - Make the block graph a rads DiGraph or Graph
+	    M = digraph.DiGraph()
+	# M=nx.DiGraph() 
         else:
-            M=nx.Graph() 
+            M=graph.Graph() 
         
     # Add nodes and properties to blockmodel            
     # The blockmodel nodes are node-induced subgraphs of G
@@ -258,7 +263,8 @@ def blockmodel(G,partitions,multigraph=False):
         M.node[i]['graph']=SG        
         M.node[i]['nnodes']=SG.number_of_nodes()
         M.node[i]['nedges']=SG.number_of_edges()
-        M.node[i]['density']=nx.density(SG)
+	## don't need this, JJB
+        # M.node[i]['density']=nx.density(SG)
         
     # Create mapping between original node labels and new blockmodel node labels
     block_mapping={}
@@ -284,4 +290,7 @@ def blockmodel(G,partitions,multigraph=False):
             else:
                 M.add_edge(bmu,bmv,weight=abs(weight))
     return M
+    
+
+    
     

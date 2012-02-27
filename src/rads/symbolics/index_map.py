@@ -130,6 +130,25 @@ class IndexMap( IP.IndexMapProcessor ):
         self.index_map.remove_nodes_from( self.non_mis_nodes )
 
 
+        
+
+    def compute_entropy( self ):
+        """
+        """
+        pass
+
+
+class IndexMapProcessor( object ):
+    """
+    Process and reduce the index map to a verified symbolic system.
+    """
+    def __init__( self, index_map, generator_map ):
+        """
+        """
+        self.index_map = index_map
+        self.generators = generator_map
+    
+    
     def verify_cycles( self, max_length=10 ):
         """
         Let N = cl(P\P'), where (P,P') is the index pair, and N=\cup
@@ -151,11 +170,12 @@ class IndexMap( IP.IndexMapProcessor ):
         the subshift of finite type, \sigma, defined on the symbol
         space of m symbols and transition matrix T==G.
 
-        The index map is represented by an m x m matrix, with the
+        The index map is represented by an n x n matrix, with the
         submatrix of size nj X ni representing the linear map on
         generators from the Ni to Nj. Thus, f_{Pk}^{c} boils down to a
-        check that the matrix product is nonzero yields a matrix with
-        a nonzero trace.
+        product of matrices. To verify nonemptiness of the invariant
+        set one then checks that the trace of the product of these
+        matrices is nonzero.
 
         Parameters:
         -----------
@@ -183,8 +203,20 @@ class IndexMap( IP.IndexMapProcessor ):
                                     self.adj_matrix,
                                     max_path_length )
 
-    def compute_entropy( self ):
-        """
-        """
-        pass
 
+
+class ProhibitedEdges( EdgeSet ):
+    """
+    Container object for edge sets. 
+    """
+    pass
+
+class EdgeSet( object ):
+    """
+    Given s,t \in V(G), each edge set E \subset E(G) consists of all
+    length k path from s -> t.
+
+    An EdgeSet is a container for a collection of dictionaries keyed
+    by edges. Dictionary values . Matrix product for resulting
+    path
+    """
