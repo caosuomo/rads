@@ -13,6 +13,6 @@ print rads_pkg
 
 setup(
   name="rads",
-  packages=['rads','test']+rads_pkg,
+  packages=['rads']+rads_pkg,
 )
 
