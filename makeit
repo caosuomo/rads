@@ -15,48 +15,9 @@
 
 from fabricate import *
 import sys, os, stat, commands
-from config import config_dirs, include_dirs
-from shutil import copytree, ignore_patterns
+import config
+from shutil import copy2,copytree, ignore_patterns
 ### EXAMPLE: copytree(source, destination, ignore=ignore_patterns('*.pyc', 'tmp*'))
-
-def list_dirs(path):
-	"""Returns a list of all top-level subdirectories in directory 'path'"""
-	return [ name for name in os.listdir(path) if os.path.isdir(os.path.join(path, name)) ]
-
-rads_dirs = list_dirs('src/rads')+['','../cpp/']
-includes = [config_dirs['base']+'src/rads/'+folder for folder in rads_dirs]
-includes += include_dirs.values()
-
-comp1 = """gcc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -fPIC
--I/usr/local/lib/python2.7/dist-packages/numpy/core/include/
--I/usr/local/lib/python2.7/dist-packages/Cython/Includes/libc/
--I/usr/local/lib/python2.7/dist-packages/Cython/Includes/libcpp/
--I. -I/usr/include/python2.7
--c""".split() + ['-I'+inc for inc in includes]
-comp2 = ["-o"]
-comp3 = "-O3 -w".split()
-
-link1 = "g++ -pthread -shared -Wl,-O1 -Wl,-Bsymbolic-functions".split()
-link2 = "-lProfil -llr -lBias -o".split()
-link3 = ["-g","-L"+config_dirs['profil']+"lib/"]
-
-clink1 = "g++"
-clink2 = "-lProfil -llr -lBias -o".split()
-clink3 = ["-g","-L"+config_dirs['profil']+"lib/"]
-
-
-def compile_cpp(inputs,output):
-	run(comp1,inputs,comp2,output,comp3)
-
-def compile_cython(inputs,output):
-	run(config_dirs['cython'], ['-I'+inc for inc in includes],
-		'-a', '--cplus', inputs, '-o', output)
-
-def link(inputs,output):
-	run(link1,inputs,link2,output,link3)
-
-def link_cpp(inputs,output):
-	run(clink1,inputs,clink2,output,clink3)
 
 dependencies = { # dependencies for cython (or c++!) files
 	'cyboxset': ['box','boxset'],
@@ -70,29 +31,94 @@ dependencies = { # dependencies for cython (or c++!) files
 
 cpp_progs = ['treetest','debugtree'] # c++ programs
 
+tmp_dir = 'build/tmp/'
+lib_dir = 'build/lib/'
+map_dir = 'src/rads/maps'
+cpp_source_dir = 'src/cpp/' # look for c++ files here (in the current dir)
+cpp_object_dir = tmp_dir+'cpp/' # compile them to object files here
 
-# scan the source directory for extension files, converting
-# them to extension names in dotted notation
+
+def list_dirs(path):
+	"""Returns a list of all top-level subdirectories in directory 'path'"""
+	return [ name for name in os.listdir(path)
+			 if os.path.isdir(os.path.join(path, name)) ]
+
+def copydirs(src, dst, ext=''):
+	"""
+	Recursively copies all files with extension 'ext' from src to dst,
+	creating the directories in dst as necessary.
+	"""
+	names = os.listdir(src)
+	try:
+		os.makedirs(dst)
+	except OSError:
+		pass
+	errors = []
+	for name in names:
+		srcname = os.path.join(src, name)
+		dstname = os.path.join(dst, name)
+		try:
+			if os.path.isdir(srcname):	# directory: recurse
+				copydirs(srcname, dstname, ext)
+			elif name.endswith(ext):	# file.ext: copy
+				print srcname, '-->', dstname
+				copy2(srcname, dstname)
+		except (IOError, os.error) as why:
+			errors.append((srcname, dstname, str(why)))
+		# catch the Error from the recursive copydirs so that we can
+		# continue with other files
+		except Error as err:
+			errors.extend(err.args[0])
+	if errors:
+		raise Error(errors)	
+
+# top-level directories in rads
+rads_dirs = ['src/rads/'+d for d in list_dirs('src/rads')+['','../cpp/']]
+# all include directories!
+includes = [config.include['cython']+'libc/',
+			config.include['cython']+'libcpp/',
+			config.include['numpy'],
+			config.include['python'],
+			config.include['profil']] + rads_dirs
+
+
+def compile_cpp(inputs,output):
+	run(config.exe['c'],config.flags['c'],
+		['-I'+i for i in includes],
+		'-c', inputs,'-o', output, '-O3','-w')
+
+def compile_cython(inputs,output):
+	run(config.exe['cython'], ['-I'+i for i in includes],
+		'-a', '--cplus', inputs, '-o', output)
+
+def link_cython(inputs,output):
+	run(config.exe['c++'],config.flags['c++ cython'],
+		inputs,
+		config.link['c++ cython'],
+		output,
+		['-g','-L'+config.link['profil']])
+
+def link_cpp(inputs,output):
+	run(config.exe['c++'], #config.flags['c++'], # cannot be empty (!?)
+		inputs,
+		config.link['c++'],
+		output,
+		['-g','-L'+config.link['profil']])
+
 def scandir(dir, files=[], ext='.py'):
 	"""
-	Return all paths (dir/dir2/dir3/file) of files in 'dir' (including subdirectories) with extension 'ext'
+	Return all paths (dir/dir2/dir3/file) of files in 'dir' (including
+	subdirectories) with extension 'ext'
 	"""
 	for file in os.listdir(dir):
 		path = os.path.join(dir, file)
 		if os.path.isfile(path) and path.endswith( ext ):
-			print path
+			# print path
 			# files.append(path.replace(os.path.sep, '.')[:-len(ext)-1])
 			files.append(path[:-len(ext)]) # kill extension
 		elif os.path.isdir(path):
 			scandir(path, files, ext)
 	return files
-
-
-tmp_dir = 'build/tmp.linux-i686-2.7/'
-lib_dir = 'build/lib.linux-i686-2.7/'
-map_dir = 'src/rads/maps'
-cpp_source_dir = 'src/cpp/' # look for c++ files here (in the current dir)
-cpp_object_dir = tmp_dir+'cpp/' # compile them here (in the build dir)
 
 def build_cpp_deps(f):
 	"""
@@ -135,7 +161,7 @@ def build_cyfile(sourcepath):
 	deps = build_cpp_deps(filename) # c++ dependencies, including self
 	
 	objects = [d+'.o' for d in deps]
-	link(objects, finalpath+'.so')
+	link_cython(objects, finalpath+'.so')
 
 
 def build_map(sourcepath):
@@ -161,7 +187,7 @@ def build_map(sourcepath):
 	compile_cpp(cython_cpp, cython_o)
 	compile_cpp(sourcepath+'_cpp.cpp', cpp_o)
 
-	link([cython_o, cpp_o], finalpath+'.so')
+	link_cython([cython_o, cpp_o], finalpath+'.so')
 
 
 def build_cpp(name):
@@ -173,24 +199,29 @@ def build_cpp(name):
 
 def build():
 	# copy python files over, preserving directory structure
-	#	copytree('src/rads/', lib_dir+'rads/', ignore=ignore_patterns('*.pyx', '*.pyd', '*.cpp', '*.h', '*~'))	
-	os.chdir('src' )
-	run('python ../buildpy.py build --build-base=../build'.split())
-	os.chdir('..')
+	copydirs('src/rads/', lib_dir+'rads/', ext='.py')	
+	# os.chdir('src' )
+	# run('python ../buildpy.py build --build-base=../build'.split())
+	# os.chdir('..')
+
+	# make temp directories for objects, etc
+	try:
+		os.makedirs(cpp_object_dir)
+		os.makedirs(tmp_dir+'src/')
+	except OSError:
+		pass
+
+	# all cython files to compile
 	files = scandir('src/rads',ext='.pyx')
-	print files
 
-	for path in files:
-		if path.startswith(map_dir):	# treat maps differently
-			build_map(path)
+	for path in files:					# for each cython file
+		if path.startswith(map_dir):	# this is a user-defined map
+			build_map(path)				# treat maps differently
 		else:
-			build_cyfile(path)
+			build_cyfile(path)			# normal cython file
 
-	for name in cpp_progs:
+	for name in cpp_progs:				# c++ programs...
 		build_cpp(name)
-
-def makedirs():
-	run(['mkdir','build',tmp_dir,tmp_dir+'src/',cpp_object_dir])
 
 def test():
 	os.chdir(lib_dir)
@@ -199,6 +230,5 @@ def test():
 def clean():
 	run('rm -r build'.split())
 	autoclean()
-	makedirs()
 
 main()
