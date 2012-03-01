@@ -67,10 +67,10 @@ def copydirs(src, dst, ext=''):
 			errors.append((srcname, dstname, str(why)))
 		# catch the Error from the recursive copydirs so that we can
 		# continue with other files
-		except Error as err:
+		except Exception as err:
 			errors.extend(err.args[0])
 	if errors:
-		raise Error(errors)	
+		raise Exception(errors)	
 
 # top-level directories in rads
 rads_dirs = ['src/rads/'+d for d in list_dirs('src/rads')+['','../cpp/']]
@@ -224,8 +224,11 @@ def build():
 		build_cpp(name)
 
 def test():
+	build()
 	os.chdir(lib_dir)
-	run('ipython', '-pylab', 'rads/test_tree.py')
+	run('python', 'rads/test/test_graphs.py')
+	#run('ipython', '-pylab', 'rads/test/test_tree.py')
+	run('ipython', '-pylab', 'rads/test/test_henon.py')
 	
 def clean():
 	run('rm -r build'.split())

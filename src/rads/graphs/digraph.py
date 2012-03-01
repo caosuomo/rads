@@ -1,125 +1,149 @@
 import networkx as nx
-import graph.Graph
+from rads.graphs import Graph
 
-class DiGraph(graph.Graph):
-    """
-    Base class for directed graphs.
-    """
-    def __init__( self, **kwargs ):
-        """
-        Initialize a DiGraph from one of the following formats:
+class DiGraph(Graph):
+	"""
+	Base class for directed graphs.
+	"""
+	def __init__( self, **kwargs ):
+		"""
+		Initialize a DiGraph from one of the following formats:
 
-        numpy adjacency array
+		numpy adjacency array
 
-        args:
-        ----
+		args:
+		----
 
-        Note: The orientation of the map should be stored in the array
-        values. Eg., (i,j) = -1 => directed edge from i -> j. The
-        value -1 is stored as an edge weight. 
-        """
+		Note: The orientation of the map should be stored in the array
+		values. Eg., (i,j) = -1 => directed edge from i -> j. The
+		value -1 is stored as an edge weight. 
+		"""
 		self.graph = nx.DiGraph(**kwargs)
 
-    def is_directed(self):
-        """Returns True."""
-        return True
-        
+	def __repr__(self):
+		return "rads DiGraph object on %i nodes and %i edges" % (
+			self.number_of_nodes(),self.number_of_edges() )
 
-    def has_successor(self, u, v):
-        """Return True if node u has successor v.
+	def is_directed(self):
+		"""Returns True."""
+		return True
 
-        This is true if graph has the edge u->v.
-        """
-        return self.graph.has_successor(u,v)
+	def has_successor(self, u, v):
+		"""Return True if node u has successor v.
 
-    def has_predecessor(self, u, v):
-        """Return True if node u has predecessor v.
+		This is true if graph has the edge u->v.
+		"""
+		return self.graph.has_successor(u,v)
 
-        This is true if graph has the edge u<-v.
-        """
-        return self.graph.has_predecessor(u,v)
+	def has_predecessor(self, u, v):
+		"""Return True if node u has predecessor v.
 
-    def successors(self, n):
-        """Return a list of successor nodes of n."""
-        return self.graph.successors(n)
+		This is true if graph has the edge u<-v.
+		"""
+		return self.graph.has_predecessor(u,v)
 
-    def predecessors(self, n):
-        """Return a list of predecessor nodes of n."""
-        return self.graph.predecessors(n)
+	def successors(self, n):
+		"""Return a list of successor nodes of n."""
+		return self.graph.successors(n)
 
-    def number_of_nodes(self):
-        """Return the number nodes in a graph."""
-        return self.graph.number_of_nodes()
+	def predecessors(self, n):
+		"""Return a list of predecessor nodes of n."""
+		return self.graph.predecessors(n)
 
-    def number_of_edges(self):
-        """Return number of edges in a graph."""
-        return self.graph.number_of_edges()
+	def number_of_nodes(self):
+		"""Return the number nodes in a graph."""
+		return self.graph.number_of_nodes()
 
-    def in_edges(self, nbunch=None, data=False):
-        """Return a list of the incoming edges.
+	def number_of_edges(self):
+		"""Return number of edges in a graph."""
+		return self.graph.number_of_edges()
 
-        See Also
-        --------
-        edges : return a list of edges
-        """
-        return self.graph.in_edges(nbunch,data)
+	def in_edges(self, nbunch=None, data=False):
+		"""Return a list of the incoming edges.
 
-    def in_degree(self, nbunch=None, weighted=False):
-        """Return the in-degree of a node or nodes.
+		See Also
+		--------
+		edges : return a list of edges
+		"""
+		return self.graph.in_edges(nbunch,data)
 
-        The node in-degree is the number of edges pointing in to the node.
+	def in_degree(self, nbunch=None, weighted=False):
+		"""Return the in-degree of a node or nodes.
 
-        Parameters
-        ----------
-        nbunch : iterable container, optional (default=all nodes)
-            A container of nodes.  The container will be iterated
-            through once.
-        weighted : bool, optional (default=False)
-           If True return the sum of edge weights adjacent to the node.
+		The node in-degree is the number of edges pointing in to the node.
 
-        Returns
-        -------
-        nd : dictionary, or number
-            A dictionary with nodes as keys and in-degree as values or
-            a number if a single node is specified.
+		Parameters
+		----------
+		nbunch : iterable container, optional (default=all nodes)
+			A container of nodes.  The container will be iterated
+			through once.
+		weighted : bool, optional (default=False)
+		   If True return the sum of edge weights adjacent to the node.
 
-        See Also
-        --------
-        degree, out_degree
-        """
-	return self.graph.in_degree(nbunch,weighted)
+		Returns
+		-------
+		nd : dictionary, or number
+			A dictionary with nodes as keys and in-degree as values or
+			a number if a single node is specified.
 
-    def out_degree(self, nbunch=None, weighted=False):
-        """Return the out-degree of a node or nodes.
+		See Also
+		--------
+		degree, out_degree
+		"""
+		return self.graph.in_degree(nbunch,weighted)
 
-        The node out-degree is the number of edges pointing out of the node.
+	def out_degree(self, nbunch=None, weighted=False):
+		"""Return the out-degree of a node or nodes.
 
-        Parameters
-        ----------
-        nbunch : iterable container, optional (default=all nodes)
-            A container of nodes.  The container will be iterated
-            through once.
-        weighted : bool, optional (default=False)
-           If True return the sum of edge weights adjacent to the node.
+		The node out-degree is the number of edges pointing out of the node.
 
-        Returns
-        -------
-        nd : dictionary, or number
-            A dictionary with nodes as keys and out-degree as values or
-            a number if a single node is specified.
-        """
-        return self.graph.out_degree(nbunch,weighted)
-    
-    def remove_nodes_from(self, nbunch):
-        """
-        Remove multiple nodes.
+		Parameters
+		----------
+		nbunch : iterable container, optional (default=all nodes)
+			A container of nodes.  The container will be iterated
+			through once.
+		weighted : bool, optional (default=False)
+		   If True return the sum of edge weights adjacent to the node.
 
-        Parameters :	
-        ------------
+		Returns
+		-------
+		nd : dictionary, or number
+			A dictionary with nodes as keys and out-degree as values or
+			a number if a single node is specified.
+		"""
+		return self.graph.out_degree(nbunch,weighted)
+	
+	def remove_nodes_from(self, nbunch):
+		"""
+		Remove multiple nodes.
 
-        nodes : iterable container
+		Parameters :	
+		------------
 
-        A container of nodes (list, dict, set, etc.). If a node in the
-        container is not in the graph it is silently ignored.
-        """
-        self.graph.remove_nodes_from( nbunch )
+		nodes : iterable container
+
+		A container of nodes (list, dict, set, etc.). If a node in the
+		container is not in the graph it is silently ignored.
+		"""
+		self.graph.remove_nodes_from( nbunch )
+
+	def reverse(self, copy=True):
+		"""Return the reverse of the graph.
+
+		The reverse is a graph with the same nodes and edges
+		but with the directions of the edges reversed.
+
+		Parameters
+		----------
+		copy : bool optional (default=True)
+			If True, return a new DiGraph holding the reversed edges.
+			If False, reverse the reverse graph is created using
+			the original graph (this changes the original graph).
+		"""
+		if copy:
+			d = DiGraph()
+			d.graph = self.graph.reverse(copy)
+			return d
+		else:
+			self.graph.reverse(copy)
+			return self
