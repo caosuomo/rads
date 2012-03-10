@@ -72,7 +72,6 @@ class IndexMap( IP.IndexMapProcessor ):
     def __init__( self, **kwargs ):
         # Inherit from IndexMapProcessor: functions for reducing the
         # number of symbols, verifying cycles, etc.
-        IP.IndexMapProcessor.__init__( self )
         fargs = {'debug': False,
                  'indexmap': None,
                  'genmap': None
@@ -87,14 +86,21 @@ class IndexMap( IP.IndexMapProcessor ):
             self.index_map = digraph.DiGraph( data=self.adj_matrix )
         else:
             self.adj_matrix = None
-            self.index_map - digraph.DiGraph()
+            self.index_map = digraph.DiGraph()
         if fargs['genmap']:
             # convert from matlab if necessary; otherwise, pass
             # dictionary back unchanged.
             self.generators = convert.convert_generators( fargs['genmap'] )
         else:
             self.generators = None
+        # Now that we have the index map and generators, initialize
+        # the processor
+        IP.IndexMapProcessor.__init__( self, self.index_map,
+                                       self.generators, **fargs )
 
+        # initially flag all edges as not prohibited
+        self.flag_edges_from( label='prohibited', flag=False )
+ 
     def shift_equivalent_map( self ):
         """
         Graphical representation of the shift equivalence proved in
@@ -132,8 +138,10 @@ class IndexMap( IP.IndexMapProcessor ):
 
         
 
-    def compute_entropy( self ):
+    def compute_entropy( self, max_path_length=20 ):
         """
         """
-        pass
+        # from IndexMapProcessor        
+        verified_cycles = self.verify_cycles( max_path_length )
+        
 

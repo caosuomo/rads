@@ -13,7 +13,8 @@ from scipy.io import loadmat
 
 def load_index_map( data ):
     """
-    Returns a Numpy adjacency matrix with weighted edges.
+    Returns a Numpy adjacency matrix with weighted edges. data is
+    converted to a numpy.matrix before being returned.
 
     Parameters:
     -----------
@@ -31,12 +32,11 @@ def load_index_map( data ):
         hasattr( data, np.matrix ):
         nx,ny = data.shape
         assert nx == ny, "Adjacency matrix is not square."
-            raise 
-        return data
+        return np.mat( np.data )
     # string, filename 
     elif hasattr( data, 'join' ):
         try:
-            return np.load( data ):
+            return np.mat(np.load( data ))
         except IOError:
             pass
     # more to add below....

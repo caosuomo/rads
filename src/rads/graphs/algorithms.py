@@ -229,7 +229,10 @@ def blockmodel(G,partitions,multigraph=False):
     	"Generalized Blockmodeling",Cambridge University Press, 2004.
     """
     # Create sets of node partitions
-    part=list(map(set,partitions)) 
+    part=list(map(set,partitions))
+
+    # account for digraph structure
+    G = G.graph
 
     # Check for overlapping node partitions
     u=set()
@@ -292,5 +295,3 @@ def blockmodel(G,partitions,multigraph=False):
     return M
     
 
-    
-    

@@ -18,13 +18,12 @@ class DiGraph(graph.Graph):
         values. Eg., (i,j) = -1 => directed edge from i -> j. The
         value -1 is stored as an edge weight. 
         """
-		self.graph = nx.DiGraph(**kwargs)
+        self.graph = nx.DiGraph(**kwargs)
 
     def is_directed(self):
-        """Returns True."""
+        """Returns True. This is needed by blockmodel"""
         return True
         
-
     def has_successor(self, u, v):
         """Return True if node u has successor v.
 
@@ -54,6 +53,47 @@ class DiGraph(graph.Graph):
     def number_of_edges(self):
         """Return number of edges in a graph."""
         return self.graph.number_of_edges()
+
+    def flag_edges_from(self, label, flag, ebunch=None):
+        """
+        Attached an attribute to each edge in order to easily
+        include/exclude it during certain computations. Eg., flag
+        prohibited edges during cycle verification.
+
+        If ebunch is not provided, all edges in graph are flagged with
+        given label and flag.
+
+        Parameters
+        ----------
+
+        label : str, name of the flag
+
+        flag : bool
+
+        ebunch : iterable object containing edges to flag
+        (default=None).
+
+        Example
+        -------
+
+        Flag edges is equivalent to:
+
+        In [1]: G = nx.path_graph(6)
+        Out [2]: for e in G.edges_iter(data=True):
+                    e[2]['flag'] = True
+        In [3]:  G.edges(data=True)
+        Out [3]: [(0, 1, {'flag': True}),
+                (1, 2, {'flag': True}),
+                (2, 3, {'flag': True}),
+                (3, 4, {'flag': True}),
+                (4, 5, {'flag': True})]
+        """
+        if ebunch is None:
+            ebunch = G.edges_iter( data=True )
+        else:
+            ebunch = iter( ebunch )
+        for e in ebunch:
+            e[2][label] = flag
 
     def in_edges(self, nbunch=None, data=False):
         """Return a list of the incoming edges.
