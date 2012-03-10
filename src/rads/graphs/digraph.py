@@ -2,19 +2,20 @@ import networkx as nx
 from rads.graphs import Graph
 
 class DiGraph(Graph):
+    """
+    Base class for directed graphs.
+    """
+    def __init__( self, **kwargs ):
 	"""
-	Base class for directed graphs.
-	"""
-	def __init__( self, **kwargs ):
-		"""
-		Initialize a DiGraph from one of the following formats:
+	Initialize a DiGraph from one of the following formats:
+	
+	numpy adjacency array
+	
+	args:
+	----
+	
+	see nx.DiGraph
 
-		numpy adjacency array
-
-		args:
-		----
-
-<<<<<<< HEAD
         Note: The orientation of the map should be stored in the array
         values. Eg., (i,j) = -1 => directed edge from i -> j. The
         value -1 is stored as an edge weight. 
