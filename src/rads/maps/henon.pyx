@@ -1,5 +1,5 @@
-from enclosure.cppdefs cimport *
-from enclosure.cymapper cimport Mapper
+from rads.enclosure.cppdefs cimport *
+from rads.enclosure.cymapper cimport Mapper
 
 cdef extern from "henon_cpp.h":
 	cdef cppclass cHenon "HenonMapper":

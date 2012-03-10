@@ -1,8 +1,8 @@
 import networkx as nx
-from rads.graphs import graph, digraph
+from rads.graphs import Graph, DiGraph
 import itertools
 
-def condense( G, components ):
+def condensation( G, components ):
 	"""Return the condensation of G with respect to the given components.
 
 	Given components C_1 .. C_k which partition the nodes of G, the
@@ -30,9 +30,9 @@ def condense( G, components ):
 	cG = DiGraph()
 	for u in mapping:
 		cG.add_node(mapping[u])
-		for _,v,d in G.graph.edges_iter(u, data=True):
+		for _,v in G.graph.edges_iter(u, data=False):
 			if v not in components[mapping[u]]:
-				cG.add_edge(mapping[u], mapping[v], d)
+				cG.add_edge(mapping[u], mapping[v])
 	return cG
 
 def graph_mis( G ):
@@ -53,12 +53,15 @@ def graph_mis( G ):
 	S : list
 	   The maximal invariant set of G.
 	"""
+	if len(G)==0:
+		return []
+	
 	sccs,rsccs = scc_raf( G )
 	C = condensation( G,sccs )
 	forward = set( descendants( C,rsccs ) )
 	backward = set( descendants( C.reverse(copy=False),rsccs ) )
 	cnodes = forward & backward
-	return list(chain(*[sccs[c] for c in cnodes]))
+	return list(itertools.chain(*[sccs[c] for c in cnodes]))
 
 def first_return_times( k, backwards=False ):
 	"""
@@ -101,7 +104,7 @@ def scc_raf(G):
 
 	Parameters
 	----------
-	G : DiGraph Graph
+	G : DiGraph
 	   An directed graph.
 
 	Returns
@@ -119,6 +122,7 @@ def scc_raf(G):
 	Uses Tarjan's algorithm with Nuutila's modifications.
 	Nonrecursive version of algorithm.
 	"""
+	G_nx = G.graph
 	preorder={}
 	lowlink={}	 
 	scc_found={}
@@ -126,7 +130,7 @@ def scc_raf(G):
 	scc_list=[]
 	real_scc_inds=[]					# RAF
 	i=0		# Preorder counter
-	for source in G:
+	for source in G_nx:
 		if source not in scc_found:
 			queue=[source]
 			while queue:
@@ -135,7 +139,7 @@ def scc_raf(G):
 					i=i+1
 					preorder[v]=i
 				done=1
-				v_nbrs=G[v]
+				v_nbrs=G_nx[v]
 				for w in v_nbrs:
 					if w not in preorder:
 						queue.append(w)
@@ -160,7 +164,7 @@ def scc_raf(G):
 						# RAF: changed here to exclude 'transient' SCCs
 						# thus, single vertices are SCCs iff they are loops
 						scc_list.append(scc)
-						if len(scc)>1 or G.has_edge(scc[0],scc[0]):
+						if len(scc)>1 or G_nx.has_edge(scc[0],scc[0]):
 							real_scc_inds.append(len(scc_list)-1) # index of the scc
 					else:
 						scc_queue.append(v)
@@ -170,17 +174,18 @@ def scc_raf(G):
 
 def descendants(G,S):
 	"""Decendents of S (subset of nodes) in G"""
-	G = G.graph # get right to nx
-	n = len(G)
-	G.add_node(n)
+	G_nx = G.graph # get right to nx
+	n = len(G_nx)
+	G_nx.add_node(n)
 	for s in S:
-		G.add_edge(n,s)
-	d = list(nx.algorithms.dfs_postorder_nodes(G,n))
+		G_nx.add_edge(n,s)
+	d = list(nx.algorithms.dfs_postorder_nodes(G_nx,n))
+	d.remove(n)							# TODO: make more efficient!
 	# JJB - since dfs_postorder_nodes return a generator, we must
 	# keep the 'star' node n in until the generator is complete
 	# RMF - casting to a list for now, for simplicity
 	# JJB - when casting to a list, make sure to close your parens ;)
-	G.remove_node(n)
+	G_nx.remove_node(n)
 	return d
                 
 	
