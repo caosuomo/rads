@@ -27,8 +27,8 @@ class DiGraph(Graph):
 		self.number_of_nodes(),self.number_of_edges() )
 
     def is_directed(self):
-        """Returns True. This is needed by blockmodel"""
-        return True
+        """Returns True. This is needed by blockmodel."""
+        return self.graph.is_directed()
         
     def has_successor(self, u, v):
         """Return True if node u has successor v.
@@ -60,7 +60,10 @@ class DiGraph(Graph):
         """Return number of edges in a graph."""
         return self.graph.number_of_edges()
 
-    def flag_edges_from(self, label, flag, ebunch=None):
+    def reverse( self ):
+        return self.graph.reverse()
+
+    def flag_edges(self, label, flag, ebunch=None):
         """
         Attached an attribute to each edge in order to easily
         include/exclude it during certain computations. Eg., flag

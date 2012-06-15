@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <vector>
-#include <Interval.h>
+#include "capd/intervals/Interval.h"
 #include "point.h"
 
 using namespace std;

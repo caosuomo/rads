@@ -2,8 +2,10 @@
 #define _point_h
 
 #include <iostream>
+#include <iomanip>
 #include <vector>
-#include <Interval.h>
+//#include "capd/capdlib.h"
+#include "capd/intervals/Interval.h"
 
 using namespace std;
 
@@ -28,7 +30,8 @@ public:
 };
 
 typedef PointBase<double> Point;
-typedef PointBase<INTERVAL> IPoint;
+typedef capd::intervals::Interval< double > DInterval;
+typedef PointBase< DInterval > IPoint;
 
 #include "treeutil.h"			// for the vector operator<< 
 #endif
