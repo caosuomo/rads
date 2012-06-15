@@ -15,10 +15,10 @@ dirs = {
 include = {
 	'sage': '/Applications/sage/devel/sage-main/',
 	'sage c': '/Applications/sage/devel/sage-main/c_lib/include/',
-	'capd_int': dirs['capd'] + 'capdAlg/include/',
 	'python': '/Library/Frameworks/Python.framework/Versions/Current/include/python2.7',
 	'cython': '/Library/Frameworks/Python.framework/Versions/Current/lib/python2.7/site-packages/Cython/Includes/',
-	'numpy': '/Library/Frameworks/Python.framework/Versions/Current/lib/python2.7/site-packages/numpy/core/include/',        
+	'numpy': '/Library/Frameworks/Python.framework/Versions/Current/lib/python2.7/site-packages/numpy/core/include/',
+	'capd': '/Users/jberwald/src/capd/capdAlg/include/'
         }
 
 capd = {
@@ -33,7 +33,7 @@ link = {
         }
 
 flags = {
-	'c': '-pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -fPIC'.split(),
+	'c': '-pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -Wall -fPIC'.split(), # -O2
 	'c++ cython': '-pthread -shared -Wl,-O1 -Wl,-Bsymbolic-functions'.split(),
-	'c++': '-D__USE_FILIB__ -frounding-math -lcapd'
+	'c++': '-D__USE_FILIB__ -lprim'.split()
         }

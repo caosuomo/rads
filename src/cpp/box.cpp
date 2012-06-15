@@ -29,7 +29,7 @@ Box::operator IPoint()
 {
   IPoint ints(size());
   for (int i=0; i<size(); i++)
-	ints[i] = INTERVAL(beg(i),end(i));
+	ints[i] = DInterval( beg(i), end(i) );
   return ints;
 }
 

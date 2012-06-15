@@ -14,6 +14,7 @@
 ######################################################################
 
 from fabricate import *
+from subprocess import Popen, PIPE, STDOUT
 import sys, os, stat, commands
 import config
 from shutil import copy2,copytree, ignore_patterns
@@ -37,6 +38,7 @@ map_dir = 'src/rads/maps'
 cpp_source_dir = 'src/cpp/' # look for c++ files here (in the current dir)
 cpp_object_dir = tmp_dir+'cpp/' # compile them to object files here
 
+				
 def list_dirs(path):
 	"""Returns a list of all top-level subdirectories in directory 'path'"""
 	return [ name for name in os.listdir(path)
@@ -76,29 +78,44 @@ rads_dirs = ['src/rads/'+d for d in list_dirs('src/rads')+['','../cpp/']]
 # all include directories!
 # removed config.include['capd'] from list, since this should be handled by capd-config
 includes = [config.include['cython']+'libc/',
-			config.include['cython']+'libcpp/',
-			config.include['numpy'],
-			config.include['python'],
-			config.include['capd_int']] + rads_dirs
+	    config.include['cython']+'libcpp/',
+	    config.include['numpy'],
+	    config.include['python'],
+	    config.include['capd']] + rads_dirs
+
+# grab CAPD cflags and lib paths
+p_flags = Popen( config.dirs['capd']+'/bin/capd-config --cflags',
+		 shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
+p_libs = Popen( config.dirs['capd']+'/bin/capd-config --libs',
+		shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
+
+capd_flags = p_flags.stdout.read().split()
+capd_libs = p_libs.stdout.read().split()
+
+capd_flags = [ i for i in capd_flags ]
+capd_link = [ '-L'+i for i in capd_libs[:-2] ].append( capd_libs[-2][:] )
+capd_libs = capd_libs[-1]
 
 def compile_cpp(inputs,output):
 	run(config.exe['c'],config.flags['c'],
 		['-I'+i for i in includes],
 		'-c', inputs,'-o', output, '-O3','-w',
-		'`/Users/jberwald/src/capd/bin/capd-config --cflags --libs`')
+		capd_flags,
+		capd_libs,
+		capd_link)
 
 def compile_cython(inputs,output):
 	run(config.exe['cython'], ['-I'+i for i in includes],
-		'-a', '--cplus', inputs, '-o', output)
-
+		'-a', '--cplus', inputs, '-o', output )
+	
 def link_cython(inputs,output):
 	run(config.exe['c++'],config.flags['c++ cython'],
 		inputs,
 		config.link['c++ cython'],
 		output,
-		['-g'])
+		['-g'],
+		capd_link)
 		
-
 def link_cpp(inputs,output):
 	"""
 	When using CAPD, we remove the linker flags, since the CAPD
@@ -108,8 +125,7 @@ def link_cpp(inputs,output):
 		inputs,
 		config.link['c++'],
 		output,
-		['-g', config.link['capd']],
-		'`/Users/jberwald/src/capd/bin/capd-config --cflags --libs`')
+		['-g'], capd_link )
 
 def scandir(dir, files=[], ext='.py'):
 	"""

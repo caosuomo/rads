@@ -1,8 +1,8 @@
 #ifndef _mapper_h
 #define _mapper_h
 
-#include "capd/intervals/Interval.h"
-#include "Functions.h"
+#include "point.h"
+//#include "Functions.h"
 #include "box.h"
 #include "treeutil.h"
 #include <math.h>

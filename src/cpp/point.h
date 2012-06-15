@@ -4,7 +4,7 @@
 #include <iostream>
 #include <iomanip>
 #include <vector>
-//#include "capd/capdlib.h"
+#include "capd/capdAlglib.h"
 #include "capd/intervals/Interval.h"
 
 using namespace std;

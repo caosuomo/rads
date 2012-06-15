@@ -32,7 +32,7 @@ public:
   UniformBoxSet(int size) : corners(size) {};
   UniformBoxSet(const Point &w) : width(w) {};
   UniformBoxSet(int size, const Point &w) : corners(size), width(w) {};
-  UniformBoxSet(const Point &w, const vector<Point > &c) : corners(c), width(w) {};
+  UniformBoxSet(const Point &w, const vector< Point > &c) : corners(c), width(w) {};
 
   void set_width(const Point &w) { width = w; }
   Point get_width() const { return width; }
