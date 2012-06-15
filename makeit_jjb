@@ -16,7 +16,7 @@
 from fabricate import *
 from subprocess import Popen, PIPE, STDOUT
 import sys, os, stat, commands
-import config
+import config_jjb as config
 from shutil import copy2,copytree, ignore_patterns
 ### EXAMPLE: copytree(source, destination, ignore=ignore_patterns('*.pyc', 'tmp*'))
 
@@ -24,8 +24,8 @@ dependencies = { # dependencies for cython (or c++!) files
 	'cyboxset': ['box','boxset'],
 	'cytree': ['tree','box','boxset','treedata'],
 	'cyutils': ['box'],
-	'cymapper': ['mapper_jjb','box','boxset'],
-	'cycombenc': ['tree','treedata','mapper_jjb','box','boxset'],
+	'cymapper': ['mapper','box','boxset'],
+	'cycombenc': ['tree','treedata','mapper','box','boxset'],
 	'treetest': ['tree','treedata','box','boxset'],
 	'debugtree': ['tree','treedata','box','boxset'],
 }
@@ -106,7 +106,7 @@ def compile_cpp(inputs,output):
 
 def compile_cython(inputs,output):
 	run(config.exe['cython'], ['-I'+i for i in includes],
-		'-a', '--cplus', inputs, '-o', output )
+		'-a', '--cplus', inputs, '-o', output)
 	
 def link_cython(inputs,output):
 	run(config.exe['c++'],config.flags['c++ cython'],

@@ -5,7 +5,7 @@ from libc cimport string
 # C++ declarations
 #------------------------------
 
-cdef extern from "Interval.h":
+cdef extern from "capd/intervals/Interval.h":
 	cdef cppclass cIVAL "INTERVAL":
 		cIVAL(double)
 		cIVAL(double,double)
