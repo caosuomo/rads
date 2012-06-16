@@ -30,8 +30,8 @@ public:
 };
 
 typedef PointBase<double> Point;
-typedef capd::intervals::Interval< double > DInterval;
-typedef PointBase< DInterval > IPoint;
+//typedef capd::intervals::Interval< double > DInterval;
+typedef PointBase< capd::intervals::Interval< double > > IPoint;
 
 #include "treeutil.h"			// for the vector operator<< 
 #endif

@@ -91,7 +91,7 @@ p_libs = Popen( config.dirs['capd']+'/bin/capd-config --libs',
 
 capd_flags = p_flags.stdout.read().split()
 capd_libs = p_libs.stdout.read().split()
-
+# now split the output, cython does not like D__USE_FILIB flag
 capd_flags = [ i for i in capd_flags ]
 capd_link = [ '-L'+i for i in capd_libs[:-2] ].append( capd_libs[-2][:] )
 capd_libs = capd_libs[-1]
@@ -99,10 +99,8 @@ capd_libs = capd_libs[-1]
 def compile_cpp(inputs,output):
 	run(config.exe['c'],config.flags['c'],
 		['-I'+i for i in includes],
-		'-c', inputs,'-o', output, '-O3','-w',
-		capd_flags,
-		capd_libs,
-		capd_link)
+		capd_flags, '-O3', '-w',
+		'-c', inputs,'-o', output )
 
 def compile_cython(inputs,output):
 	run(config.exe['cython'], ['-I'+i for i in includes],
@@ -112,9 +110,9 @@ def link_cython(inputs,output):
 	run(config.exe['c++'],config.flags['c++ cython'],
 		inputs,
 		config.link['c++ cython'],
+		capd_flags,
 		output,
-		['-g'],
-		capd_link)
+		['-g'])
 		
 def link_cpp(inputs,output):
 	"""
@@ -124,8 +122,9 @@ def link_cpp(inputs,output):
 	run(config.exe['c++'], #config.flags['c++'], # cannot be empty (!?)
 		inputs,
 		config.link['c++'],
+		capd_flags,
 		output,
-		['-g'], capd_link )
+		['-g'] )
 
 def scandir(dir, files=[], ext='.py'):
 	"""
@@ -177,6 +176,9 @@ def build_cyfile(sourcepath):
 	tempfile = tmp_dir+filename+'_from_cython.cpp' # the temp cpp file name
 	finalpath = lib_dir+sourcepath.replace('src/','') # the final resting place = rads/../..
 
+	print "here"
+	print ""
+
 	# compile to temp dir, but flat (notice tempfile instead of sourcepath)
 	compile_cython(sourcepath+'.pyx', tempfile)
 	compile_cpp(tempfile, cpp_object_dir+filename+'.o')
@@ -204,7 +206,6 @@ def build_map(sourcepath):
 	cython_cpp = tmp_dir+filename+'_cython_mapfile.cpp'
 	cython_o = cpp_object_dir+filename+'_cython_mapfile.o'
 	cpp_o = cpp_object_dir+filename+'_cpp_mapfile.o'
-	
 	compile_cython(sourcepath+'.pyx', cython_cpp)
 	compile_cpp(cython_cpp, cython_o)
 	compile_cpp(sourcepath+'_cpp.cpp', cpp_o)

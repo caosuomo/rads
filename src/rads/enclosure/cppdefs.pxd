@@ -6,12 +6,12 @@ from libc cimport string
 #------------------------------
 
 cdef extern from "capd/intervals/Interval.h":
-	cdef cppclass cIVAL "INTERVAL":
+	cdef cppclass cIVAL "capd::intervals::Interval < double >":
 		cIVAL(double)
 		cIVAL(double,double)
-	cdef double Inf(cIVAL &)
-	cdef double Diam(cIVAL &)
-	cdef double Sup(cIVAL &)
+	cdef double Inf "leftBound" ( cIVAL & ) 
+	cdef double Diam "diam" ( cIVAL & )
+	cdef double Sup "rightBound" ( cIVAL & )
 	
 cdef extern from "point.h":
 	cdef cppclass cPoint "Point":
@@ -38,6 +38,8 @@ cdef extern from "box.h":
 		cPoint w
 		cBox()
 		cBox(int)
+		#cBox( cPoint & )
+		#cBox( cPoint &, cPoint & )
 		int size()
 	cBox *new_Box "new Box" (int)
 	void del_Box "delete" (cBox *)

@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <vector>
-#include "capd/intervals/Interval.h"
+//#include "capd/intervals/Interval.h"
 #include "point.h"
 
 using namespace std;
@@ -27,7 +27,7 @@ public:
   vector<int> children_hit(const Box &b) const;
   Point get_corner(int corner) const;
   int size() const;
-
+ 
   // shorthand for the relevant points in the box
   double beg(int i) const;
   double mid(int i) const;
