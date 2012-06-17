@@ -4,3 +4,4 @@ To build:
 2. Edit entries of config.py to match your system
 3. Run makeit in the base directory
 4. Compiled files should now appear in build/lib
+
