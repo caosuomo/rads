@@ -28,7 +28,7 @@ link = {
         }
 
 flags = {
-	'c': '-pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -fPIC'.split(), # -O2
+	'c': '-arch x86_64 -arch i386 -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -fPIC'.split(), # -O2
 	'c++ cython': '-fPIC -dynamiclib -Wl,-headerpad_max_install_names,-undefined,dynamic_lookup,-compatibility_version,1.0,-current_version,1.0,-install_name,'.split(),
 	#'-pthread -shared -Wl,-Wl,-Bsymbolic-functions'.split(),
 	'c++': ''#'-D__USE_FILIB__ -lprim'.split()

@@ -22,7 +22,7 @@ from shutil import copy2,copytree, ignore_patterns
 
 # Find the OS for the prper extension. There is no Windows option.
 if os.uname()[0] == 'Darwin':
-	extension = '.dylib'
+	extension = '.so' #'.dylib'
 else:
 	extension = '.so'
 
@@ -97,10 +97,21 @@ p_libs = Popen( config.dirs['capd']+'/bin/capd-config --libs',
 
 capd_flags = p_flags.stdout.read().split()
 capd_libs = p_libs.stdout.read().split()
+
+print "capd_flags"
+print capd_flags
+print ""
+print "capd_libs"
+print capd_libs
+print ""
+
 # now split the output, cython does not like D__USE_FILIB flag
 capd_flags = [ i for i in capd_flags ]
-capd_libs = [ i for i in capd_libs[:-2] ]#.append( capd_libs[:-2][:] )
-capd_links = capd_libs[-1]
+#capd_links = capd_libs[-1]
+capd_libs = capd_libs #[ i for i in capd_libs ]#.append( capd_libs[:-2][:] )
+
+					 #sys.exit(0)
+
 
 def compile_cpp(inputs,output):
 	run(config.exe['c'],config.flags['c'],
@@ -118,7 +129,8 @@ def link_cython(inputs,output):
 		config.link['c++ cython'],
 		#capd_flags,
 		output,
-		['-g'] + capd_libs )
+		capd_libs,
+		['-g'] )#+ [capd_links] )
 		
 def link_cpp(inputs,output):
 	"""
@@ -129,8 +141,9 @@ def link_cpp(inputs,output):
 		inputs,
 		config.link['c++'],
 		capd_flags,
+		capd_libs,
 		config.flags['c++ cython'].append(output),
-		['-g'] + capd_libs )
+		['-g'] )#+ [capd_links] )
 
 def scandir(dir, files=[], ext='.py'):
 	"""
