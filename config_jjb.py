@@ -21,19 +21,17 @@ include = {
 	'capd': '/Users/jberwald/src/capd/capdAlg/include/'
         }
 
-capd = {
-	'libs': '`' + dirs['capd'] + '--libs`',
-	'flags': '`' + dirs['capd'] + '--clags`'
-	}
-
 link = {
 	'capd': dirs['capd'],
-	'c++ cython':'-llr',
-	'c++': dirs['capd']
+	'c++ cython': '-o'.split(), #'-llr'
+	'c++': '-lprim -o'.split() #-llr
         }
 
 flags = {
-	'c': '-pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -Wall -fPIC'.split(), # -O2
-	'c++ cython': '-pthread -shared -Wl,-O1 -Wl,-Bsymbolic-functions'.split(),
-	'c++': '-D__USE_FILIB__ -lprim'.split()
+	'c': '-pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -fPIC'.split(), # -O2
+	'c++ cython': '-fPIC -dynamiclib -Wl,-headerpad_max_install_names,-undefined,dynamic_lookup,-compatibility_version,1.0,-current_version,1.0,-install_name,'.split(),
+	#'-pthread -shared -Wl,-Wl,-Bsymbolic-functions'.split(),
+	'c++': ''#'-D__USE_FILIB__ -lprim'.split()
         }
+
+# gcc -dynamiclib -Wl,-headerpad_max_install_names,-undefined,dynamic_lookup,-compatibility_version,1.0,-current_version,1.0,-install_name,/usr/local/lib/libfoo.1.dylib -o libfoo.1.dylib $(OBJ)

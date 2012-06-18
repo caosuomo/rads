@@ -20,6 +20,12 @@ import config_jjb as config
 from shutil import copy2,copytree, ignore_patterns
 ### EXAMPLE: copytree(source, destination, ignore=ignore_patterns('*.pyc', 'tmp*'))
 
+# Find the OS for the prper extension. There is no Windows option.
+if os.uname()[0] == 'Darwin':
+	extension = '.dylib'
+else:
+	extension = '.so'
+
 dependencies = { # dependencies for cython (or c++!) files
 	'cyboxset': ['box','boxset'],
 	'cytree': ['tree','box','boxset','treedata'],
@@ -80,8 +86,8 @@ rads_dirs = ['src/rads/'+d for d in list_dirs('src/rads')+['','../cpp/']]
 includes = [config.include['cython']+'libc/',
 	    config.include['cython']+'libcpp/',
 	    config.include['numpy'],
-	    config.include['python'],
-	    config.include['capd']] + rads_dirs
+	    config.include['python']] + rads_dirs
+	    #	    config.include['capd']] + rads_dirs
 
 # grab CAPD cflags and lib paths
 p_flags = Popen( config.dirs['capd']+'/bin/capd-config --cflags',
@@ -93,8 +99,8 @@ capd_flags = p_flags.stdout.read().split()
 capd_libs = p_libs.stdout.read().split()
 # now split the output, cython does not like D__USE_FILIB flag
 capd_flags = [ i for i in capd_flags ]
-capd_link = [ '-L'+i for i in capd_libs[:-2] ].append( capd_libs[-2][:] )
-capd_libs = capd_libs[-1]
+capd_libs = [ i for i in capd_libs[:-2] ]#.append( capd_libs[:-2][:] )
+capd_links = capd_libs[-1]
 
 def compile_cpp(inputs,output):
 	run(config.exe['c'],config.flags['c'],
@@ -110,9 +116,9 @@ def link_cython(inputs,output):
 	run(config.exe['c++'],config.flags['c++ cython'],
 		inputs,
 		config.link['c++ cython'],
-		capd_flags,
+		#capd_flags,
 		output,
-		['-g'])
+		['-g'] + capd_libs )
 		
 def link_cpp(inputs,output):
 	"""
@@ -123,8 +129,8 @@ def link_cpp(inputs,output):
 		inputs,
 		config.link['c++'],
 		capd_flags,
-		output,
-		['-g'] )
+		config.flags['c++ cython'].append(output),
+		['-g'] + capd_libs )
 
 def scandir(dir, files=[], ext='.py'):
 	"""
@@ -175,17 +181,23 @@ def build_cyfile(sourcepath):
 	filename = sourcepath.split(os.path.sep)[-1]			   # filename.pyx
 	tempfile = tmp_dir+filename+'_from_cython.cpp' # the temp cpp file name
 	finalpath = lib_dir+sourcepath.replace('src/','') # the final resting place = rads/../..
-
-	print "here"
-	print ""
-
 	# compile to temp dir, but flat (notice tempfile instead of sourcepath)
 	compile_cython(sourcepath+'.pyx', tempfile)
+
+	print ""
+	print "compiled cython files, compiling cpp..."
+	print ""
+	
 	compile_cpp(tempfile, cpp_object_dir+filename+'.o')
 	deps = build_cpp_deps(filename) # c++ dependencies, including self
+
+	print ""
+	print "linking object files"
+	print "finalpath:", finalpath
+	print ""
 	
 	objects = [d+'.o' for d in deps]
-	link_cython(objects, finalpath+'.so')
+	link_cython(objects, finalpath + extension )
 
 
 def build_map(sourcepath):
@@ -207,16 +219,25 @@ def build_map(sourcepath):
 	cython_o = cpp_object_dir+filename+'_cython_mapfile.o'
 	cpp_o = cpp_object_dir+filename+'_cpp_mapfile.o'
 	compile_cython(sourcepath+'.pyx', cython_cpp)
+	print ""
+	print "done with cython files, compiling c++..."
+	print ""
 	compile_cpp(cython_cpp, cython_o)
 	compile_cpp(sourcepath+'_cpp.cpp', cpp_o)
 
-	link_cython([cython_o, cpp_o], finalpath+'.so')
+	link_cython([cython_o, cpp_o], finalpath + extension )
 
 
 def build_cpp(name):
 	"""Build a c++ file."""
 	compile_cpp(cpp_source_dir+name+'.cpp', cpp_object_dir+name+'.o')
+	print ""
+	print "  building deps..."
+	print ""
 	deps = build_cpp_deps(name)
+	print ""
+	print "  now linking..."
+	print ""
 	link_cpp([d+'.o' for d in deps],lib_dir+name)
 
 
@@ -238,12 +259,17 @@ def build():
 	files = scandir('src/rads',ext='.pyx')
 
 	for path in files:					# for each cython file
+		print ""
+		print "path:"
+		print path
+		print ""
 		if path.startswith(map_dir):	# this is a user-defined map
 			build_map(path)				# treat maps differently
 		else:
 			build_cyfile(path)			# normal cython file
 
 	for name in cpp_progs:				# c++ programs...
+		print "building cpp progs..."
 		build_cpp(name)
 
 def test():

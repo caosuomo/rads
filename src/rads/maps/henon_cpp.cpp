@@ -11,7 +11,7 @@ HenonMapper::HenonMapper() : Mapper(2,"henon")
 IPoint HenonMapper::map_point(const IPoint &v) const
 {
   IPoint w(dim());
-  w[0] = 1 - params[A] * Power(v[0],2) + v[1];
+  w[0] = 1 - params[A] * power(v[0],2) + v[1];
   w[1] = params[B] * v[0];
   return w;
 }

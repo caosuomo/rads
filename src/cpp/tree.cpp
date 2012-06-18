@@ -34,7 +34,7 @@ void Tree::copy_rec(Node *to, Node *from)
   }
   else if (from->children)		// node has kids
   {
-	for (int i=0; i<pow(2,dim); i++)
+	for (int i=0; i<power(2,dim); i++)
 	{
 	  if (from->children[i])
 	  {
@@ -59,7 +59,7 @@ void Tree::del(Node *n)
 
   if (n->children)
   {
-	for (int i=0; i<pow(2,dim); i++)
+	for (int i=0; i<power(2,dim); i++)
 	{
 	  if (n->children[i]) del(n->children[i]);
 	}
@@ -81,7 +81,7 @@ void Tree::print_rec()
 	   << "," << recboxes.back().w
 	   << endl;
 
-  for (int i=0; i<pow(2,dim); i++)
+  for (int i=0; i<power(2,dim); i++)
   {
 	if (down(i))
 	{
@@ -99,7 +99,7 @@ void Tree::subdivide()
   data.set_size_vector(halve_vector(box.w)); // shrink boxes
 
   int oldlen = data.count();
-  int num_children = pow(2,dim);
+  int num_children = power(2,dim);
   data.resize(oldlen*num_children);
 
   // start from the end so we can write in place

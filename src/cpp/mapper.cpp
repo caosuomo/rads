@@ -1,4 +1,5 @@
 #include "mapper.h"
+#include "henon_cpp.h"
 
 BoxSet Mapper::map_points (const UniformBoxSet &bs) const
 {

@@ -14,7 +14,7 @@ void test_remove(Tree &tree, int trials, int verbosity)
 	vector<int> ids;
 	for (int i=0; i<n; i++)
 	{
-	  if ((double)rand()/RAND_MAX < 1.0/pow(n,0.9))
+	  if ((double)rand()/RAND_MAX < 1.0/power(n,0.9))
 		ids.push_back(i);
 	}
 	cout << "removing " << ids << endl;
