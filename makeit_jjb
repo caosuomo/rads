@@ -22,7 +22,7 @@ from shutil import copy2,copytree, ignore_patterns
 
 # Find the OS for the prper extension. There is no Windows option.
 if os.uname()[0] == 'Darwin':
-	extension = '.so' #'.dylib'
+	extension = '.dylib'
 else:
 	extension = '.so'
 
@@ -116,7 +116,7 @@ capd_libs = capd_libs #[ i for i in capd_libs ]#.append( capd_libs[:-2][:] )
 def compile_cpp(inputs,output):
 	run(config.exe['c'],config.flags['c'],
 		['-I'+i for i in includes],
-		capd_flags, '-O3', '-w',
+		capd_flags, '-w',
 		'-c', inputs,'-o', output )
 
 def compile_cython(inputs,output):
@@ -127,10 +127,9 @@ def link_cython(inputs,output):
 	run(config.exe['c++'],config.flags['c++ cython'],
 		inputs,
 		config.link['c++ cython'],
-		#capd_flags,
-		output,
 		capd_libs,
-		['-g'] )#+ [capd_links] )
+		['-g'],
+		'-o', output )#+ [capd_links] )
 		
 def link_cpp(inputs,output):
 	"""
@@ -142,8 +141,10 @@ def link_cpp(inputs,output):
 		config.link['c++'],
 		capd_flags,
 		capd_libs,
-		config.flags['c++ cython'].append(output),
-		['-g'] )#+ [capd_links] )
+		config.flags['c++ cython'],
+		['-g'],
+		'-o', output)
+		
 
 def scandir(dir, files=[], ext='.py'):
 	"""

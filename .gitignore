@@ -38,3 +38,6 @@
 # for fabricate
 .deps
 build
+
+# mac crap
+.DS_store
