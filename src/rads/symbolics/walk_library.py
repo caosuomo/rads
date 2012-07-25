@@ -14,15 +14,15 @@ import numpy as np
 from collections import defaultdict, deque
 from itertools import chain, ifilter
 
-class BadLibrary:
+class BadLibrary( object ):
     """
     A library of edgesets that are bad (all parameters are of type frozenset())
     """
-    def __init__(self, edgesets=[])
+    def __init__(self, edgesets=[]):
         self.bads = []
         self.bads.extend[edgesets]
     
-    def __contains__(self, edgeset)
+    def __contains__(self, edgeset):
         """
         Returns true if the given edgeset is a superset of any set to be cut,
         which implies that the edgeset will be cut as well.
@@ -32,7 +32,7 @@ class BadLibrary:
                 return True
         return False
 
-    def add(self,edgeset)
+    def add(self, edgeset):
         """
         Adds the edgeset to the set of edges to be cut
         """
@@ -41,14 +41,14 @@ class BadLibrary:
         self.bads = filter(lambda bad: not bad >= edgeset, self.bads)
         self.bads.append(edgeset)
 
-class UnverifiedLibrary:
+class UnverifiedLibrary( object ):
     """
     A library of walks for fast lookup and indexing, for walks
     that have not yet been exhaustively searched
     """
     def __init__(self, walks=[]):
         # Allows fast search for items given a start and end, and edgeset
-        self.start_end_dict = defaultdict(lambda: defaultdict(lambda: defaultdict(list))
+        self.start_end_dict = defaultdict( lambda: defaultdict( lambda: defaultdict(list) ) )
         for walk in walks:
             self.add(walk)
     
@@ -59,10 +59,11 @@ class UnverifiedLibrary:
 
     def has_scalar_multiple(self, walk):
         """ Finds every scalar multiple of the given walk """
-        for other in self.start_end_dict[walk.start][walk.end][walk.edges]:
-            TODO!!!!! BROKEN
+        pass
+        # for other in self.start_end_dict[walk.start][walk.end][walk.edges]:
+        #     TODO!!!!! BROKEN
 
-class Walk:
+class Walk( object ):
     """
     All the information needed for symbolics calculation about a walk
     """
@@ -85,19 +86,19 @@ class Walk:
         """
         When two walks are added togeather, the new walk is formed by connecting
         the end of the first to the start of the second, and then multiplying the
-        submatricies
+        submatrices
         """
         assert self.end == other.start, \
                 "Cannot add walks a+b if a.end!=b.start"
-        return Walk(self.start, other.end,
-                self.edges.union(other.edges),
-                np.dot(self.matrix, other.matrix),
-                self.length + other.length)
+        return Walk( self.start, other.end,
+                     self.edges.union(other.edges),
+                     np.dot(self.matrix, other.matrix),
+                     self.length + other.length )
 
     def __repr__( self ):
         s = "Walk(start="+str( self.start )+\
             ", end="+str( self.end )+\
-            ", len(edges)="+str(len( self.edges ))+\
+            ", len(edges)="+str( len( self.edges ))+\
             ", length="+str(self.length)+")"
         return s
 
@@ -107,9 +108,21 @@ class Walk:
 
     def cycle(self):
         """ Test if a walk is a cycle """
-        self.start==self.end
+        return self.start==self.end
 
     def zero(self):
         """ Test if the matrix of the walk is a zero matrix
         These walks are generally considered useless """
         return np.any(self.matrix!=0)
+
+if __name__ == "__main__":
+
+    import sys
+    sys.path.append( '/Users/jberwald/github/local/caja-matematica/rads/src/rads' )
+    import graphs.digraph as DG
+    
+    # sample data for unit tests
+    # barbell-shaped graph with two self-loops at the ends
+    edges = [(0,0),(0,1),(1,0),(2,1),(2.5,2),(3,2.5),(4,3),(4,5),(5,4)]
+    G = DG.DiGraph( )
+    G.add_edges_from( edges )
