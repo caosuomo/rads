@@ -1,6 +1,6 @@
 
 exe = {
-	'cython': '/Applications/sage/local/bin/sage-cython', #cython
+	'cython': '/Library/Frameworks/EPD64.framework/Versions/Current/bin/cython', #/Applications/sage/local/bin/sage-cython', #cython
 	'c++': 'g++',
 	'c': 'gcc',
 	}
@@ -23,16 +23,18 @@ include = {
 
 link = {
 	'capd': dirs['capd'],
-	'c++ cython': '',#.split(), #'-llr'
-	'c++': '-lprim'.split() #-llr
-        }
+	'c++ cython': '-fPIC,'.split(), #.split(), #'-llr'
+	'c++': '-bundle -Wl,-headerpad_max_install_names,-undefined,dynamic_lookup,-compatibility_version,1.0,-current_version,1.0,-install_name'.split()
+	}
+	#-bundle -flat_namespace -fPIC,-install_name,'.split() #-llr
+        
 
 flags = {
-	'c': '-fno-strict-aliasing -fno-common -dynamic -arch x86_64 -DNDEBUG -g -O3'.split(),
+	'c': '-fno-strict-aliasing -fno-common -arch x86_64 -DNDEBUG -g -O3'.split(),
 	# 'c': '-arch x86_64 -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -fPIC'.split(), # -O2
-	'c++ cython': '-arch x86_64 -shared -fPIC,-dynamiclib -Wl,-headerpad_max_install_names,-undefined,dynamic_lookup,-compatibility_version,1.0,-current_version,1.0'.split(),
+	'c++ cython': '-O3 -bundle -Wl,-headerpad_max_install_names,-undefined,dynamic_lookup,-compatibility_version,1.0,-current_version,1.0'.split(),
 	#'-pthread -shared -Wl,-Wl,-Bsymbolic-functions'.split(),
-	'c++': ''#'-D__USE_FILIB__ -lprim'.split()
+	'c++': ''
         }
 
 # gcc -dynamiclib -Wl,-headerpad_max_install_names,-undefined,dynamic_lookup,-compatibility_version,1.0,-current_version,1.0,-install_name,/usr/local/lib/libfoo.1.dylib -o libfoo.1.dylib $(OBJ)

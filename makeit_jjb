@@ -21,10 +21,7 @@ from shutil import copy2,copytree, ignore_patterns
 ### EXAMPLE: copytree(source, destination, ignore=ignore_patterns('*.pyc', 'tmp*'))
 
 # Find the OS for the prper extension. There is no Windows option.
-if os.uname()[0] == 'Darwin':
-	extension = '.dylib'
-else:
-	extension = '.so'
+extension = '.so'
 
 dependencies = { # dependencies for cython (or c++!) files
 	'cyboxset': ['box','boxset'],
@@ -124,12 +121,13 @@ def compile_cython(inputs,output):
 		'-a', '--cplus', inputs, '-o', output)
 	
 def link_cython(inputs,output):
-	run(config.exe['c++'],config.flags['c++ cython'],
-		inputs,
-		config.link['c++ cython'],
-		capd_libs,
-		['-g'],
-		'-o', output )#+ [capd_links] )
+	run(config.exe['c++'],
+	    config.flags['c++ cython'],
+	    config.link['c++ cython'],
+	    '-o', output,
+	    ['-g'],
+	    capd_libs,
+	    inputs )#+ [capd_links] )
 		
 def link_cpp(inputs,output):
 	"""
@@ -137,13 +135,14 @@ def link_cpp(inputs,output):
 	capd-config script does this automagically(?).
 	"""
 	run(config.exe['c++'], #config.flags['c++'], # cannot be empty (!?)
-		inputs,
-		config.link['c++'],
-		capd_flags,
-		capd_libs,
-		config.flags['c++ cython'],
-		['-g'],
-		'-o', output)
+	    config.link['c++ cython'],
+	    config.link['c++'],
+	    '-o', output,
+	    ['-g'],
+	    capd_flags,
+	    capd_libs,
+	    config.flags['c++ cython'],
+            inputs)
 		
 
 def scandir(dir, files=[], ext='.py'):
