@@ -6,7 +6,27 @@ Opened: Jun. 13, 2012
 Author: Jakub Gedeon
 
 Contains classes and functions for dealing with storing and handling a set of
-walks through a graph where matrixies are associated with each edge.
+walks through a graph where matricies are associated with each edge.
+
+Summary:
+-------
+
+We work with a finite alphabet, A = {1,...,m}, which are the nodes of
+the constructed graph. Allowable transitions i -> j, determined from
+the underlying dynamics, define the edges, E. We can think of each
+edge as colored. The coloring function associates to each edge e \in E
+a color in B = {1,...,k},
+
+c : E --> B.
+
+The graph G is the triple < G, E, c >. In this way we create a
+subshift of a colored graph, defined by
+
+X_G = { (x_i)_{i \in N} : \forall n \in N, \exists path a \subset E
+such that the coloring c(a) = [x] is allowable },
+
+where c(a) = [x] refers to the coloring of the path (i.e. the matrix
+product). We are constructing X_G based on a search for all [x].
 """
 # External dependenices
 import numpy as np
@@ -44,7 +64,7 @@ class BadLibrary( object ):
 class UnverifiedLibrary( object ):
     """
     A library of walks for fast lookup and indexing, for walks
-    that have not yet been exhaustively searched
+    that have not yet been exhaustively searched.
     """
     def __init__(self, walks=[]):
         # Allows fast search for items given a start and end, and edgeset
