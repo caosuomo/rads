@@ -5,7 +5,6 @@ from graphs.digraph import DiGraph
 #from symbolics import Path
 from walk_library import Walk
 
-
 from numpy import zeros
 
 class IndexMap(DiGraph):
