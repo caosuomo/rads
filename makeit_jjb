@@ -20,7 +20,8 @@ import config_jjb as config
 from shutil import copy2,copytree, ignore_patterns
 ### EXAMPLE: copytree(source, destination, ignore=ignore_patterns('*.pyc', 'tmp*'))
 
-# Find the OS for the prper extension. There is no Windows option.
+# We might have to find the OS for the proper extension. There is no
+# Windows option.
 extension = '.so'
 
 dependencies = { # dependencies for cython (or c++!) files
@@ -111,6 +112,8 @@ capd_libs = capd_libs #[ i for i in capd_libs ]#.append( capd_libs[:-2][:] )
 
 
 def compile_cpp(inputs,output):
+	print "g++ compiling inputs: ", inputs
+	print "g++ outputs: ", output
 	run(config.exe['c'],config.flags['c'],
 		['-I'+i for i in includes],
 		capd_flags, '-w',
@@ -121,13 +124,16 @@ def compile_cython(inputs,output):
 		'-a', '--cplus', inputs, '-o', output)
 	
 def link_cython(inputs,output):
+	print "linking inputs", inputs
+	print "linking ouput", output
+	print ""
 	run(config.exe['c++'],
 	    config.flags['c++ cython'],
-	    config.link['c++ cython'],
 	    '-o', output,
 	    ['-g'],
+	    inputs,
 	    capd_libs,
-	    inputs )#+ [capd_links] )
+	    config.link['c++ cython'])#+ [capd_links] )
 		
 def link_cpp(inputs,output):
 	"""
@@ -135,7 +141,7 @@ def link_cpp(inputs,output):
 	capd-config script does this automagically(?).
 	"""
 	run(config.exe['c++'], #config.flags['c++'], # cannot be empty (!?)
-	    config.link['c++ cython'],
+			       #config.link['c++ cython'],
 	    config.link['c++'],
 	    '-o', output,
 	    ['-g'],
@@ -198,7 +204,7 @@ def build_cyfile(sourcepath):
 	compile_cython(sourcepath+'.pyx', tempfile)
 
 	print ""
-	print "compiled cython files, compiling cpp..."
+	print "compiled cython file, compiling cpp file..."
 	print ""
 	
 	compile_cpp(tempfile, cpp_object_dir+filename+'.o')
@@ -206,7 +212,7 @@ def build_cyfile(sourcepath):
 
 	print ""
 	print "linking object files"
-	print "finalpath:", finalpath
+	print "finalpath:", finalpath+'.so'
 	print ""
 	
 	objects = [d+'.o' for d in deps]
@@ -271,6 +277,8 @@ def build():
 	# all cython files to compile
 	files = scandir('src/rads',ext='.pyx')
 
+	print "FILES", files
+
 	for path in files:					# for each cython file
 		print ""
 		print "path:"
@@ -282,6 +290,7 @@ def build():
 			build_cyfile(path)			# normal cython file
 
 	for name in cpp_progs:				# c++ programs...
+		print "file name", name
 		print "building cpp progs..."
 		build_cpp(name)
 

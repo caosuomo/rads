@@ -1,5 +1,5 @@
 #include "mapper.h"
-#include "henon_cpp.h"
+//#include "henon_cpp.h"
 
 BoxSet Mapper::map_points (const UniformBoxSet &bs) const
 {
@@ -48,6 +48,17 @@ void maptest(const Mapper &m, int num_pts)
 	
 int main()
 {
-  HenonMapper henon;
-  maptest(henon,10);
+
+  double y;
+  int i;
+  cout << "enter a number: ";
+  cin >> y;
+  cout << "enter an integer: ";
+  cin >> i;
+  IPoint x(y);
+  cout << "Interval x: " << x << endl;
+  return 0;
+
+   //  HenonMapper henon;
+//     maptest( henon , 10 );
 }
