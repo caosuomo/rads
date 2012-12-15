@@ -59,7 +59,7 @@ def graph_mis( G ):
 	sccs,rsccs = scc_raf( G )
 	C = condensation( G,sccs )
 	forward = set( descendants( C,rsccs ) )
-	backward = set( descendants( C.reverse(copy=False),rsccs ) )
+	backward = set( descendants( C.reverse( copy=False ),rsccs ) )
 	cnodes = forward & backward
 	return list(itertools.chain(*[sccs[c] for c in cnodes]))
 
@@ -180,7 +180,7 @@ def descendants(G,S):
 	for s in S:
 		G_nx.add_edge(n,s)
 	d = list(nx.algorithms.dfs_postorder_nodes(G_nx,n))
-	d.remove(n)							# TODO: make more efficient!
+	d.remove(n)		# TODO: make more efficient!
 	# JJB - since dfs_postorder_nodes return a generator, we must
 	# keep the 'star' node n in until the generator is complete
 	# RMF - casting to a list for now, for simplicity

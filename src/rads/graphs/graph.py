@@ -396,6 +396,14 @@ class Graph:
 		"""
 		return self.graph.edges(nbunch, data)
 
+	def number_of_nodes(self):
+		"""Return the number nodes in a graph."""
+		return self.graph.number_of_nodes()
+
+	def number_of_edges(self):
+		"""Return number of edges in a graph."""
+		return self.graph.number_of_edges()
+
 
 	def clear(self):
 		"""Remove all nodes and edges from the graph.

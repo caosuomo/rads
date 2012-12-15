@@ -52,16 +52,16 @@ class DiGraph(Graph):
         """Return a list of predecessor nodes of n."""
         return self.graph.predecessors(n)
 
-    def number_of_nodes(self):
-        """Return the number nodes in a graph."""
-        return self.graph.number_of_nodes()
+    # def number_of_nodes(self):
+    #     """Return the number nodes in a graph."""
+    #     return self.graph.number_of_nodes()
 
-    def number_of_edges(self):
-        """Return number of edges in a graph."""
-        return self.graph.number_of_edges()
+    # def number_of_edges(self):
+    #     """Return number of edges in a graph."""
+    #     return self.graph.number_of_edges()
 
-    def reverse( self ):
-        return self.graph.reverse()
+    def reverse( self, copy=False ):
+        return self.graph.reverse( copy=copy )
 
     def flag_edges(self, label, flag, ebunch=None):
         """
