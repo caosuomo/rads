@@ -60,6 +60,13 @@ class DiGraph(Graph):
         """Return number of edges in a graph."""
         return self.graph.number_of_edges()
 
+    def from_numpy_matrix( self, mat ):
+        """
+        Interface to NX's function.
+        """
+        self.graph = nx.from_numpy_matrix( mat,
+                                           create_using=self.graph )
+
     def flag_edges_from(self, label, flag, ebunch=None):
         """
         Attached an attribute to each edge in order to easily

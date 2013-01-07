@@ -40,7 +40,7 @@ class BadLibrary( object ):
     """
     def __init__(self, edgesets=[]):
         self.bads = []
-        self.bads.extend[edgesets]
+        self.bads.extend( edgesets )
     
     def __contains__(self, edgeset):
         """
@@ -54,9 +54,11 @@ class BadLibrary( object ):
 
     def add(self, edgeset):
         """
-        Adds the edgeset to the set of edges to be cut
+        Adds the edgeset to the set of edges to be cut. Loop over the
+        current list and filter according to whether the new edgeset
+        is a subset of an edgeset already in bads.
         """
-        # If a edgeset is a superset of the added set, it is going to be cut
+        # If a current edgeset is a superset of the added set, it is going to be cut
         # anyways, so remove all such sets.
         self.bads = filter(lambda bad: not bad >= edgeset, self.bads)
         self.bads.append(edgeset)
@@ -68,21 +70,37 @@ class UnverifiedLibrary( object ):
     """
     def __init__(self, walks=[]):
         # Allows fast search for items given a start and end, and edgeset
+        self.count = 0
         self.start_end_dict = defaultdict( lambda: defaultdict( lambda: defaultdict(list) ) )
         for walk in walks:
             self.add(walk)
+        
     
     def add(self, walk):
         """ Add a Walk to the library """ 
-        self.start_end_list[walk.start][walk.end][walk.edges] = walk
+        self.start_end_dict[walk.start][walk.end][walk.edges] = walk
         self.count += 1
 
-    def has_scalar_multiple(self, walk):
-        """ Finds every scalar multiple of the given walk """
-        pass
-        # for other in self.start_end_dict[walk.start][walk.end][walk.edges]:
-        #     TODO!!!!! BROKEN
+    def reduction_exists( self, walk ):
+        """
+        If an s-u path P results in a matrix product M, and smaller s-u
+        path Q results in cM for some nonzero scalar c, and Q uses only
+        edges from P, then we can ignore P 'by induction'.
 
+        s -- walk.start
+
+        u -- walk.end
+
+        M -- walk.matrix
+        """
+        for other in self.start_end_dict[walk.start][walk.end].values():
+            print "IN REDUCTION", other
+            if other.edges.issubset( walk.edges ) and walk.is_multiple( other ):
+                return True
+            else:
+                return False
+            
+        
 class Walk( object ):
     """
     All the information needed for symbolics calculation about a walk
@@ -98,7 +116,7 @@ class Walk( object ):
         """
         self.start = start
         self.end = end
-        self.edges = frozenset(edges)
+        self.edges = frozenset( edges )
         self.matrix = matrix
         self.length = length
 
@@ -111,17 +129,42 @@ class Walk( object ):
         assert self.end == other.start, \
                 "Cannot add walks a+b if a.end!=b.start"
         return Walk( self.start, other.end,
-                     self.edges.union(other.edges),
-                     np.dot(self.matrix, other.matrix),
+                     self.edges.union( other.edges ),
+                     other.matrix * self.matrix,
                      self.length + other.length )
 
     def __repr__( self ):
         s = "Walk(start="+str( self.start )+\
             ", end="+str( self.end )+\
-            ", len(edges)="+str( len( self.edges ))+\
+            ", len(edges)="+str( self.edges )+\
             ", length="+str(self.length)+")"
         return s
 
+    def __eq__( self, other ):
+        """
+        Compare two walks
+        """
+        return self.__dict__ == other.__dict__
+
+    def is_multiple( self, other ):
+        """
+        Returns A = c*B, where A = self.matrix, B = other.matrix.
+        """
+        A = self.matrix
+        B = other.matrix
+        w0, w1 = np.where( A != 0 )
+        print w0, w1
+        c =  A[w0[0,0],w1[0,0]] / B[w0[0,0],w1[0,0]]
+        print "A", A
+        print "B", B
+        print A[w0[0,0],w1[0,0]]
+        print B[w0[0,0],w1[0,0]]
+        print "C", c
+        if np.array_equal( A, c*B):
+            return True
+        else:
+            return False           
+        
     def zero_trace(self):
         """ Test if walk has a zero trace """
         return np.trace(self.matrix)==0
@@ -133,16 +176,58 @@ class Walk( object ):
     def zero(self):
         """ Test if the matrix of the walk is a zero matrix
         These walks are generally considered useless """
-        return np.any(self.matrix!=0)
+        return np.all( self.matrix == 0 )
 
 if __name__ == "__main__":
 
     import sys
     sys.path.append( '/Users/jberwald/github/local/caja-matematica/rads/src/rads' )
-    import graphs.digraph as DG
+    from graphs import DiGraph
+    import numpy
     
     # sample data for unit tests
-    # barbell-shaped graph with two self-loops at the ends
-    edges = [(0,0),(0,1),(1,0),(2,1),(2.5,2),(3,2.5),(4,3),(4,5),(5,4)]
-    G = DG.DiGraph( )
-    G.add_edges_from( edges )
+    # See Figure one in "Algorithms for rigorous entropy bounds"
+    # edges = [ ('A','C'), ('C','E'), ('E','F'), ('F','B'),
+    #          ('B','D'), ('D','B'), ('D','A'), ('F','A') ]
+   
+    generators = numpy.matrix( [[0,0,0,1,0,0,0,0],
+                                [0,0,0,0,1,0,0,0],
+                                [0,0,0,0,1,0,0,0],
+                                [0,0,0,0,0,1,0,0],
+                                [-1,-1,0,0,0,0,0,0],
+                                [0,0,0,0,0,0,-1,1],
+                                [0,0,1,0,0,0,0,0],
+                                [-1,0,0,0,0,0,0,0]]
+                               ).T
+    regions = { 0 : [0],
+                1 : [1,2],
+                2 : [3],
+                3 : [4],
+                4 : [5],
+                5 : [6,7]
+                }
+
+    adjmatrix = numpy.matrix( [[0,0,1,0,0,0],
+                               [0,0,0,1,0,0],
+                               [0,0,0,0,1,0],
+                               [1,1,0,0,0,0],
+                               [0,0,0,0,0,1],
+                               [1,1,0,0,0,0]]
+                              )
+    
+    P = DiGraph()
+    P.from_numpy_matrix( adjmatrix )
+
+    G = DiGraph( )
+    G.from_numpy_matrix( generators )
+
+    edgeset = defaultdict( list )
+
+    # length-1 walks
+    k = 1
+    for s,t in P.edges():
+        r2g = ( regions[ s ], regions[ t ] )
+        edge_matrix = generators[ r2g[0],r2g[1] ]
+        edgeset[k].append( Walk( s, t, set( [(s,t)] ), edge_matrix, k ) )
+        
+     

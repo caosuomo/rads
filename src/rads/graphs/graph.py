@@ -397,6 +397,12 @@ class Graph:
 		return self.graph.edges(nbunch, data)
 
 
+	def edges_iter( self, nbunch=None, data=False):
+		"""
+		Returns an iterator over the edges. See edges for args.
+		"""
+		return self.graph.edges_iter( nbunch, data )
+
 	def clear(self):
 		"""Remove all nodes and edges from the graph.
 
