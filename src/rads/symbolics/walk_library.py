@@ -42,26 +42,33 @@ class BadLibrary( object ):
         self.bads = []
         self.bads.extend( edgesets )
     
-    def __contains__(self, edgeset):
-        """
-        Returns true if the given edgeset is a superset of any set to be cut,
-        which implies that the edgeset will be cut as well.
-        """
-        for bad in self.bads:
-            if bad <= edgeset:
-                return True
-        return False
+    # def __contains__(self, edgeset):
+    #     """
+    #     Returns true if the given edgeset is a superset of any set to be cut,
+    #     which implies that the edgeset will be cut as well.
+    #     """
+    #     for bad in self.bads:
+    #         print ""
+    #         print "bad", bad
+    #         print "edgeset", edgeset
+    #         if bad <= edgeset:
+    #             return True
+    #     return False
 
     def add(self, edgeset):
         """
-        Adds the edgeset to the set of edges to be cut. Loop over the
-        current list and filter according to whether the new edgeset
-        is a subset of an edgeset already in bads.
+        Adds the edgeset to the set of edges to be cut. Filter
+        according to whether the new edgeset is a superset of an
+        edgeset already in bads.
         """
-        # If a current edgeset is a superset of the added set, it is going to be cut
-        # anyways, so remove all such sets.
-        self.bads = filter(lambda bad: not bad >= edgeset, self.bads)
-        self.bads.append(edgeset)
+        print "*****"
+        print "bads", self.bads
+        print "edgeset", edgeset
+        print "*****"
+        print ""
+        self.bads = filter( lambda bad: bad not in edgeset, self.bads )
+        # self.bads = filter( lambda bad: not bad >= edgeset, self.bads )
+        self.bads.append( edgeset )
 
 class UnverifiedLibrary( object ):
     """
@@ -71,7 +78,7 @@ class UnverifiedLibrary( object ):
     def __init__(self, walks=[]):
         # Allows fast search for items given a start and end, and edgeset
         self.count = 0
-        self.start_end_dict = defaultdict( lambda: defaultdict( lambda: defaultdict(list) ) )
+        self.start_end_dict = defaultdict( lambda: defaultdict( lambda: defaultdict( list ) ) )
         for walk in walks:
             self.add(walk)
         
@@ -81,7 +88,7 @@ class UnverifiedLibrary( object ):
         self.start_end_dict[walk.start][walk.end][walk.edges] = walk
         self.count += 1
 
-    def reduction_exists( self, walk ):
+    def reduction_exists( self, walk, debug=False ):
         """
         If an s-u path P results in a matrix product M, and smaller s-u
         path Q results in cM for some nonzero scalar c, and Q uses only
@@ -94,8 +101,16 @@ class UnverifiedLibrary( object ):
         M -- walk.matrix
         """
         for other in self.start_end_dict[walk.start][walk.end].values():
-            print "IN REDUCTION", other
+            if debug:
+                print "IN REDUCTION", other
             if other.edges.issubset( walk.edges ) and walk.is_multiple( other ):
+                if debug:
+                    print ""
+                    print "REDUCTION!"
+                    print ""
+                    print "other", other.edges
+                    print "walk", walk.edges
+                    print ""
                 return True
             else:
                 return False
@@ -153,13 +168,10 @@ class Walk( object ):
         A = self.matrix
         B = other.matrix
         w0, w1 = np.where( A != 0 )
-        print w0, w1
-        c =  A[w0[0,0],w1[0,0]] / B[w0[0,0],w1[0,0]]
-        print "A", A
-        print "B", B
-        print A[w0[0,0],w1[0,0]]
-        print B[w0[0,0],w1[0,0]]
-        print "C", c
+        try:
+            c =  float( A[w0[0,0],w1[0,0]] ) / float( B[w0[0,0],w1[0,0]] )
+        except ZeroDivisionError:
+            return False
         if np.array_equal( A, c*B):
             return True
         else:

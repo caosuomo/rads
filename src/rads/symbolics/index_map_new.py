@@ -45,8 +45,6 @@ class IndexMap(DiGraph):
             r2g = ( self.regions[ s ], self.regions[ t ] )
             matidx = ( r2g[0][0],r2g[0][-1]+1,
                        r2g[1][0],r2g[1][-1]+1 )
-            if self.debug:
-                print "MATIDX", matidx
             edge = Walk(start=s,
                         end=t,
                         edges=frozenset( [(s,t)] ),#frozenset( [self.edge2hash( s, t )] ),
@@ -72,13 +70,24 @@ if __name__ == "__main__":
     from index_map_processor import IndexMapProcessor
 
     # column mapping: col idx --> row idx 
+    # generators = numpy.matrix( [[0,0,0,1,0,0,0,0],
+    #                             [0,0,0,0,1,0,0,0],
+    #                             [0,0,0,0,1,0,0,0],
+    #                             [0,0,0,0,0,1,0,0],
+    #                             [-1,-1,0,0,0,0,0,0],
+    #                             [0,0,0,0,0,0,-1,1],
+    #                             [0,0,1,0,0,0,0,0],
+    #                             [-1,0,0,0,0,0,0,0]]
+    #                            ).T
+
+    # modified version 
     generators = numpy.matrix( [[0,0,0,1,0,0,0,0],
-                                [0,0,0,0,1,0,0,0],
+                                [0,0,0,0,0,0,0,0],
                                 [0,0,0,0,1,0,0,0],
                                 [0,0,0,0,0,1,0,0],
                                 [-1,-1,0,0,0,0,0,0],
                                 [0,0,0,0,0,0,-1,1],
-                                [0,0,1,0,0,0,0,0],
+                                [0,0,0,0,0,0,0,0],
                                 [-1,0,0,0,0,0,0,0]]
                                ).T
     
@@ -90,16 +99,17 @@ if __name__ == "__main__":
                 5 : [6,7]
                 }
 
-    adjmatrix = numpy.matrix( [[0,0,1,0,0,0],
-                               [0,0,0,1,0,0],
-                               [0,0,0,0,1,0],
-                               [1,1,0,0,0,0],
-                               [0,0,0,0,0,1],
-                               [1,1,0,0,0,0]]
-                              )
-    
-    IM = IndexMap( generators, regions, adjmatrix, debug=True )
-    IP = IndexMapProcessor( IM, debug=True )
+    map_on_regions = numpy.matrix( [[0,0,1,0,0,0],
+                                    [0,0,0,1,0,0],
+                                    [0,0,0,0,1,0],
+                                    [1,1,0,0,0,0],
+                                    [0,0,0,0,0,1],
+                                    [1,1,0,0,0,0]]
+                                   )
+
+    debug = True
+    IM = IndexMap( generators, regions, map_on_regions, debug=debug )
+    IP = IndexMapProcessor( IM, debug=debug )
     IP.find_bad_edge_sets( 3 )
                                         
                                          
