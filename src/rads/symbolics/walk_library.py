@@ -38,22 +38,21 @@ class BadLibrary( object ):
     """
     A library of edgesets that are bad (all parameters are of type frozenset())
     """
-    def __init__(self, edgesets=[]):
+    def __init__(self, edgesets=[], debug=False):
         self.bads = []
         self.bads.extend( edgesets )
+
+        self.debug = debug
     
-    # def __contains__(self, edgeset):
-    #     """
-    #     Returns true if the given edgeset is a superset of any set to be cut,
-    #     which implies that the edgeset will be cut as well.
-    #     """
-    #     for bad in self.bads:
-    #         print ""
-    #         print "bad", bad
-    #         print "edgeset", edgeset
-    #         if bad <= edgeset:
-    #             return True
-    #     return False
+    def __contains__(self, edgeset):
+        """
+        Returns true if the given edgeset is a superset of any set to be cut,
+        which implies that the edgeset will be cut as well.
+        """
+        for bad in self.bads:
+            if bad.issubset( edgeset ):
+                return True
+        return False
 
     def add(self, edgeset):
         """
@@ -61,12 +60,13 @@ class BadLibrary( object ):
         according to whether the new edgeset is a superset of an
         edgeset already in bads.
         """
-        print "*****"
-        print "bads", self.bads
-        print "edgeset", edgeset
-        print "*****"
-        print ""
-        self.bads = filter( lambda bad: bad not in edgeset, self.bads )
+        if self.debug:
+            print "*****"
+            print "bads", self.bads
+            print "edgeset", edgeset
+            print "*****"
+            print ""
+        self.bads = filter( lambda bad: bad.issuperset( edgeset ), self.bads )
         # self.bads = filter( lambda bad: not bad >= edgeset, self.bads )
         self.bads.append( edgeset )
 
@@ -100,7 +100,7 @@ class UnverifiedLibrary( object ):
 
         M -- walk.matrix
         """
-        for other in self.start_end_dict[walk.start][walk.end].values():
+        for other in self.start_end_dict[walk.start][walk.end].itervalues():
             if debug:
                 print "IN REDUCTION", other
             if other.edges.issubset( walk.edges ) and walk.is_multiple( other ):
@@ -148,6 +148,9 @@ class Walk( object ):
                      other.matrix * self.matrix,
                      self.length + other.length )
 
+    def __iter__( self ):
+        return self.edges
+
     def __repr__( self ):
         s = "Walk(start="+str( self.start )+\
             ", end="+str( self.end )+\
@@ -157,7 +160,7 @@ class Walk( object ):
 
     def __eq__( self, other ):
         """
-        Compare two walks
+        Compare two walks.
         """
         return self.__dict__ == other.__dict__
 

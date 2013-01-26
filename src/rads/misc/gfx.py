@@ -30,7 +30,13 @@ def show_uboxes(uboxes,S=None,col='b',ecol='k'):
 
 def show_box(b,col='b',ecol='k',alpha=1):
 	patches = []
-	art = mpatches.Rectangle(b[0],b[1,0],b[1,1])
+
+	# lower left corner at b[0], followed by width and height
+	xy = b[0]
+	width = np.absolute( b[0,1] - b[0,0] )
+	height = np.absolute( b[1,1] - b[1,0] )
+	art = mpatches.Rectangle( xy, width, height )
+	#art = mpatches.Rectangle(b[0],b[1,0],b[1,1])
 	patches.append(art)
 
 	ax = plt.gca()

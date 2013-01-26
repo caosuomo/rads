@@ -1,13 +1,18 @@
 from walk_library import UnverifiedLibrary, BadLibrary
 from collections import deque
+import numpy as np
+from math import log
 
 class IndexMapProcessor( object ):
-    """ Processes a given index map of generators """
-    def __init__( self, indexmap, debug=False ):
+    """
+    Processes a given index map of generators.
+    """
+    def __init__( self, indexmap, check_trace=False, debug=False ):
         """
         indexmap -- IndexMap object
         """
         self.debug = debug
+        self.check_trace = check_trace
         self.map = indexmap
         # Stores all edge sets that need to have one edge cut
         self.bad_edges = BadLibrary()
@@ -26,6 +31,23 @@ class IndexMapProcessor( object ):
         # again, init with the 1-step walks
         self.unverified = UnverifiedLibrary( self.edge_walks.values() )
 
+    def check_walk( self, walk ):
+        """
+        Check whether the matrix product is zero.
+
+        Returns True if either the matrix product is zero or the trace of a cycle is zero.
+        """
+        # If matrix product is zero matrix, always add to bad edge
+        # set, so check first
+        if walk.zero():
+            return True
+        # If we pass the zero matrix condition, and check_trace==True,
+        # then check if we're a cycle and if the trace is zero.
+        if self.check_trace:
+            if walk.cycle() and walk.zero_trace():
+                return True
+        return False        
+
     def find_bad_edge_sets( self, maxLength ):
         """
         Version of Algorithms 6 in Day, Frongillo, Trevino.
@@ -41,7 +63,6 @@ class IndexMapProcessor( object ):
         paths from todo are checked against those in unverified to see
         if a reduction exists.
         """
-
         if self.debug:
             maxlen = 1
         
@@ -76,12 +97,12 @@ class IndexMapProcessor( object ):
                 
                 # Check if the walk has an edgeset that will already be cut...
                 # If so, ignore it
-                if new_walk in self.bad_edges:
+                if new_walk.edges in self.bad_edges:
                     continue
                 
                 # Check if the walk is a zero matrix, or is a cycle with zero
                 # trace. If so, add it to the bad edge list.
-                if new_walk.zero() or (new_walk.cycle() and new_walk.zero_trace()):
+                if self.check_walk( new_walk ):
                     if self.debug:
                         print "=========================="
                         print "BADS", self.bad_edges.bads
@@ -89,7 +110,6 @@ class IndexMapProcessor( object ):
                         print new_walk.edges
                         print new_walk.matrix
                         print "=========================="
-
                     self.bad_edges.add( new_walk.edges )
                     continue
 
@@ -109,12 +129,45 @@ class IndexMapProcessor( object ):
                 if self.debug:
                     print "\n\n"
 
-    # def cutBadEdgeSets(self, **kwargs):
-    #     args = {bad_edge_sets = self.bad_edges.bad,
-    #             cut_edges = [],
-    #             excluded_edges = [],
-    #             best_entropy = -1,
-    #             cutoff = 10000}
+    def cut_bad_edge_sets(self, **kwargs):
+        """
+        Remove all edges in 
+        """
+        fargs = { bad_edge_sets : self.bad_edges.bad,
+                  cut_edges : [],
+                  excluded_edges : [],
+                  best_entropy : -1,
+                  cutoff : 10000
+                  }
+
+    def contruct_symbolic_system( self ):
+        """
+        Construct a symbolic system on phase space from allowable
+        transitions.
+        """
+        pass
+        
+def log_max_eigenvalue( M, base=None ):
+    """
+    Returns max( log( 0, || v || ) ), where v is the leading
+    eigenvalue of M.
+
+    M -- numpy matrix
+
+    Note: log is base e by default 
+    """
+    # compute the eigenvalues, take |v| of each, and store the largest
+    # in eigmax
+    eigmax = np.absolute( np.linalg.eigvals( M ) ).max()
+    if eigmax == 0:
+        return 0
+    else:
+        if not base:
+            return log( eigmax )
+        else:
+            return log( eigmax, base )
+        
+
                 
 if __name__ == "__main__":
 
