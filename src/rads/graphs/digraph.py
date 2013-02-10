@@ -1,7 +1,7 @@
 import networkx as nx
 from rads.graphs import Graph
 
-class DiGraph(Graph):
+class DiGraph( Graph ):
     """
     Base class for directed graphs.
     """
@@ -62,10 +62,38 @@ class DiGraph(Graph):
 
     def from_numpy_matrix( self, mat ):
         """
-        Interface to NX's function.
+        Interface to NX's function. In-place conversion.
         """
-        self.graph = nx.from_numpy_matrix( mat,
-                                           create_using=self.graph )
+        self.graph = nx.from_numpy_matrix( mat, create_using=self.graph )
+
+    def copy( self ):
+	"""
+        Return a copy of the graph.
+
+        Returns
+        -------
+        G : Graph
+            A copy of the graph.
+
+        See Also
+        --------
+        to_directed: return a directed copy of the graph.
+
+        Notes
+        -----
+        This makes a complete copy of the graph including all of the
+        node or edge attributes.
+
+        Examples
+        --------
+        >>> G = nx.Graph()   # or DiGraph, MultiGraph, MultiDiGraph, etc
+        >>> G.add_path([0,1,2,3])
+        >>> H = G.copy()
+        """
+        G = DiGraph()
+        copy_self = self.graph.copy()
+        G.add_edges_from( copy_self.edges( data=True ) ) 
+        return G
 
     def flag_edges_from(self, label, flag, ebunch=None):
         """

@@ -1,12 +1,12 @@
 import sys
-sys.path.append( '/Users/jberwald/github/local/caja-matematica/rads/src/rads' )
+#sys.path.append( '/Users/jberwald/github/local/caja-matematica/rads/src/rads' )
 
-from graphs.digraph import DiGraph
+from rads.graphs.digraph import DiGraph
 #from symbolics import Path
-from walk_library import Walk, UnverifiedLibrary
+from rads.symbolics.walk_library import Walk, UnverifiedLibrary
 from numpy import zeros
 
-class IndexMap(DiGraph):
+class IndexMap( DiGraph ):
     def __init__(self, generators=None, regions=None, transitions=None, debug=False):
         """
         Inputs:
@@ -63,52 +63,6 @@ class IndexMap(DiGraph):
             
 
 
-if __name__ == "__main__":
 
-    import numpy
-    from index_map_processor import IndexMapProcessor
-    
-    # column mapping: col idx --> row idx 
-    generators = numpy.matrix( [[0,0,0,1,0,0,0,0],
-                                [0,0,0,0,1,0,0,0],
-                                [0,0,0,0,1,0,0,0],
-                                [0,0,0,0,0,1,0,0],
-                                [-1,-1,0,0,0,0,0,0],
-                                [0,0,0,0,0,0,-1,1],
-                                [0,0,1,0,0,0,0,0],
-                                [-1,0,0,0,0,0,0,0]]
-                               ).T
 
-    # modified version 
-    # generators = numpy.matrix( [[0,0,0,1,0,0,0,0],
-    #                             [0,0,0,0,0,0,0,0],
-    #                             [0,0,0,0,1,0,0,0],
-    #                             [0,0,0,0,0,1,0,0],
-    #                             [-1,-1,0,0,0,0,0,0],
-    #                             [0,0,0,0,0,0,-1,1],
-    #                             [0,0,0,0,0,0,0,0],
-    #                             [-1,0,0,0,0,0,0,0]]
-    #                            ).T
-    
-    regions = { 0 : [0],
-                1 : [1,2],
-                2 : [3],
-                3 : [4],
-                4 : [5],
-                5 : [6,7]
-                }
-
-    map_on_regions = numpy.matrix( [[0,0,1,0,0,0],
-                                    [0,0,0,1,0,0],
-                                    [0,0,0,0,1,0],
-                                    [1,1,0,0,0,0],
-                                    [0,0,0,0,0,1],
-                                    [1,1,0,0,0,0]]
-                                   )
-
-    debug = True
-    IM = IndexMap( generators, regions, map_on_regions, debug=debug )
-    IP = IndexMapProcessor( IM, debug=debug )
-    IP.find_bad_edge_sets( 2 )
-                                        
                                          

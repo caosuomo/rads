@@ -3,7 +3,7 @@ walk_library.py
 
 Opened: Jun. 13, 2012
 
-Author: Jakub Gedeon
+Authors: Jakub Gedeon and Jesse Berwald
 
 Contains classes and functions for dealing with storing and handling a set of
 walks through a graph where matricies are associated with each edge.
@@ -20,7 +20,7 @@ a color in B = {1,...,k},
 c : E --> B.
 
 The graph G is the triple < G, E, c >. In this way we create a
-subshift of a colored graph, defined by
+subshift of a 'colored' graph, defined by
 
 X_G = { (x_i)_{i \in N} : \forall n \in N, \exists path a \subset E
 such that the coloring c(a) = [x] is allowable },

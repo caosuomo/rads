@@ -35,15 +35,15 @@ class IndexMap( IP.IndexMapProcessor ):
     ------
     
     Construction of an IndexMap representing the map on homology for a
-    kixed k
+    fixed homology level k,
 
          f: H_{k}(P,P') -> H_{k}(P,P')
 
-    for the index pair (P,P'):
+    for the index pair (P,P').
 
     Two objects are necessary, a directed graph (equivalently an
     adjacency matrix) and a representation of generators by disjoint
-    regions within the index pair.
+    regions within the index pair. 
 
     Initialization:
     ---------------
@@ -66,8 +66,15 @@ class IndexMap( IP.IndexMapProcessor ):
                Represents map on homology.
 
     genmap : map from disjoint regions in index pair to the generators
-             that live on those regions.
+             that live on those regions. G[r] = [g1,...,gk], where r
+             is a region (int) and gi are generators on the region
+             (also int).
 
+    ** The goal of IndexMap is to provide an interface to the
+       algorithms used to reduce the symbolic representation
+       (i.e. remove transient generators, verify cycles). Hence, the
+       core structure is just a DiGraph object (initially NetworkX,
+       posibly changed to a Sage digraph in the future?). 
     """
     def __init__( self, **kwargs ):
         # Inherit from IndexMapProcessor: functions for reducing the
@@ -99,7 +106,7 @@ class IndexMap( IP.IndexMapProcessor ):
                                        self.generators, **fargs )
 
         # initially flag all edges as not prohibited
-        self.flag_edges_from( label='prohibited', flag=False )
+        self.flag_edges( label='prohibited', flag=False )
  
     def shift_equivalent_map( self ):
         """
@@ -108,7 +115,8 @@ class IndexMap( IP.IndexMapProcessor ):
 
         The required sets of nodes V1, V2, and V3 are computed as
         follows:
-            Given G = (V,E), with V = {V1,V2,V3},
+        
+            Given G = (V,E), with V = {V1,V2,V3}:
 
             1. Find strongly connected components (scc) of G. Labeled
             by nodes V2.
@@ -133,9 +141,7 @@ class IndexMap( IP.IndexMapProcessor ):
         # remove nodes to form subgraph of map on generators
         # containing only nodes that are part of the maximally
         # invariant set.
-        self.index_map.remove_nodes_from( self.non_mis_nodes )
-
-
+        self.graph.remove_nodes_from( self.non_mis_nodes )
         
 
     def compute_entropy( self, max_path_length=20 ):

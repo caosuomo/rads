@@ -12,15 +12,10 @@ tree = Tree(box)
 for i in range(6):
 	tree.subdivide()
 
-
-nprand.seed( 123 )
-
 def test_one_box(box,tree,graphics=False,callback=None):#,f):
 	print 'box',box[0],box[1],':',
 	s = tree.search(box)
-	print ""
-	print "box search:", s
-	print "len(s):", len( s )
+	print s,
 	boxes = tree.boxes()
 	if graphics:
 		plt.close()

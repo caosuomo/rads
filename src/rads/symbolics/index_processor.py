@@ -127,11 +127,11 @@ class IndexMapProcessor( object ):
         self.adj_matrix = adj_matrix
     
     
-    def verify_cycles( self, index_map, generators, max_length=10 ):
+    def verify_cycles( self, index_map, generators, max_path_length=10 ):
         """
         Let N = cl(P\P'), where (P,P') is the index pair, and N=\cup
         N_i, where the N_i are disjoint regions in N, m=1,...,m. Let
-        G=<V,E> represents admissible transitions between the regions
+        G=<V,E> represent admissible transitions between the regions
         N_i, where V={1,...,m} and (i,j) \in E if F(N_i) \cap N_j \ne
         \emptyset.
         
@@ -150,7 +150,7 @@ class IndexMapProcessor( object ):
         of the map f with the subshift of finite type, \sigma, defined
         on the symbol space of m symbols and transition matrix T==G.
 
-        The index map is represented by an n x n matrix (n>=m), with
+        The index map is represented by an n x n matrix (n >= m), with
         the submatrix of size nj X ni representing the linear map on
         generators from the Ni to Nj. Thus, f_{Pk}^{c} boils down to a
         product of matrices. To verify nonemptiness of the invariant
@@ -182,18 +182,17 @@ class IndexMapProcessor( object ):
         # invert the generator map so we can get the blocks below
         inv_map = convert.invert_dictionary( self.generators )
         if self.debug: print "inv gens", inv_gens
-        # list of lists. blocks = [blocks[i]] =[[gen0,gen1],[gen2],...]
+        # list of lists. Eg., blocks = [blocks[i]] =[[gen0,gen1],[gen2],...]
         blocks = list( chain(inv_map.itervalues()) )
         if self.debug: print "blocks", blocks
         # condensed matrix -- collapsed onto regions
         self.map_on_regions = algorithms.blockmodel( self.index_map, blocks )
         self.verified_cycles = algorithms.verified_cycles( self.index_map,
                                                            self.adj_matrix,
-                                                           dmax_path_length )
+                                                           max_path_length )
         
 
-
-    def verified_cycles( self map_on_regions, index_map, adj_matrix, max_path_length ):
+    def verified_cycles( self, map_on_regions, index_map, adj_matrix, max_path_length ):
 	"""
 	Induction on the path length.
 

@@ -10,7 +10,9 @@ class Graph:
 
 		numpy adjacency array
 
-		args:
+		Networkx Graph
+
+		kwargs:
 		----
 
 		Note: The orientation of the map should be stored in the array
@@ -369,6 +371,34 @@ class Graph:
 			True if edge is in the graph, False otherwise.
 		"""
 		return self.graph.has_edge(u,v)
+
+	def nodes( self, data=False ):
+		"""
+		Return a list of the nodes in the graph.
+
+		Parameters
+		----------
+		data : boolean, optional (default=False)
+		       If False return a list of nodes.  If True return a
+		       two-tuple of node and node data dictionary
+
+		Returns
+		-------
+		nlist : list
+		    A list of nodes.  If data=True a list of two-tuples containing
+		    (node, node data dictionary).
+
+		Examples
+		--------
+		>>> G = nx.Graph()   # or DiGraph, MultiGraph, MultiDiGraph, etc
+		>>> G.add_path([0,1,2])
+		>>> G.nodes()
+		[0, 1, 2]
+		>>> G.add_node(1, time='5pm')
+		>>> G.nodes(data=True)
+		[(0, {}), (1, {'time': '5pm'}), (2, {})]
+		"""
+		return self.graph.nodes( data )
 		
 	def edges(self, nbunch=None, data=False):
 		"""Return a list of edges.
@@ -410,6 +440,35 @@ class Graph:
 		"""
 		self.graph.clear()
 
+	def copy( self ):
+		"""
+		Return a copy of the graph.
+
+		Returns
+		-------
+		G : Graph
+		    A copy of the graph.
+
+		See Also
+		--------
+		to_directed: return a directed copy of the graph.
+
+		Notes
+		-----
+		This makes a complete copy of the graph including all of the
+		node or edge attributes.
+		Examples
+		--------
+		>>> G = nx.Graph()   # or DiGraph, MultiGraph, MultiDiGraph, etc
+		>>> G.add_path([0,1,2,3])
+		>>> H = G.copy()
+		"""
+		G = Graph()
+		copy_self = self.graph.copy()
+		G.add_edges_from( copy_self.edges( data=True ) ) 
+		return G
+
+
 	def deepcopy(self):
 		"""Return a deep copy of the graph.
 
@@ -428,6 +487,13 @@ class Graph:
 		and deep copies, http://docs.python.org/library/copy.html.
 		"""
 		return deepcopy(self)
+
+	def to_numpy_matrix( self ):
+		"""
+		Returns the adjacency matrix of self.graph as a numpy
+		matrix.
+		"""
+		return nx.to_numpy_matrix( self.graph )
 
 	def draw( self, **kwargs ):
 		"""
