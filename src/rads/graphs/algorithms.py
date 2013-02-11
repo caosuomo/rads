@@ -241,7 +241,7 @@ def blockmodel(G,partitions,multigraph=False):
     part=list(map(set,partitions))
 
     # account for digraph structure
-    G = G.graph
+    #    G = G.graph
 
     # Check for overlapping node partitions
     u=set()
@@ -260,10 +260,10 @@ def blockmodel(G,partitions,multigraph=False):
     else:
         if G.is_directed():
 	    # JJB - Make the block graph a rads DiGraph or Graph
-	    M = digraph.DiGraph()
+	    M = nx.DiGraph()
 	# M=nx.DiGraph() 
         else:
-            M=graph.Graph() 
+            M=nx.Graph() 
         
     # Add nodes and properties to blockmodel            
     # The blockmodel nodes are node-induced subgraphs of G
@@ -275,7 +275,7 @@ def blockmodel(G,partitions,multigraph=False):
         M.node[i]['graph']=SG        
         M.node[i]['nnodes']=SG.number_of_nodes()
         M.node[i]['nedges']=SG.number_of_edges()
-	## don't need this, JJB
+	## JJB -- don't need this
         # M.node[i]['density']=nx.density(SG)
         
     # Create mapping between original node labels and new blockmodel node labels

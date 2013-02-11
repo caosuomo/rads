@@ -1,7 +1,9 @@
 import numpy
 #from rads.symbolics.index_map_new import IndexMap
 from rads.symbolics.index_map_processor import IndexMapProcessor,IndexMap
+from rads.misc import utils
 import matplotlib.pyplot as plt
+
 
 if 0:
       # column mapping: col idx --> row idx 
@@ -39,11 +41,11 @@ if 0:
                                         [0,0,0,0,1,0],
                                         [1,1,0,0,0,0],
                                         [0,0,0,0,0,1],
-                                       [1,1,0,0,0,0]]
+                                        [1,1,0,0,0,0]]
                                        )
 if 1:
 
-    generators = numpy.matrix( [[0,0,1,1,0],
+    hom_matrix = numpy.matrix( [[0,0,1,1,0],
                                 [0,0,0,0,1],
                                 [0,1,0,0,0],
                                 [0,0,1,1,-1],
@@ -51,10 +53,10 @@ if 1:
                                ).T
 
     # A <--> 0, B <--> 1, etc.
-    regions = { 0 : [0,1],
-                1 : [2],
-                2 : [3,4]
-                }
+    region2gen = { 0 : [0,1],
+                   1 : [2],
+                   2 : [3,4]
+                   }
 
     map_on_regions = numpy.matrix( [[0,1,1],
                                     [1,0,0],
@@ -62,7 +64,7 @@ if 1:
                                    )
 
 debug = False
-IM = IndexMap( generators, regions, map_on_regions, debug=debug )
+IM = IndexMap( hom_matrix, region2gen, map_on_regions, debug=debug )
 IP = IndexMapProcessor( IM, debug=debug )
 IP.find_bad_edge_sets( 4 )  # argument == max path length
 IP.cut_bad_edge_sets()
