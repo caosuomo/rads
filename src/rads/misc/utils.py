@@ -8,8 +8,8 @@ Opened: Feb. 15, 2012
 A wrapper for various utility functions. Meant to be subclassed.
 """
 import networkx as nx
+import numpy as np
 from scipy.io import loadmat
-from numpy import matrix, where
 from rads.graphs import algorithms, DiGraph
 
 def load_matlab_matrix( matfile, matname=None ):
@@ -20,10 +20,10 @@ def load_matlab_matrix( matfile, matname=None ):
     map. Otherwise, the full dict provided by loadmat is returns.
     """
     if not matname:
-        return matrix( loadmat( matfile ) )
+        return np.matrix( loadmat( matfile ) )
     else:
         mat = loadmat( matfile )
-        return matrix( mat[ matname ] )
+        return np.matrix( mat[ matname ] )
 
 
 def convert_matlab_gens( genfile, genname='generators' ):
@@ -80,16 +80,27 @@ def cell2dict( ca, genname ):
             g = gen.tolist()
             # no generators in this region
             if len( g ) == 0:
+                # no generator on this region
                 continue
             else:
                 gdict[r+1] = g
-    return gdict
+    # Now that we've created the hash, shift all region labels and
+    # generator labels by (-1) to align with Python 0-based indexing.
+    aligned_dict = {}
+    for key, val in gdict.items():
+        new_val = [ x-1 for x in val ]
+        aligned_dict[ key-1 ] = new_val
+    return aligned_dict # gdict
 
-def index_map_to_region_map( hom_mat, reg2gen ):
+def index_map_to_region_map( hom_mat, reg2gen, shift=0 ):
     """
     hom_mat : numpy matrix representing a map on generators (index map).
 
     reg2gen : dictionary mapping region -> generator(s).
+
+    shift : align indices for numpy matrices. If generators produced
+    from Matlab matrix or cell array of generators, then must account
+    of 1-indexing in Matlab by shift = -1.
 
     Uses NetworkX blockmodel to condense reg2gen 
 
@@ -101,23 +112,20 @@ def index_map_to_region_map( hom_mat, reg2gen ):
     Rinv = invert_dictionary( R )
     G = DiGraph()
     for k in R.keys():
-        # k is a tuple or set
-        gen_conns = where( H[:,R[k]] != 0 )[0]
-        print gen_conns
-        gen_conns = gen_conns.tolist()[0] # just stupid matrix formatting
+        # # k is a tuple or set
+        # if shift:
+        #     idx = np.array( R[k] ) + shift
+        #     gen_conns = np.where( H[:,idx] != 0 )[0]
+        # else:
+        gen_conns = np.where( H[:,R[k]] != 0 )[0]
+        gen_conns = gen_conns.tolist()[0] # fix matrix formatting
         for edge in gen_conns:
             for glist in Rinv.keys():
                 if edge in glist:
-                    print "edge: ", k, " --> ", Rinv[glist]
                     G.add_edge( k, Rinv[glist][0] )
-    return G.to_numpy_matrix()
-    
-    # G = nx.from_dict_of_lists( reg2gen )
-    # # compress all generators on a single region to a node using nx's
-    # # blockmodel.
-    # B = algorithms.blockmodel( G, reg2gen.values() )
-    # return B
-    #return nx.to_numpy_matrix( B )
+    # return the graph so that we have access to the nodes labels that
+    # correspond directly to regions with generators.
+    return G  
 
 def invert_dictionary( d ):
     inv_map = {}

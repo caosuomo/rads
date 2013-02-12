@@ -65,7 +65,7 @@ def graph_mis( G ):
 	rG.graph = rC
 	backward = set( descendants( rG,rsccs ) )
 	cnodes = forward & backward
-	return list(itertools.chain(*[sccs[c] for c in cnodes]))
+	return list(itertools.chain(*[sccs[c] for c in cnodes])), sccs, rsccs
 
 def first_return_times( k, backwards=False ):
 	"""

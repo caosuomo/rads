@@ -66,6 +66,24 @@ class DiGraph( Graph ):
         """
         self.graph = nx.from_numpy_matrix( mat, create_using=self.graph )
 
+    def reverse( self, copy=True ):
+        """
+        Return the reverse of the graph.
+
+        The reverse is a graph with the same nodes and edges
+        but with the directions of the edges reversed.
+
+        Parameters
+        ----------
+        copy : bool optional (default=True)
+            If True, return a new DiGraph holding the reversed edges.
+            If False, reverse the reverse graph is created using
+            the original graph (this changes the original graph).
+        """
+        return self.graph.reverse( copy=copy )
+
+
+
     def copy( self ):
 	"""
         Return a copy of the graph.

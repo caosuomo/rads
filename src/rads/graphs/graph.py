@@ -488,12 +488,12 @@ class Graph:
 		"""
 		return deepcopy(self)
 
-	def to_numpy_matrix( self ):
+	def to_numpy_matrix( self, **kwargs ):
 		"""
 		Returns the adjacency matrix of self.graph as a numpy
 		matrix.
 		"""
-		return nx.to_numpy_matrix( self.graph )
+		return nx.to_numpy_matrix( self.graph, **kwargs )
 
 	def draw( self, **kwargs ):
 		"""

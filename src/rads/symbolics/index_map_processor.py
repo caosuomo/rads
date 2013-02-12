@@ -17,7 +17,12 @@ calculation of the entropy.
 """
 
 class IndexMap( DiGraph ):
-    def __init__(self, generators=None, regions=None, transitions=None, debug=False):
+    
+    def __init__(self,
+                 generators=None,
+                 regions=None,
+                 transitions=None,
+                 debug=False):
         """
         Inputs:
         
@@ -29,37 +34,87 @@ class IndexMap( DiGraph ):
 
             transitions -- An adjacency matrix representing the
             transitions between regions in phase space.
+
+            matlab_shift -- Account for 1-based indexing in Matlab. 
             
             debug (optional) = a boolean representing if debug
                 statements should be printed
         """
-        self.generators = generators
-        self.regions = regions
-        self.transitions = DiGraph()
-        self.transitions.from_numpy_matrix( transitions )
-        self.library = UnverifiedLibrary()
-        self.debug = debug
-
+        
         # Graph that will store the backend reprsentation 
         DiGraph.__init__(self)
+        
+        self.generators = generators
+        self.regions = regions
+        self.debug = debug
+        
+        # adjacency matrix
+        if hasattr( transitions, '__abs__' ):
+            self.unverified_symbolic_system = DiGraph()
+            self.unverified_symbolic_system.from_numpy_matrix( transitions )
+        # assume it's already a Digraph (no check done!)
+        else:
+            self.unverified_symbolic_system = transitions
+
+        self.library = UnverifiedLibrary()
 
         # Utility functions for packing and unpacking edge information into an integer
         self.regioncount = len( self.regions )
         self.edge2hash = lambda start, end: start * self.regioncount + end
-        self.hash2edge = lambda hashed: hashed / self.regioncount, #hashed%regioncount
+        self.hash2edge = lambda hashed: hashed / self.regioncount, #hashed%regioncount            
 
-        # source and sink along one-step paths phase space (maps between regions)
-        for s, t in self.transitions.edges():
+class IndexMapProcessor( IndexMap ):
+    """
+    Processes a given index map of generators.
+    """
+    def __init__( self,
+                  index_map=None,
+                  reg2gen=None,
+                  symbolic_system=None,
+                  debug=False,
+                  check_trace=False ):
+        """
+        Objects and methods for verifying paths in a symbolic system
+        based on the given index map. Works whether symbolic system
+        contains one or many disjoint strongly connected components.
+
+        index_map -- numpy matrix of map on generators on disjoint
+        regions of an attactor in phase space. Output from CHomP or
+        other homology software.
+
+        reg2gen -- a dictionary of lists representing generators
+        per region.
+        
+        symbol_system -- An adjacency matrix representing the
+        transitions between regions in phase space.
+
+        debug -- turn on debugging messages (default = False)
+
+        check_trace -- toggle whether to check the trace of matrix
+        products resulting from cycles. (default=False)
+        """
+        IndexMap.__init__( self, index_map, reg2gen, symbolic_system, debug )
+
+        self.check_trace = check_trace
+        #self.unverified_symbolic_system = indexmap
+        # Stores all edge sets that need to have one edge cut
+        self.bad_edges = BadLibrary()
+
+        # source and sink along one-step paths phase space (maps
+        # between regions). self.unverified_symbolic_system inherited
+        # from IndexMap.
+        for s, t in self.unverified_symbolic_system.edges_iter():
             # generators supported on each region
             r2g = ( self.regions[ s ], self.regions[ t ] )
             matidx = ( r2g[0][0],r2g[0][-1]+1,
-                       r2g[1][0],r2g[1][-1]+1 )
-            edge = Walk(start=s,
-                        end=t,
-                        edges=frozenset( [(s,t)] ),#frozenset( [self.edge2hash( s, t )] ),
-                        matrix=self.generators[ matidx[2]:matidx[3],
-                                                matidx[0]:matidx[1] ],
-                        length=1
+                       r2g[1][0],r2g[1][-1]+1
+                       )
+            edge = Walk( start=s,
+                         end=t,
+                         edges=frozenset( [(s,t)] ),#frozenset( [self.edge2hash( s, t )] ),
+                         matrix=self.generators[ matidx[2]:matidx[3],
+                                                 matidx[0]:matidx[1] ],
+                         length=1
                         )
             if debug:
                 print "Walk from ", s, " --> ", t
@@ -70,26 +125,11 @@ class IndexMap( DiGraph ):
             if not edge.zero():
                 self.graph.add_edge( s, t, edge=edge )
                 self.library.add( edge )
-            
 
-
-class IndexMapProcessor( object ):
-    """
-    Processes a given index map of generators.
-    """
-    def __init__( self, indexmap, check_trace=False, debug=False ):
-        """
-        indexmap -- IndexMap object
-        """
-        self.debug = debug
-        self.check_trace = check_trace
-        self.map = indexmap
-        # Stores all edge sets that need to have one edge cut
-        self.bad_edges = BadLibrary()
-
-        # Unravel the index map (stored as a graph) into list of 1-step walks. 
+        # Unravel the underlying index map (stored as a graph) into
+        # list of 1-step walks.
         self.edge_walks = {}
-        for start,end,attr in self.map.graph.edges_iter( data=True ):
+        for start,end,attr in self.graph.edges_iter( data=True ):
             self.edge_walks[ (start,end) ] = attr["edge"]
         
         # Stores edges that need to be expanded, to search for more edges
@@ -102,8 +142,13 @@ class IndexMapProcessor( object ):
 
         # set initial entropy
         self.entropy = -1
+        
         # best symbolic system found 
-        self.semi_conjugate_subshift = None
+        self.verified_symbolic_system = None
+
+    def __repr__( self ):
+        s = "IndexMapProcessor on " +str( len( self.graph ) ) + " regions."
+        return s
 
     def check_walk( self, walk ):
         """
@@ -164,13 +209,13 @@ class IndexMapProcessor( object ):
                     print ""
                     
             # Now take every edge that comes out from the end of the old walk
-            for succ in self.map.graph.successors_iter( old.end ):
+            for succ in self.unverified_symbolic_system.graph.successors_iter( old.end ):
                 next_step = self.edge_walks[ (old.end, succ) ]
                 if self.debug:
                     print "Successor edge:", next_step
                     print " matrix"
                     print next_step.matrix
-                #for next_step in ( append["edge"] for append in self.map[old.end] ):
+                #for next_step in ( append["edge"] for append in self.symbolic_system[old.end] ):
                 # Create a new walk by appending the new edge
                 new_walk = old + next_step
 
@@ -247,7 +292,7 @@ class IndexMapProcessor( object ):
             bads = self.bad_edges.bads
         bad_combos = list( product( *bads ) )
         # product returns ((.),) format if only one bad edge set, so
-        # take first entry of each
+        # take first entry of each if this is the case.
         if len( bads ) == 1:
             bad_combos = [ x[0] for x in bad_combos ]
 
@@ -259,38 +304,29 @@ class IndexMapProcessor( object ):
             S = self._cut_edges( combo )
             entropy = log_max_eigenvalue( S )
 
-            print "cut edge(s):", combo
-            print "entropy:", entropy
+            # print "cut edge(s):", combo
+            # print "entropy:", entropy
             
             if entropy > self.entropy:
                 self.entropy = entropy
                 # save the best semi-conjugate subshift found
-                self.semi_conjugate_subshift = S
+                self.verified_symbolic_system = S
                 
 
     def _cut_edges( self, edges ):
         """
         Remove allowable transitions (edges) from full transition
-        graph on regions (self.map)
+        graph on regions (self.unverified_symbolic_system)
         """
         # remove_edges_from operatoes in-place, so we must map a copy
         # of the full transition matrix. 
-        T = self.map.copy()
+        T = self.unverified_symbolic_system.copy()
         try:
             T.remove_edges_from( edges )
         # occurs if bad_combos in cut_bad_edge_sets only contain one path
-        except TypeError:
+        except TypeError,IndexError:
             T.remove_edge( edges[0], edges[1] )            
         return T
-        
-
-    def contruct_symbolic_system( self, edges=None ):
-        """
-        Construct a symbolic system on phase space from allowable
-        transitions.
-        """
-        pass
-        
         
     
     ##################
