@@ -12,8 +12,9 @@ Opened: ~ Jun. 13, 2012
 
 Authors: Jakub Gedeon and Jesse Berwald
 
-Processes objects contained in walk_library.py for eventual
-calculation of the entropy.
+Processes objects contained in walk_library.py for calculation of the
+entropy of system semi-conjugate to the symbolic system represented by
+matrix/graph in transitions (see IndexMap).
 """
 
 class IndexMap( DiGraph ):
@@ -22,7 +23,8 @@ class IndexMap( DiGraph ):
                  generators=None,
                  regions=None,
                  transitions=None,
-                 debug=False):
+                 debug=False,
+                 verbose=False):
         """
         Inputs:
         
@@ -47,12 +49,13 @@ class IndexMap( DiGraph ):
         self.generators = generators
         self.regions = regions
         self.debug = debug
+        self.verbose = verbose
         
-        # adjacency matrix
+        # adjacency matrix will have '__abs__' attribute
         if hasattr( transitions, '__abs__' ):
             self.unverified_symbolic_system = DiGraph()
             self.unverified_symbolic_system.from_numpy_matrix( transitions )
-        # assume it's already a Digraph (no check done!)
+        # otherwise, assume it's already a Digraph (no check done!)
         else:
             self.unverified_symbolic_system = transitions
 
@@ -72,6 +75,7 @@ class IndexMapProcessor( IndexMap ):
                   reg2gen=None,
                   symbolic_system=None,
                   debug=False,
+                  verbose=False,
                   check_trace=False ):
         """
         Objects and methods for verifying paths in a symbolic system
@@ -93,16 +97,21 @@ class IndexMapProcessor( IndexMap ):
         check_trace -- toggle whether to check the trace of matrix
         products resulting from cycles. (default=False)
         """
-        IndexMap.__init__( self, index_map, reg2gen, symbolic_system, debug )
+        IndexMap.__init__( self, index_map, reg2gen,
+                           symbolic_system, debug, verbose )
 
         self.check_trace = check_trace
-        #self.unverified_symbolic_system = indexmap
+        
         # Stores all edge sets that need to have one edge cut
-        self.bad_edges = BadLibrary()
+        self.bad_edges = BadLibrary( debug=debug )
 
         # source and sink along one-step paths phase space (maps
         # between regions). self.unverified_symbolic_system inherited
         # from IndexMap.
+        if self.verbose:
+            print "CONSTRUCTING INITIAL WALK LIBRARY FROM INDEX MAP"\
+                "AND UNVERIFIED SYMBOLIC SYSTEM GRAPH:"
+            print ""
         for s, t in self.unverified_symbolic_system.edges_iter():
             # generators supported on each region
             r2g = ( self.regions[ s ], self.regions[ t ] )
@@ -111,16 +120,16 @@ class IndexMapProcessor( IndexMap ):
                        )
             edge = Walk( start=s,
                          end=t,
-                         edges=frozenset( [(s,t)] ),#frozenset( [self.edge2hash( s, t )] ),
+                         edges=frozenset( [(s,t)] ),
                          matrix=self.generators[ matidx[2]:matidx[3],
                                                  matidx[0]:matidx[1] ],
                          length=1
                         )
-            if debug:
+            if self.verbose:
+                print "---------------------------------------------"
                 print "Walk from ", s, " --> ", t
                 print "  region to generator map:", r2g[0], r2g[1]
-                print "  corresponding edge matrix ('color'):\n", edge.matrix
-                print "  mat.shape:", edge.matrix.shape
+                print "  corresponding edge matrix:\n", edge.matrix
                 print ""
             if not edge.zero():
                 self.graph.add_edge( s, t, edge=edge )
@@ -156,7 +165,8 @@ class IndexMapProcessor( IndexMap ):
         == True, also check zero trace condition if we pass the zero
         matrix condition.
 
-        Returns True if either the matrix product is zero or the trace of a cycle is zero.
+        Returns True if either the matrix product is zero or the trace
+        of a cycle is zero.
         """
         # If matrix product is zero matrix, always add to bad edge
         # set, so check first
@@ -215,12 +225,11 @@ class IndexMapProcessor( IndexMap ):
                     print "Successor edge:", next_step
                     print " matrix"
                     print next_step.matrix
-                #for next_step in ( append["edge"] for append in self.symbolic_system[old.end] ):
                 # Create a new walk by appending the new edge
                 new_walk = old + next_step
 
                 if self.debug:
-                    print "--> New walk:"
+                    print "--> New walk:"""
                     print new_walk
                     print new_walk.matrix
                 
@@ -233,12 +242,12 @@ class IndexMapProcessor( IndexMap ):
                 # trace. If so, add it to the bad edge list.
                 if self.check_walk( new_walk ):
                     if self.debug:
-                        print "=========================="
+                        print "------------------------------"
                         print "BADS", self.bad_edges.bads
                         print " ** Adding BAD edgeset **"
                         print new_walk.edges
                         print new_walk.matrix
-                        print "=========================="
+                        print "------------------------------"
                     self.bad_edges.add( new_walk.edges )
                     continue
 
@@ -267,7 +276,6 @@ class IndexMapProcessor( IndexMap ):
                 if self.debug:
                     print "\n\n"
 
-
     def cut_bad_edge_sets(self, edges=None, **kwargs):
         """
         Remove edges in bad_edges. Maximize entropy by checking all
@@ -275,14 +283,6 @@ class IndexMapProcessor( IndexMap ):
         than ~10k bad edge sets so that an exhaustive search is still
         fast.
         """
-        # fargs = { bad_edge_sets : self.bad_edges.bad,
-        #           cut_edges : [],
-        #           excluded_edges : [],
-        #           best_entropy : -1,
-        #           cutoff : 10000
-        #           }
-        # fargs.update( kwargs )
-        
         # for each path in collection self.bad_edges.bads, choose one
         # edge from each path and cut it.
         # all combinations of one edge from each path
@@ -290,6 +290,7 @@ class IndexMapProcessor( IndexMap ):
             bads = edges
         else:
             bads = self.bad_edges.bads
+       
         bad_combos = list( product( *bads ) )
         # product returns ((.),) format if only one bad edge set, so
         # take first entry of each if this is the case.
@@ -298,39 +299,45 @@ class IndexMapProcessor( IndexMap ):
 
         # cycle through combinations looking for cut combo that
         # maximizes entropy.
-        for combo in bad_combos:
+        if self.verbose:
+            print "Searching for best combination of edges to cut..."
+            print "  Collections (one from each bad path):", bad_combos
+        for edge_combo in bad_combos:
+            if self.verbose:
+                print "  edges cut: ", edge_combo
             # symbolic system to check entropy (copy of full system
             # with 'combo' edges cut.            
-            S = self._cut_edges( combo )
+            S = self._cut_edges( edge_combo )
             entropy = log_max_eigenvalue( S )
-
-            # print "cut edge(s):", combo
-            # print "entropy:", entropy
-            
+            if self.verbose:
+                print "   --> resulting entropy: ", entropy
             if entropy > self.entropy:
                 self.entropy = entropy
                 # save the best semi-conjugate subshift found
                 self.verified_symbolic_system = S
-                
+
+        if self.entropy == -1 or self.entropy == 0:
+            print "No positive entropy found!"
+            print ""
+            
 
     def _cut_edges( self, edges ):
         """
         Remove allowable transitions (edges) from full transition
         graph on regions (self.unverified_symbolic_system)
         """
-        # remove_edges_from operatoes in-place, so we must map a copy
+        # remove_edges_from operates in-place, so we must make a copy
         # of the full transition matrix. 
         T = self.unverified_symbolic_system.copy()
         try:
             T.remove_edges_from( edges )
         # occurs if bad_combos in cut_bad_edge_sets only contain one path
-        except TypeError,IndexError:
+        except (TypeError,IndexError):
             T.remove_edge( edges[0], edges[1] )            
         return T
-        
-    
+
     ##################
-    # End class
+    # End classes
     ##################    
         
 def log_max_eigenvalue( S, base=None ):

@@ -66,9 +66,13 @@ class BadLibrary( object ):
             print "edgeset", edgeset
             print "*****"
             print ""
-        self.bads = filter( lambda bad: bad.issuperset( edgeset ), self.bads )
-        # self.bads = filter( lambda bad: not bad >= edgeset, self.bads )
+            #self.bads = filter( lambda bad: not bad.issuperset( edgeset ), self.bads )
+        self.bads = filter( lambda bad: not bad >= edgeset, self.bads )
         self.bads.append( edgeset )
+
+        if self.debug:
+            print "new bads", self.bads
+            print ""
 
 class UnverifiedLibrary( object ):
     """
