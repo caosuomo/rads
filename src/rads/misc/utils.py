@@ -10,7 +10,7 @@ A wrapper for various utility functions. Meant to be subclassed.
 import networkx as nx
 import numpy as np
 import cPickle as pkl
-from scipy.io import loadmat
+import scipy.io as spio
 from rads.graphs import algorithms, DiGraph
 
 def load_numpy( fname ):
@@ -42,10 +42,17 @@ def load_matlab_matrix( matfile, matname=None ):
     map. Otherwise, the full dict provided by loadmat is returns.
     """
     if not matname:
-        return np.matrix( loadmat( matfile ) )
+        out = spio.loadmat( matfile )
+        mat = _extract_mat( out )
+        return np.matrix( mat )
     else:
-        mat = loadmat( matfile )
+        mat = spio.loadmat( matfile )
         return np.matrix( mat[ matname ] )
+
+def _extract_mat( mat ):
+    keys = mat.keys()
+    mat_key = filter( lambda x : not x.startswith( "__" ), keys )[0]
+    return mat[ mat_key ]
 
 def convert_matlab_gens( genfile, genname='generators' ):
     """
@@ -57,7 +64,7 @@ def convert_matlab_gens( genfile, genname='generators' ):
     returned by loadmat. Otherwise, there's a bit of guess work in
     cell2dict to find where the generators are stored.
     """
-    cell_array = loadmat( genfile, squeeze_me=True )
+    cell_array = spio.loadmat( genfile, squeeze_me=True )
     return cell2dict( cell_array, genname )
 
 def cell2dict( ca, genname ):

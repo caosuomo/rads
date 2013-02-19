@@ -1,6 +1,6 @@
 import networkx as nx
 
-class Graph:
+class Graph( object ):
 	"""
 	Base class for undirected graphs.
 	"""

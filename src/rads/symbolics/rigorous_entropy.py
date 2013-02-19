@@ -10,8 +10,11 @@ entropy of system semi-conjugate to the symbolic system represented by
 matrix/graph in transitions (see IndexMap).
 """
 from rads.misc import utils
-from collections import defaultdict
 from rads.graphs import DiGraph
+from rads.symbolics.index_map_processor import IndexMapProcessor
+from rads.graphs.algorithms import graph_mis
+import argparse
+
 
 class RigorousEntropy( object ):
     """
@@ -43,7 +46,8 @@ class RigorousEntropy( object ):
 
     where the region2gen.keys() = indices of symbols.
     """
-    def __init__( self, verbose=False, debug=False ):
+    def __init__( self, index_map=None, reg2gen=None,
+                  verbose=False, debug=False ):
         """
         Initialize the object and check for recurrent graph structures. 
 
@@ -54,11 +58,16 @@ class RigorousEntropy( object ):
         generator_map : dictionary -- Map that associates regions in
         phase to generators. Indices in index_map must align with
         """
+        self.index_map = index_map
+        self.region2gen = reg2gen
         self.verbose = verbose
         self.debug = debug
 
         # To hold disjoint regions and maximum 
         self.phase_space = []
+
+        # place holder for max entropy
+        self.max_entropy = -1
         
     def load_from_file( self, index_fname, generators_fname, dtype=int ):
 
@@ -77,6 +86,7 @@ class RigorousEntropy( object ):
         except (NameError,IOError):
             print "Problem loading generator file, ", generators_fname
             raise
+        
 
     def load_from_matlab_files( self, index_fname=None,
                                 generators_fname=None,
@@ -104,15 +114,24 @@ class RigorousEntropy( object ):
                                                              self.region2gen,
                                                              shift=-1)
             
-    def construct_regions( self ):
+    def prepare_regions( self ):
         """
+        Partition the phase space into disjoint, recurrent regions.
+
+        Must have initialized self with index_map matrix and
+        region2gen dictionary, or used one of the load_from_* methods
+        to initialize these values.
         """
         self.map_on_regions = utils.index_map_to_region_map( self.index_map,
                                                              self.region2gen,
                                                              shift=-1)
 
-        scc_list, scc_components, recurrent_regions = algorithms.graph_mis( self.map_on_regions )
+        # graph_mis from graphs.algorithms
+        scc_list, scc_components, recurrent_regions = graph_mis( self.map_on_regions )
+        nbunch = [ scc_components[i] for i in recurrent_regions ]
         self.recurrent_subgraphs = []
+
+        # the actual partition of phase space in graph format
         for n in nbunch:
             # ignore disjoint regions that have self-loops => no
             # entropy
@@ -123,95 +142,128 @@ class RigorousEntropy( object ):
             self.recurrent_subgraphs.append( G )
 
         # construct IndexMapProcessor for each disjoint region
-        # asihn entropies  of -1 to each recurrent region. 
+        # assign entropies  of -1 to each recurrent region. 
         for region in self.recurrent_subgraphs:
-            self.phase_space.append( ( IndexMapProcessor( self.index_map,
+            self.phase_space.append( [ IndexMapProcessor( self.index_map,
                                                           self.region2gen,
                                                           region,
                                                           debug=self.debug,
                                                           verbose=self.verbose ),
                                       -1  # initial entropy for region
-                                       ) )
+                                       ] )
         
-
-
-    def analyze_regions_parallel( self ):
+    def compute_entropy_parallel( self ):
         pass
 
     def compute_entropy( self, max_path_length=16 ):
         """
-        Loop through regions in series and compute entropy
+        Loop through regions in series and compute entropy.
         """
-        for region in self.phase_space.keys():
-            R = self.phase_space[ region ]
+        for region in self.phase_space:
+            R = region[0]
             R.find_bad_edge_sets( max_path_length )
             R.cut_bad_edge_sets()
-            self.entropy[ region ] = R.entropy
+            region[1] = R.entropy
 
-    def maximum_entropy( self ):
+        # now find the maximum entropy
+        self._maximum_entropy()
+            
+
+    def _maximum_entropy( self ):
         """
         Returns the maximum entropy over all recurrent regions in
         phase space.
         """
-        entropies = self.entropy.values()
-        self.max_entropy = max( entropies )
-        return self.max_entropy
-            
-    # def draw( self, region=None ):
-    #     """
-    #     """
-    #     print ""
-    #     print "  Drawing both transition graphs..."
+        max_ent = -1
+        for i, region in enumerate( self.phase_space ):
+            if region[1] > max_ent:
+                self.max_entropy = region[1]
+                self.max_region = i
+        if self.verbose:
+            print "Maximum entropy found: ", self.max_entropy
 
-    #     fig1 = plt.figure()
-    #     ax1 = fig1.gca()
-    #     ax1.set_title( "Original transition map on regions (subshift)" )
-    #     pos1 = utils.nx.graphviz_layout( imp.map.graph )
-    #     imp.unverified_symbolic_system.draw( ax=ax1, pos=pos1 )
+########################################################################
 
 
-    #     fig2 = plt.figure()
-    #     ax2 = fig2.gca()
-    #     ax2.set_title( "Best subshift found after trimming edges" )
-    #     pos2 = utils.nx.graphviz_layout( imp.semi_conjugate_subshift.graph )
-    #     imp.verified_symbolic_system.draw( ax=ax2, pos=pos2 )
-
-    #     plt.show()
-
-    # IP = IndexMapProcessor( IM, debug=debug )
-
-    # nbunch = [ scc_components[i] for i in recurrent_regions[:5] ] # just plot 5 SCC's
-    # color = ['r', 'g', 'b', 'm', 'c']
-    # for i,n in enumerate(nbunch):
-    #     fig=plt.figure( i )
-    #     ax = fig.gca()
-    #     sg = IP.unverified_symbolic_system.graph.subgraph( nbunch=n )
-    #     pos = nx.graphviz_layout( sg )
-    #     print "s[",i,"] =", scc_components[i]
-    #     nx.draw_networkx(  sg, pos=pos, node_color=color[i], ax=ax )
-    #     fig.savefig( './figures/henon_symbol_map_scc'+str(i)+'.png' )
-    #     #    IP.unverified_symbolic_system.draw( nodelist=n, node_color=color[i] )
-
-
-if __name__ == "__main__":
-
-    # test various methods
+def run( fargs ):
+    """
+    Run from command line. Type 'python rigorous_entropy.py -h' for
+    argument help.
+    """
+    index_fname = fargs.index_map
+    gens_fname = fargs.generators
     
-    # TEXT and NPY
-    fname_npy = '/Users/jberwald/github/local/caja-matematica/rads/sandbox/leslie_index.npy'
-    #fname_txt = '/Users/jberwald/github/local/caja-matematica/rads/sandbox/test_array.txt'
+    # load from file
+    re = RigorousEntropy()
+    if not fargs.matlab:
+        re.load_from_file( index_fname, gens_fname )
+        re.prepare_regions()
+        re.compute_entropy()
+    else:
+        re.load_from_matlab_files( index_fname, gens_fname )
+        re.prepare_regions()
+        re.compute_entropy()
 
-    reg_fname =  '/Users/jberwald/github/local/caja-matematica/rads/sandbox/leslie_gens.pkl'
-     
-    # MAT
-    fname_mat = '/Users/jberwald/github/local/caja-matematica/rads/sandbox/leslie_index.mat'
-    reg_mat = '/Users/jberwald/github/local/caja-matematica/rads/sandbox/leslie_gens.mat'
-    matname = 'hom_matrix'
-
-    re1 = RigorousEntropy()
-    re2 = RigorousEntropy()
+    if fargs.verbose:
+        print "Phase space contains "+str( len( re.phase_space ) )+\
+            " disjoint region(s)."
+        print "Maximum entropy found on recurrent region with "+\
+            str( len( re.phase_space[re.max_region][0].graph ) )+\
+            " nodes."
+        print "Maximum entropy: ", re.max_entropy
+    else:
+        print re.max_entropy
     
-    re1.load_from_file( fname_npy, reg_fname )
-    re2.load_from_matlab_files( fname_mat, reg_mat, matname )
+    # NOT WORKING YET!!
+    def draw( self, region=None ):
+        """
+        """
+        print ""
+        print "  Drawing both transition graphs..."
+
+        fig1 = plt.figure()
+        ax1 = fig1.gca()
+        ax1.set_title( "Original transition map on regions (subshift)" )
+        pos1 = utils.nx.graphviz_layout( imp.map.graph )
+        imp.unverified_symbolic_system.draw( ax=ax1, pos=pos1 )
+
+
+        fig2 = plt.figure()
+        ax2 = fig2.gca()
+        ax2.set_title( "Best subshift found after trimming edges" )
+        pos2 = utils.nx.graphviz_layout( imp.semi_conjugate_subshift.graph )
+        imp.verified_symbolic_system.draw( ax=ax2, pos=pos2 )
+
+        plt.show()
+
+        IP = IndexMapProcessor( IM, debug=debug )
+
+        nbunch = [ scc_components[i] for i in recurrent_regions[:5] ] # just plot 5 SCC's
+        color = ['r', 'g', 'b', 'm', 'c']
+        for i,n in enumerate(nbunch):
+            fig=plt.figure( i )
+            ax = fig.gca()
+            sg = IP.unverified_symbolic_system.graph.subgraph( nbunch=n )
+            pos = nx.graphviz_layout( sg )
+            print "s[",i,"] =", scc_components[i]
+            nx.draw_networkx(  sg, pos=pos, node_color=color[i], ax=ax )
+            fig.savefig( './figures/henon_symbol_map_scc'+str(i)+'.png' )
+            #    IP.unverified_symbolic_system.draw( nodelist=n, node_color=color[i] )
+
+
+parser = argparse.ArgumentParser(description='Process input for RigorousEntropy class.')
+parser.add_argument( "index_map", help="Path to map on generators.", type=str )
+parser.add_argument( "generators", help="Path to region to generator map.", type=str )
+parser.add_argument( "-v", "--verbose", help="Increase output verbosity.",
+                    action="store_true" )
+parser.add_argument( "-d", "--debug", help="Show debugging output.",
+                    action="store_true" )
+parser.add_argument( "-m", "--matlab", help="Input data is in matlab matrices.",
+                     action="store_true" )
+args = parser.parse_args()
+
+run( args )
+
+
 
     

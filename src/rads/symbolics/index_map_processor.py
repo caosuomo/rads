@@ -8,7 +8,7 @@ from itertools import product
 """
 index_map_processor.py
 
-Opened: ~ Jun. 13, 2012
+Opened: ~ June 13, 2012
 
 Authors: Jakub Gedeon and Jesse Berwald
 
@@ -156,7 +156,7 @@ class IndexMapProcessor( IndexMap ):
         self.verified_symbolic_system = None
 
     def __repr__( self ):
-        s = "IndexMapProcessor on " +str( len( self.graph ) ) + " regions."
+        s = "IndexMapProcessor on " +str( len( self.graph ) ) + " regions"
         return s
 
     def check_walk( self, walk ):
