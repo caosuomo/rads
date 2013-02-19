@@ -9,8 +9,30 @@ A wrapper for various utility functions. Meant to be subclassed.
 """
 import networkx as nx
 import numpy as np
+import cPickle as pkl
 from scipy.io import loadmat
 from rads.graphs import algorithms, DiGraph
+
+def load_numpy( fname ):
+    """
+    Returns numpy array stored as .npy file
+    """
+    return np.matrix( np.load( fname ) )
+
+def loadtxt( fname, dtype=np.int ):
+    """
+    Returns numpy array stored as .npy file
+    """
+    return np.matrix( np.loadtxt( fname, dtype=dtype ) )
+
+def load_generators( fname ):
+    """
+    Returns dictionary of region --> generator hash map
+    """
+    with open( fname ) as fh:
+        d = pkl.load( fh )
+    return d
+    
 
 def load_matlab_matrix( matfile, matname=None ):
     """
@@ -24,7 +46,6 @@ def load_matlab_matrix( matfile, matname=None ):
     else:
         mat = loadmat( matfile )
         return np.matrix( mat[ matname ] )
-
 
 def convert_matlab_gens( genfile, genname='generators' ):
     """

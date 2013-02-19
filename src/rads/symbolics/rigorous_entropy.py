@@ -10,6 +10,8 @@ entropy of system semi-conjugate to the symbolic system represented by
 matrix/graph in transitions (see IndexMap).
 """
 from rads.misc import utils
+from collections import defaultdict
+from rads.graphs import DiGraph
 
 class RigorousEntropy( object ):
     """
@@ -41,8 +43,7 @@ class RigorousEntropy( object ):
 
     where the region2gen.keys() = indices of symbols.
     """
-    def __init__( self, index_map, generator_map, symbol_transition=None,
-                  verbose=False, debug=False ):
+    def __init__( self, verbose=False, debug=False ):
         """
         Initialize the object and check for recurrent graph structures. 
 
@@ -53,38 +54,86 @@ class RigorousEntropy( object ):
         generator_map : dictionary -- Map that associates regions in
         phase to generators. Indices in index_map must align with
         """
-        self.index_map = index_map
-        self.region2gen = generator_map
-        self.map_on_regions = \
-            utils.index_map_to_region_map( hom_matrix, region2gen, shift=-1)
+        self.verbose = verbose
+        self.debug = debug
 
-        scc_list, scc_components, recurrent_regions = algorithms.graph_mis( map_on_regions )
-        recurrent_subgraphs = []
+        # To hold disjoint regions and maximum 
+        self.phase_space = []
+        
+    def load_from_file( self, index_fname, generators_fname, dtype=int ):
+
+        ## try to load numpy, fall through to loadtxt
+        self.index_fname = index_fname
+        self.generators_fname = generators_fname
+        try:
+            self.index_map = utils.load_numpy( index_fname )
+        except IOError:
+            self.index_map = utils.loadtxt( index_fname, dtype=dtype )
+
+        # generator map should be a dictionary, so we expect it to be
+        # serialized as a pickle file
+        try:
+            self.region2gen = utils.load_generators( generators_fname )
+        except (NameError,IOError):
+            print "Problem loading generator file, ", generators_fname
+            raise
+
+    def load_from_matlab_files( self, index_fname=None,
+                                generators_fname=None,
+                                matname=None):
+        """
+        index_fname : path to matrix of map on generators (may have to
+        provide internal name of the matlab matrix to extract it from
+        meta data. See example below. )
+
+        generators_fname : path to the region --> geneators map.
+
+        Example:
+        --------
+
+           hom_matrix = utils.load_matlab_matrix( 'henon_index.mat', 'hom_matrix' )
+           region2gen = utils.convert_matlab_gens( 'henon_gens.mat' )
+           map_on_regions = utils.index_map_to_region_map( hom_matrix, region2gen, shift=-1)
+        """
+        self.index_fname = index_fname
+        self.generators_fname = generators_fname
+        self.index_map = utils.load_matlab_matrix( self.index_fname, matname )
+        self.region2gen = utils.convert_matlab_gens( self.generators_fname )
+        
+        self.map_on_regions = utils.index_map_to_region_map( self.index_map,
+                                                             self.region2gen,
+                                                             shift=-1)
+            
+    def construct_regions( self ):
+        """
+        """
+        self.map_on_regions = utils.index_map_to_region_map( self.index_map,
+                                                             self.region2gen,
+                                                             shift=-1)
+
+        scc_list, scc_components, recurrent_regions = algorithms.graph_mis( self.map_on_regions )
+        self.recurrent_subgraphs = []
         for n in nbunch:
-        # ignore disjoint regions that have self-loops => no entropy
+            # ignore disjoint regions that have self-loops => no
+            # entropy
             if len( n ) == 1:
                 continue
             G = DiGraph()
-            G.graph = map_on_regions.graph.subgraph( n )
-            recurrent_subgraphs.append( G )
+            G.graph = self.map_on_regions.graph.subgraph( n )
+            self.recurrent_subgraphs.append( G )
 
         # construct IndexMapProcessor for each disjoint region
-        self.phase_space = {}
-        self.entropy = {}
-        for i, region in enumerate( recurrent_subgraphs ):
-            self.phase_space[ i ] = IndexMapProcessor( hom_matrix,
-                                                       region2gen,
-                                                       region,
-                                                       debug=debug,
-                                                       verbose=verbose
-                                                       )
-            self.entropy[ i ] = 0 # initialize entropy for each region
+        # asihn entropies  of -1 to each recurrent region. 
+        for region in self.recurrent_subgraphs:
+            self.phase_space.append( ( IndexMapProcessor( self.index_map,
+                                                          self.region2gen,
+                                                          region,
+                                                          debug=self.debug,
+                                                          verbose=self.verbose ),
+                                      -1  # initial entropy for region
+                                       ) )
+        
 
-        
-        
-        # self.hom_matrix = utils.load_matlab_matrix( 'leslie_index.mat', 'hom_matrix' )
-        # self.region2gen = utils.convert_matlab_gens( 'leslie_gens.mat' )
-        # self.map_on_regions = utils.index_map_to_region_map( hom_matrix, region2gen, shift=-1)
 
     def analyze_regions_parallel( self ):
         pass
@@ -99,8 +148,7 @@ class RigorousEntropy( object ):
             R.cut_bad_edge_sets()
             self.entropy[ region ] = R.entropy
 
-
-    def maximum_entropy( self )
+    def maximum_entropy( self ):
         """
         Returns the maximum entropy over all recurrent regions in
         phase space.
@@ -145,4 +193,25 @@ class RigorousEntropy( object ):
     #     #    IP.unverified_symbolic_system.draw( nodelist=n, node_color=color[i] )
 
 
+if __name__ == "__main__":
+
+    # test various methods
+    
+    # TEXT and NPY
+    fname_npy = '/Users/jberwald/github/local/caja-matematica/rads/sandbox/leslie_index.npy'
+    #fname_txt = '/Users/jberwald/github/local/caja-matematica/rads/sandbox/test_array.txt'
+
+    reg_fname =  '/Users/jberwald/github/local/caja-matematica/rads/sandbox/leslie_gens.pkl'
      
+    # MAT
+    fname_mat = '/Users/jberwald/github/local/caja-matematica/rads/sandbox/leslie_index.mat'
+    reg_mat = '/Users/jberwald/github/local/caja-matematica/rads/sandbox/leslie_gens.mat'
+    matname = 'hom_matrix'
+
+    re1 = RigorousEntropy()
+    re2 = RigorousEntropy()
+    
+    re1.load_from_file( fname_npy, reg_fname )
+    re2.load_from_matlab_files( fname_mat, reg_mat, matname )
+
+    
