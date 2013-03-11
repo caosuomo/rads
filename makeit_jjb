@@ -16,12 +16,15 @@
 from fabricate import *
 from subprocess import Popen, PIPE, STDOUT
 import sys, os, stat, commands
-import config_jjb as config
+import config_jjb as config    ## <<------------- Here goes your personalized config_* file!
 from shutil import copy2,copytree, ignore_patterns
 ### EXAMPLE: copytree(source, destination, ignore=ignore_patterns('*.pyc', 'tmp*'))
 
-# We might have to find the OS for the proper extension. There is no
-# Windows option.
+
+################################################
+## Setup paths, includes, libs and other deps
+################################################
+
 extension = '.so'
 
 dependencies = { # dependencies for cython (or c++!) files
@@ -96,6 +99,7 @@ p_libs = Popen( config.dirs['capd']+'/bin/capd-config --libs',
 capd_flags = p_flags.stdout.read().split()
 capd_libs = p_libs.stdout.read().split()
 
+## For debugging purposes
 print "capd_flags"
 print capd_flags
 print ""
@@ -104,12 +108,13 @@ print capd_libs
 print ""
 
 # now split the output, cython does not like D__USE_FILIB flag
+# Using all of these is overkill, but I'm not going to parse the output for the few that we need.
 capd_flags = [ i for i in capd_flags ]
-#capd_links = capd_libs[-1]
-capd_libs = capd_libs #[ i for i in capd_libs ]#.append( capd_libs[:-2][:] )
+capd_libs = capd_libs
 
-					 #sys.exit(0)
-
+##################################
+## End setup, begin build funcs
+##################################
 
 def compile_cpp(inputs,output):
 	print "g++ compiling inputs: ", inputs

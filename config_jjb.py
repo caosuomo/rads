@@ -8,7 +8,7 @@ exe = {
 # CAPD include and lib directories are loaded unsing the capd-config script
 dirs = {
 	'base': '/Users/jberwald/github/local/caja-matematica/rads/',
-	'capd_config': '/Users/jberwald/src/capd/bin/capd-config ', #--cflags --libs`'
+	'capd_config': '/Users/jberwald/src/capd/bin/capd-config ', # used with Popen call along with `--cflags --libs`'
 	'capd':  '/Users/jberwald/src/capd/'
         }
 
