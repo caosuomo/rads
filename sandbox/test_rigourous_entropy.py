@@ -1,8 +1,5 @@
 from rads.symbolics.rigorous_entropy import RigorousEntropy
 
-
-# test various methods
-
 # TEXT and NPY
 fname_npy = '/Users/jberwald/github/local/caja-matematica/rads/sandbox/leslie_index.npy'
 #fname_txt = '/Users/jberwald/github/local/caja-matematica/rads/sandbox/test_array.txt'
@@ -28,4 +25,4 @@ region2gen = utils.convert_matlab_gens( reg_mat )
 re2 = RigorousEntropy( index_map=hom_matrix,
                        reg2gen=region2gen )    
 re2.prepare_regions()
-    re2.compute_entropy()
+re2.compute_entropy()

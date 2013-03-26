@@ -250,7 +250,9 @@ def run( fargs ):
             fig.savefig( './figures/henon_symbol_map_scc'+str(i)+'.png' )
             #    IP.unverified_symbolic_system.draw( nodelist=n, node_color=color[i] )
 
-
+##############################
+#  PARSE COMMAND LINE ARGS
+##############################
 parser = argparse.ArgumentParser(description='Process input for RigorousEntropy class.')
 parser.add_argument( "index_map", help="Path to map on generators.", type=str )
 parser.add_argument( "generators", help="Path to region to generator map.", type=str )
@@ -262,6 +264,7 @@ parser.add_argument( "-m", "--matlab", help="Input data is in matlab matrices.",
                      action="store_true" )
 args = parser.parse_args()
 
+# crank out some entropy!
 run( args )
 
 

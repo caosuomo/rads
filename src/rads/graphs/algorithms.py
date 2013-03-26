@@ -58,12 +58,16 @@ def graph_mis( G ):
 	sccs,rsccs = scc_raf( G )
 	C = condensation( G,sccs )
 	forward = set( descendants( C,rsccs ) )
+<<<<<<< HEAD
 	
 	# need to construct new DiGraph() wrapper around reversed C.
 	rC = C.reverse( copy=True )
 	rG = DiGraph()
 	rG.graph = rC
 	backward = set( descendants( rG,rsccs ) )
+=======
+	backward = set( descendants( C.reverse( copy=False ),rsccs ) )
+>>>>>>> adding-capd
 	cnodes = forward & backward
 	return list(itertools.chain(*[sccs[c] for c in cnodes])), sccs, rsccs
 

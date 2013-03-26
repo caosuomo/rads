@@ -23,8 +23,12 @@ for d in range(depth):
 	ce.update()
 	print 'enclosure updated'
 	I = graph_mis(ce.mvm)
-	print 'len(I) = ', len(I[0]) # fix the extra stuff returned by graph_mis
+	print 'len(I) = ', len(I) # fix the extra stuff returned by graph_mis
 	# now remove all boxes not in I (the maximal invariant set)
+
+	print "blah", set( range(ce.tree.size) )
+	print "I", I[0]
+	
 	ce.tree.remove(list(set(range(ce.tree.size))-set(I[0])))
 
 # now display the tree!

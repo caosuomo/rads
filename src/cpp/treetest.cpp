@@ -148,7 +148,7 @@ int main()
 
   const int dim = 2;
   const int depth = 4;
-  Point corner(dim,0), size(dim,pow(2,depth));
+  Point corner(dim,0), size(dim,power(2,depth));
   Box bbox(corner,size);
   Tree tree(bbox);
 
@@ -161,7 +161,7 @@ int main()
   tree.print();
 
   srand(5);						// keep it deterministic, silly
-  test_tree_vector(tree,pow(2,dim*depth-1),0);
+  test_tree_vector(tree,power(2,dim*depth-1),0);
   test_tree_box(tree,20,0);
 
   Tree tree1 = tree;

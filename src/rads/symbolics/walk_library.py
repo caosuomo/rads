@@ -67,6 +67,8 @@ class BadLibrary( object ):
             print "*****"
             print ""
             #self.bads = filter( lambda bad: not bad.issuperset( edgeset ), self.bads )
+        # test whether !(every edge in edgeset is in bad) == True
+        # <==> \exists e \in edgeset such that e \notin bad
         self.bads = filter( lambda bad: not bad >= edgeset, self.bads )
         self.bads.append( edgeset )
 
@@ -128,9 +130,14 @@ class Walk( object ):
         """
         Parameters:
             start = start node
+            
             end = end node
+            
             edges = set object containing the edges
-            matrix = a numpy matrix of some sort, representing generator translation
+            
+            matrix = a numpy matrix, representing the composition of
+            generator maps along the path
+            
             length = integer that is the edge length
         """
         self.start = start

@@ -59,7 +59,7 @@ class IndexMap( DiGraph ):
         else:
             self.unverified_symbolic_system = transitions
 
-        self.library = UnverifiedLibrary()
+            #self.library = UnverifiedLibrary()
 
         # Utility functions for packing and unpacking edge information into an integer
         self.regioncount = len( self.regions )
@@ -141,7 +141,7 @@ class IndexMapProcessor( IndexMap ):
         for start,end,attr in self.graph.edges_iter( data=True ):
             self.edge_walks[ (start,end) ] = attr["edge"]
         
-        # Stores edges that need to be expanded, to search for more edges
+        # Stores edges that need to be expanded, to search for more edges.
         # init with the 1-step walks above
         self.todo = deque( self.edge_walks.values() )
         
@@ -172,8 +172,9 @@ class IndexMapProcessor( IndexMap ):
         # set, so check first
         if walk.zero():
             return True
-        # If we pass the zero matrix condition, and check_trace==True,
-        # then check if we're a cycle and if the trace is zero.
+        # If we pass the zero matrix condition *and*
+        # check_trace==True, then check if we're a cycle and if the
+        # trace is zero.
         if self.check_trace:
             if walk.cycle() and walk.zero_trace():
                 return True

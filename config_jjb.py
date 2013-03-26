@@ -1,32 +1,34 @@
 
 exe = {
-	'cython': 'cython',
+	'cython': 'cython --cplus'.split(), 
 	'c++': 'g++',
 	'c': 'gcc',
-}
+       }
 
+# CAPD include and lib directories are loaded unsing the capd-config script
 dirs = {
-	'base': '/home/raf/projects/rads/',
-	'profil': '/home/raf/projects/rads/Profil-2.0.8/',
-}
+	'base': '/Users/jberwald/github/local/caja-matematica/rads/',
+	'capd_config': '/Users/jberwald/src/capd/bin/capd-config ', # used with Popen call along with `--cflags --libs`'
+	'capd':  '/Users/jberwald/src/capd/'
+        }
 
 include = {
-	'sage': '/usr/local/share/sage-4.2-linux-ubuntu9.10-i686-Linux/devel/sage-main/',
-	'sage c': '/usr/local/share/sage-4.2-linux-ubuntu9.10-i686-Linux/devel/sage-main/c_lib/include/',
-	'profil': dirs['profil']+'include/',
-	'python': '/usr/include/python2.7',
-	'cython': '/usr/local/lib/python2.7/dist-packages/Cython/Includes/',
-	'numpy': '/usr/local/lib/python2.7/dist-packages/numpy/core/include/',
-}
+	'sage': '/Applications/sage/devel/sage-main/',
+	'sage c': '/Applications/sage/devel/sage-main/c_lib/include/',
+	'python': '/Library/Frameworks/EPD64.framework/Versions/Current/include/python2.7/',
+	'cython': '/Library/Frameworks/EPD64.framework/Versions/Current/lib/python2.7/site-packages/Cython/Includes/',
+	'numpy': '/Library/Frameworks/EPD64.framework/Versions/Current/lib/python2.7/site-packages/numpy/core/include/',
+	'capd': '/Users/jberwald/src/capd/capdAlg/include/'
+        }
 
 link = {
-	'profil': dirs['profil']+'lib/',
-	'c++ cython': '-lProfil -llr -lBias -o'.split(),
-	'c++': '-lProfil -llr -lBias -o'.split(),
-}
+	'capd': dirs['capd'],
+	'c++ cython': '-L/Library/Frameworks/EPD64.framework/Versions/Current/lib -lpython2.7'.split(),
+	'c++': '-L/Library/Frameworks/EPD64.framework/Versions/Current/lib -lpython2.7'.split()
+	}
+        
 
 flags = {
-	'c': '-pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -fPIC'.split(),
-	'c++ cython': '-pthread -shared -Wl,-O1 -Wl,-Bsymbolic-functions'.split(),
-	'c++': '',
-}
+	'c': '-fno-strict-aliasing -fno-common -arch x86_64 -DNDEBUG -O1'.split(),
+	 'c++ cython': '-arch x86_64 -bundle -undefined dynamic_lookup'.split()
+        }

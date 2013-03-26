@@ -426,6 +426,14 @@ class Graph( object ):
 		"""
 		return self.graph.edges(nbunch, data)
 
+	def number_of_nodes(self):
+		"""Return the number nodes in a graph."""
+		return self.graph.number_of_nodes()
+
+	def number_of_edges(self):
+		"""Return number of edges in a graph."""
+		return self.graph.number_of_edges()
+
 
 	def edges_iter( self, nbunch=None, data=False):
 		"""

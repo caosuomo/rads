@@ -46,7 +46,7 @@ if 0:
                                         [0,0,0,0,0,1],
                                         [1,1,0,0,0,0]]
                                        )
-if 0:
+if 1:
 
     hom_matrix = numpy.matrix( [[0,0,1,1,0],
                                 [0,0,0,0,1],
@@ -74,7 +74,7 @@ if 0:
     region2gen = utils.convert_matlab_gens( 'henon_gens.mat' )
     map_on_regions = utils.index_map_to_region_map( hom_matrix, region2gen, shift=-1)
 
-if 1:
+if 0:
     hom_matrix = utils.load_matlab_matrix( 'leslie_index.mat', 'hom_matrix' )
     region2gen = utils.convert_matlab_gens( 'leslie_gens.mat' )
     map_on_regions = utils.index_map_to_region_map( hom_matrix, region2gen, shift=-1)
@@ -86,7 +86,7 @@ if 1:
     #
     ########################
 
-debug = False
+debug = True
 verbose = False
 
 scc_list, scc_components, recurrent_regions = algorithms.graph_mis( map_on_regions )
