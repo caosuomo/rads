@@ -1,11 +1,11 @@
-#include "ricker_cpp.h"
+#include "henon_cpp.h"
 
-RickerMapper::RickerMapper() : Mapper(2,"henon")
+HenonMapper::HenonMapper() : Mapper(2,"henon")
 {
-  params[r] = 5;
-  params[d] = 0.1;
-  param_names[r] = 'r';
-  param_names[d] = 'd';
+  params[A] = 1.4;
+  params[B] = 0.3;
+  param_names[A] = 'a';
+  param_names[B] = 'b';
 }
 
 IPoint HenonMapper::map_point(const IPoint &v) const

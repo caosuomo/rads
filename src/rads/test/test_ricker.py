@@ -2,7 +2,7 @@
 
 import numpy as np
 from rads.enclosure import CombEnc,Tree
-from rads.maps.henon import HenonMapper
+from rads.maps.ricker import RickerMapper
 from rads.graphs.algorithms import graph_mis
 from rads.misc import gfx
 
