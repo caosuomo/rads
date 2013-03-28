@@ -58,18 +58,19 @@ def graph_mis( G ):
 	sccs,rsccs = scc_raf( G )
 	C = condensation( G,sccs )
 	forward = set( descendants( C,rsccs ) )
-<<<<<<< HEAD
 	
-	# need to construct new DiGraph() wrapper around reversed C.
+	# need to construct new DiGraph() wrapper around reversed
+	# C. Otherwise, rC.graph ends up null because the revered copy
+	# is an NX object, and NX.Graph.graph holds the *name* of the
+	# graph.
 	rC = C.reverse( copy=True )
-	rG = DiGraph()
+	rG = DiGraph() # new reversed DiGraph
 	rG.graph = rC
 	backward = set( descendants( rG,rsccs ) )
-=======
-	backward = set( descendants( C.reverse( copy=False ),rsccs ) )
->>>>>>> adding-capd
+
+	# backward = set( descendants( C.reverse( copy=False ),rsccs ) )
 	cnodes = forward & backward
-	return list(itertools.chain(*[sccs[c] for c in cnodes])), sccs, rsccs
+	return list(itertools.chain(*[sccs[c] for c in cnodes])) #, sccs, rsccs
 
 def first_return_times( k, backwards=False ):
 	"""

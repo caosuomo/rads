@@ -82,8 +82,6 @@ class DiGraph( Graph ):
         """
         return self.graph.reverse( copy=copy )
 
-
-
     def copy( self ):
 	"""
         Return a copy of the graph.
