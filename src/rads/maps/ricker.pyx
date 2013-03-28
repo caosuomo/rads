@@ -11,7 +11,7 @@ cdef extern from "ricker_cpp.h":
 cdef class RickerMapper(Mapper):
 
 	def __cinit__(self):
-		print "in RickernMapper cinit"
+		print "in RickerMapper cinit"
 		self.mapper = <cMapper *>new_Ricker()
 
 	def __dealloc__(self):

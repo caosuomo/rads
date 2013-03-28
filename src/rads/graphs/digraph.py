@@ -60,7 +60,6 @@ class DiGraph( Graph ):
     #     """Return number of edges in a graph."""
     #     return self.graph.number_of_edges()
 
-<<<<<<< HEAD
     def from_numpy_matrix( self, mat ):
         """
         Interface to NX's function. In-place conversion.
@@ -114,13 +113,7 @@ class DiGraph( Graph ):
         G.add_edges_from( copy_self.edges( data=True ) ) 
         return G
 
-    def flag_edges_from(self, label, flag, ebunch=None):
-=======
-    def reverse( self, copy=False ):
-        return self.graph.reverse( copy=copy )
-
     def flag_edges(self, label, flag, ebunch=None):
->>>>>>> adding-capd
         """
         Attached an attribute to each edge in order to easily
         include/exclude it during certain computations. Eg., flag

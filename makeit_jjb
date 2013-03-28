@@ -110,6 +110,7 @@ print ""
 # now split the output, cython does not like D__USE_FILIB flag
 # Using all of these is overkill, but I'm not going to parse the output for the few that we need.
 capd_flags = [ i for i in capd_flags ]
+capd_flags.append( '-I/Users/jberwald/src/capd/capdAlg/include/capd/intervals' )
 capd_libs = capd_libs
 
 ##################################
@@ -244,7 +245,7 @@ def build_map(sourcepath):
 	cpp_o = cpp_object_dir+filename+'_cpp_mapfile.o'
 	compile_cython(sourcepath+'.pyx', cython_cpp)
 	print ""
-	print "done with cython files, compiling c++..."
+	print "done with cython map files, compiling c++..."
 	print ""
 	compile_cpp(cython_cpp, cython_o)
 	compile_cpp(sourcepath+'_cpp.cpp', cpp_o)
