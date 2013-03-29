@@ -56,7 +56,7 @@ class RigorousEntropy( object ):
         map f : X --> X on phase space.
         
         generator_map : dictionary -- Map that associates regions in
-        phase to generators. Indices in index_map must align with
+        phase space to generators. Indices in index_map must align with
         """
         self.index_map = index_map
         self.region2gen = reg2gen

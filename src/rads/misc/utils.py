@@ -4,8 +4,6 @@ utils.py
 Author: Jesse Berwald
 
 Opened: Feb. 15, 2012
-
-A wrapper for various utility functions. Meant to be subclassed.
 """
 import networkx as nx
 import numpy as np
