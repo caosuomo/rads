@@ -1,7 +1,7 @@
 import networkx as nx
 from rads.graphs import Graph
 
-class DiGraph( Graph ):
+class DiGraph(Graph):
     """
     Base class for directed graphs.
     """
@@ -60,56 +60,8 @@ class DiGraph( Graph ):
     #     """Return number of edges in a graph."""
     #     return self.graph.number_of_edges()
 
-    def from_numpy_matrix( self, mat ):
-        """
-        Interface to NX's function. In-place conversion.
-        """
-        self.graph = nx.from_numpy_matrix( mat, create_using=self.graph )
-
-    def reverse( self, copy=True ):
-        """
-        Return the reverse of the graph.
-
-        The reverse is a graph with the same nodes and edges
-        but with the directions of the edges reversed.
-
-        Parameters
-        ----------
-        copy : bool optional (default=True)
-            If True, return a new DiGraph holding the reversed edges.
-            If False, reverse the reverse graph is created using
-            the original graph (this changes the original graph).
-        """
+    def reverse( self, copy=False ):
         return self.graph.reverse( copy=copy )
-
-    def copy( self ):
-	"""
-        Return a copy of the graph.
-
-        Returns
-        -------
-        G : Graph
-            A copy of the graph.
-
-        See Also
-        --------
-        to_directed: return a directed copy of the graph.
-
-        Notes
-        -----
-        This makes a complete copy of the graph including all of the
-        node or edge attributes.
-
-        Examples
-        --------
-        >>> G = nx.Graph()   # or DiGraph, MultiGraph, MultiDiGraph, etc
-        >>> G.add_path([0,1,2,3])
-        >>> H = G.copy()
-        """
-        G = DiGraph()
-        copy_self = self.graph.copy()
-        G.add_edges_from( copy_self.edges( data=True ) ) 
-        return G
 
     def flag_edges(self, label, flag, ebunch=None):
         """

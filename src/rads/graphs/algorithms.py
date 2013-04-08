@@ -55,22 +55,13 @@ def graph_mis( G ):
 	"""
 	if len(G)==0:
 		return []
+	
 	sccs,rsccs = scc_raf( G )
 	C = condensation( G,sccs )
 	forward = set( descendants( C,rsccs ) )
-	
-	# need to construct new DiGraph() wrapper around reversed
-	# C. Otherwise, rC.graph ends up null because the revered copy
-	# is an NX object, and NX.Graph.graph holds the *name* of the
-	# graph.
-	rC = C.reverse( copy=True )
-	rG = DiGraph() # new reversed DiGraph
-	rG.graph = rC
-	backward = set( descendants( rG,rsccs ) )
-
-	# backward = set( descendants( C.reverse( copy=False ),rsccs ) )
+	backward = set( descendants( C.reverse( copy=False ),rsccs ) )
 	cnodes = forward & backward
-	return list(itertools.chain(*[sccs[c] for c in cnodes])) #, sccs, rsccs
+	return list(itertools.chain(*[sccs[c] for c in cnodes]))
 
 def first_return_times( k, backwards=False ):
 	"""
@@ -246,7 +237,7 @@ def blockmodel(G,partitions,multigraph=False):
     part=list(map(set,partitions))
 
     # account for digraph structure
-    #    G = G.graph
+    G = G.graph
 
     # Check for overlapping node partitions
     u=set()
@@ -265,10 +256,10 @@ def blockmodel(G,partitions,multigraph=False):
     else:
         if G.is_directed():
 	    # JJB - Make the block graph a rads DiGraph or Graph
-	    M = nx.DiGraph()
+	    M = digraph.DiGraph()
 	# M=nx.DiGraph() 
         else:
-            M=nx.Graph() 
+            M=graph.Graph() 
         
     # Add nodes and properties to blockmodel            
     # The blockmodel nodes are node-induced subgraphs of G
@@ -280,7 +271,7 @@ def blockmodel(G,partitions,multigraph=False):
         M.node[i]['graph']=SG        
         M.node[i]['nnodes']=SG.number_of_nodes()
         M.node[i]['nedges']=SG.number_of_edges()
-	## JJB -- don't need this
+	## don't need this, JJB
         # M.node[i]['density']=nx.density(SG)
         
     # Create mapping between original node labels and new blockmodel node labels
