@@ -18,8 +18,7 @@ def show_uboxes(uboxes,S=None,col='b',ecol='k'):
 		art = mpatches.Rectangle(uboxes.corners[i],uboxes.width[0],uboxes.width[1])
 		patches.append(art)
 
-	fig = plt.figure()
-	ax = fig.gca()
+	ax = plt.gca()
 	ax.hold(True)
 	collection = PatchCollection(patches)
 	collection.set_facecolor(col)
@@ -27,21 +26,14 @@ def show_uboxes(uboxes,S=None,col='b',ecol='k'):
 	ax.add_collection(collection,autolim=True)
 	ax.autoscale_view()
 	plt.show()
-	
-	return fig
 
 
-def show_box(b,col='b',ecol='k',alpha=1, fig=None):
+def show_box(b,col='b',ecol='k',alpha=1):
 	patches = []
-	
-	# lower left corner at b[0], followed by width and height
 	art = mpatches.Rectangle(b[0],b[1,0],b[1,1])
 	patches.append(art)
 
-	if not fig:
-		ax = plt.gca()
-	else:
-		ax = fig.gca()
+	ax = plt.gca()
 	ax.hold(True)
 	collection = PatchCollection(patches)
 	collection.set_facecolor(col)
@@ -51,9 +43,7 @@ def show_box(b,col='b',ecol='k',alpha=1, fig=None):
 	ax.autoscale_view()
 	plt.show()
 
-	return fig
-
-def show_boxes(boxes,S=None,col='b',ecol='k',alpha=1, fig=None):
+def show_boxes(boxes,S=None,col='b',ecol='k',alpha=1):
 	if boxes.dim != 2:
 		raise Exception("show_boxes: dimension must be 2")
 	if S is None:
@@ -64,10 +54,7 @@ def show_boxes(boxes,S=None,col='b',ecol='k',alpha=1, fig=None):
 		art = mpatches.Rectangle(boxes.corners[i],boxes.widths[i][0],boxes.widths[i][1])
 		patches.append(art)
 
-	if not fig:
-		ax = plt.gca()
-	else:
-		ax = fig.gca()
+	ax = plt.gca()
 	ax.hold(True)
 	collection = PatchCollection(patches)
 	collection.set_facecolor(col)
