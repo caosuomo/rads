@@ -54,7 +54,9 @@ def rand_test_int(event=None):
 	box = np.array([v,w])
 	test_one_box(box,tree,True,rand_test)
 
-rand_test()
+# rand_test()
+rand_test_int()
+
 
 # for i in range(500):
 # #	print "rand_test"
