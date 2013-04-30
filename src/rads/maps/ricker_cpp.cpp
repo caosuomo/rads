@@ -1,5 +1,6 @@
 #include "ricker_cpp.h"
 
+
 RickerMapper::RickerMapper() : Mapper( 2, "ricker" )
 {
   params[r] = 5.0;
@@ -11,8 +12,7 @@ RickerMapper::RickerMapper() : Mapper( 2, "ricker" )
 IPoint RickerMapper::map_point(const IPoint &v) const
 {
     int i, row, col;
-    //int  = dim();
-    int sysdim = dim() * dim();
+    int sysdim = dim(); 
 
     // square set of patches of size dim x dim
     IPoint w( sysdim );
@@ -58,10 +58,6 @@ IPoint RickerMapper::map_point(const IPoint &v) const
 	      } // end for row
 	  } // end if
       } // end else
-
-    // TESTING
-    for ( i = 0; i < sysdim; i ++ )
-      std::cout << "w[" << i << "] = " << w[i] << std::endl;
 
   return w;
 }

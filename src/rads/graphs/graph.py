@@ -441,6 +441,26 @@ class Graph( object ):
 		"""
 		return self.graph.edges_iter( nbunch, data )
 
+        def subgraph( self, nbunch ):
+		"""
+		Return the subgraph induced on nodes in nbunch in the
+		form of a Graph() object.
+
+		Parameters
+		----------
+		nbunch : list, iterable
+		   A container of nodes that will be iterated through once (thus
+		   it should be an iterator or be iterable).  Each element of the
+		   container should be a valid node type: any hashable type except
+		   None.  If nbunch is None, return all edges data in the graph.
+		   Nodes in nbunch that are not in the graph will be (quietly)
+		   ignored.
+		"""
+		subG = self.graph.subgraph( nbunch )
+		S = Graph()
+		S.graph = subG
+		return S
+
 	def clear(self):
 		"""Remove all nodes and edges from the graph.
 

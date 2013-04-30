@@ -35,7 +35,20 @@ def condensation( G, components ):
 				cG.add_edge(mapping[u], mapping[v])
 	return cG
 
-def graph_mis( G ):
+def condensation_nx( G, components) :
+	"""
+	G : DiGraph object. the nx.DiGraph attribute is extracted from this.
+
+	components : 	Given components C_1 .. C_k which partition the nodes of G, the
+	condensation graph cG has nodes <C_1> .. <C_k> and has edge
+	(<C_i>,<C_j>) iff there was an edge in G from a node in C_i to a
+	node in C_j.
+	"""
+	cG = DiGraph()
+	cG.graph = nx.condensation( G, components )
+	return cG
+
+def graph_mis( G, return_rsccs=False ):
 	"""Return the maximal invariant set of a graph G.
 
 	Given a graph G, the maximal invariant set (MIS) is the maximal
@@ -54,21 +67,32 @@ def graph_mis( G ):
 	if len(G)==0:
 		return []
 	sccs,rsccs = scc_raf( G )
-	C = condensation( G,sccs )
-	forward = set( descendants( C,rsccs ) )
-	
-	# need to construct new DiGraph() wrapper around reversed
-	# C. Otherwise, rC.graph ends up null because the revered copy
-	# is an NX object, and NX.Graph.graph holds the *name* of the
-	# graph.
-	rC = C.reverse( copy=True )
-	rG = DiGraph() # new reversed DiGraph
-	rG.graph = rC
-	backward = set( descendants( rG,rsccs ) )
-
-	# backward = set( descendants( C.reverse( copy=False ),rsccs ) )
+	#C = condensation( G, sccs )
+	C = condensation_nx( G.graph, sccs )
+	forward = set( descendants( C, rsccs ) )
+	C.reverse()
+	backward = set( descendants( C, rsccs ) )
 	cnodes = forward & backward
-	return list(itertools.chain(*[sccs[c] for c in cnodes])) #, sccs, rsccs
+	if return_rsccs:
+		return list(itertools.chain(*[sccs[c] for c in cnodes])), sccs, rsccs
+	else:
+		return list(itertools.chain(*[sccs[c] for c in cnodes]))
+def descendants(G,S):
+	"""Decendents of S (subset of nodes) in G"""
+	G_nx = G.graph # get right to nx
+	n = len(G_nx)
+	G_nx.add_node(n)
+	for s in S:
+		G_nx.add_edge(n,s)
+	d = list( nx.algorithms.dfs_postorder_nodes(G_nx,n) )
+	d.remove(n)		# TODO: make more efficient!
+	# JJB - since dfs_postorder_nodes return a generator, we must
+	# keep the 'star' node n in until the generator is complete
+	# RMF - casting to a list for now, for simplicity
+	# JJB - when casting to a list, make sure to close your parens ;)
+	G_nx.remove_node(n)
+	return d
+                
 
 def first_return_times( k, backwards=False ):
 	"""
@@ -135,7 +159,7 @@ def scc_raf(G):
 	scc_found={}
 	scc_queue = []
 	scc_list=[]
-	real_scc_inds=[]					# RAF
+	real_scc_inds=[]	# RAF
 	i=0		# Preorder counter
 	for source in G_nx:
 		if source not in scc_found:
@@ -177,24 +201,7 @@ def scc_raf(G):
 						scc_queue.append(v)
 	# RAF: removed sorting... don't really need it
 	# scc_list.sort(key=len,reverse=True)			
-	return scc_list,real_scc_inds
-
-def descendants(G,S):
-	"""Decendents of S (subset of nodes) in G"""
-	G_nx = G.graph # get right to nx
-	n = len(G_nx)
-	G_nx.add_node(n)
-	for s in S:
-		G_nx.add_edge(n,s)
-	d = list(nx.algorithms.dfs_postorder_nodes(G_nx,n))
-	d.remove(n)		# TODO: make more efficient!
-	# JJB - since dfs_postorder_nodes return a generator, we must
-	# keep the 'star' node n in until the generator is complete
-	# RMF - casting to a list for now, for simplicity
-	# JJB - when casting to a list, make sure to close your parens ;)
-	G_nx.remove_node(n)
-	return d
-                
+	return scc_list, real_scc_inds
 	
 def blockmodel(G,partitions,multigraph=False):
     """

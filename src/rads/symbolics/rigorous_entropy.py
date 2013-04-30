@@ -18,9 +18,12 @@ import argparse
 
 class RigorousEntropy( object ):
     """
-    Entry point for consfor working with multiple IMP's if/when there are multiple
+    Entry point for working with multiple IMP's if/when there are multiple
     disjoint strongly connected components in the map among regions in
     phase space.
+
+    Data format: index_map is a matrix representation of a directed
+    graph on generators of homology at level *.
 
     Example:
 

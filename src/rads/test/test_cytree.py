@@ -3,11 +3,13 @@
 import sys
 sys.path.append("cython/build/")
 
-import cyboxset
-from cyboxset import UBoxSet
-import cytree
-from cytree import Tree
+#import cyboxset
+from rads.enclosure import UBoxSet
+#import cytree
+from rads.enclosure import Tree
+from rads.misc import gfx
 import numpy as np
+
 
 box = np.array([[0.0,0],[8,8]])
 t = Tree(box)
@@ -20,3 +22,5 @@ print t.insert(np.array([3,3]))
 print t.search(np.array([3,3]))
 ubs = t.boxes()
 print ubs
+
+gfx.show_uboxes(ubs, col='c', ecol='b')
