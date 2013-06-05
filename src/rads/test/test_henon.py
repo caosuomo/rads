@@ -6,7 +6,11 @@ from rads.maps.henon import HenonMapper
 from rads.graphs.algorithms import graph_mis
 from rads.misc import gfx
 
+<<<<<<< HEAD
 depth = 5
+=======
+depth = 8
+>>>>>>> adding-capd
 
 # main bounding box
 box = np.array([[-2.0,-2],[4,4]])
@@ -14,6 +18,12 @@ box = np.array([[-2.0,-2],[4,4]])
 # our tree, mapper, enclosure
 tree = Tree(box,full=True)
 m = HenonMapper()
+
+p = m.get_params()
+p['a'][:] = 1.2
+p['b'][:] = 0.2
+m.set_params( p )
+
 ce = CombEnc(tree,m)
 
 for d in range(depth):
@@ -25,7 +35,15 @@ for d in range(depth):
 	I = graph_mis(ce.mvm)
 	print 'len(I) = ', len(I[0]) # fix the extra stuff returned by graph_mis
 	# now remove all boxes not in I (the maximal invariant set)
+<<<<<<< HEAD
 	ce.tree.remove(list(set(range(ce.tree.size))-set(I[0])))
+=======
+	nodes = set(range(ce.tree.size))
+	ce.tree.remove(list(nodes-set(I)))
+
+# remove nodes not in I
+ce.mvm.remove_nodes_from( list(nodes-set(I)) )
+>>>>>>> adding-capd
 
 # now display the tree!
 boxes = ce.tree.boxes()

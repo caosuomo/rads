@@ -52,13 +52,14 @@ class DiGraph( Graph ):
         """Return a list of predecessor nodes of n."""
         return self.graph.predecessors(n)
 
-    # def number_of_nodes(self):
-    #     """Return the number nodes in a graph."""
-    #     return self.graph.number_of_nodes()
-
-    # def number_of_edges(self):
-    #     """Return number of edges in a graph."""
-    #     return self.graph.number_of_edges()
+    def subgraph( self, nbunch ):
+        """
+        Return DiGraph on nbunch nodes. See Graph object of NetworkX.
+        """ 
+        subG = self.graph.subgraph( nbunch )
+        S = DiGraph()
+        S.graph = subG
+        return S
 
     def from_numpy_matrix( self, mat ):
         """
@@ -77,10 +78,18 @@ class DiGraph( Graph ):
         ----------
         copy : bool optional (default=True)
             If True, return a new DiGraph holding the reversed edges.
-            If False, reverse the reverse graph is created using
-            the original graph (this changes the original graph).
+            If False, reverse the reverse graph is created using the
+            original graph (this changes the original graph). Returns
+            a new RADS DiGraph if True.
         """
-        return self.graph.reverse( copy=copy )
+        if copy:
+            Rnx = self.graph.reverse( copy=copy )
+            RG = DiGraph()
+            RG.graph = Rnx
+            return RG
+        else:
+            Rnx = self.graph.reverse()
+            self.graph = Rnx
 
     def copy( self ):
 	"""

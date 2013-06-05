@@ -151,7 +151,25 @@ def index_map_to_region_map( hom_mat, reg2gen, shift=0 ):
                     G.add_edge( k, Rinv[glist][0] )
     # return the graph so that we have access to the nodes labels that
     # correspond directly to regions with generators.
+<<<<<<< HEAD
     return G  
+=======
+    return G
+
+def make_node_hash( nbunch ):
+    """
+    Create a mapping from the boxes --> indices listed in the nodes of
+    the directed graph.
+    """
+    idx = range( len( nbunch ) )
+    d = dict()
+    #d.fromkeys( idx )
+    #d.fromkeys( nbunch )
+    for i in idx:
+        d[i] = nbunch[i]
+    return d
+    
+>>>>>>> adding-capd
 
 def invert_dictionary( d ):
     inv_map = {}
@@ -164,6 +182,7 @@ def invert_dictionary( d ):
             inv_map[v] = inv_map.get(v, [])
             inv_map[v].append(k)
     return inv_map
+<<<<<<< HEAD
     
 # =======
 # from scipy.io import loadmat
@@ -209,3 +228,27 @@ def invert_dictionary( d ):
 #                 gdict[r] = set( g )
 #         return gdict
 # >>>>>>> adding-capd
+=======
+
+def array2chomp( arr, savename ):
+    """
+    Convert an array to chomp format, ( , , ). Write the resulting
+    column of numbers to disk. Formatted for use with chomp-rutgers
+    (see https://code.google.com/p/chomp-rutgers/)
+    """
+    rows = map( lambda x: str(x)+'\n', map( tuple, iter( arr ) ) ) 
+    with open( savename, 'w' ) as fh:
+        fh.writelines( rows )
+
+
+def to_sparse( G ):
+    """
+    DiGraph to scipy sparse matrix.
+    """
+    try:
+        return nx.to_scipy_sparse_matrix( G.graph, dtype=int, format='csr' )
+    # in case one sends in G.graph instead.
+    except AttributeError:
+        return nx.to_scipy_sparse_matrix( G, dtype=int, format='csr' )        
+
+>>>>>>> adding-capd
