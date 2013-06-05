@@ -4,11 +4,8 @@ from rads.enclosure.cymapper cimport Mapper
 cdef extern from "ricker_cpp.h":
 	cdef cppclass cRicker "RickerMapper":
 		cRicker()
-<<<<<<< HEAD
-		cIPoint map_point (cIPoint &v)
-=======
 		cIPoint map_point (cIPoint &curr)
->>>>>>> adding-capd
+
 	cRicker *new_Ricker "new RickerMapper" ()
 	void del_Ricker "delete" (cRicker *)
 

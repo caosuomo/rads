@@ -151,9 +151,6 @@ def index_map_to_region_map( hom_mat, reg2gen, shift=0 ):
                     G.add_edge( k, Rinv[glist][0] )
     # return the graph so that we have access to the nodes labels that
     # correspond directly to regions with generators.
-<<<<<<< HEAD
-    return G  
-=======
     return G
 
 def make_node_hash( nbunch ):
@@ -169,8 +166,6 @@ def make_node_hash( nbunch ):
         d[i] = nbunch[i]
     return d
     
->>>>>>> adding-capd
-
 def invert_dictionary( d ):
     inv_map = {}
     for k, v in d.iteritems():
@@ -182,53 +177,6 @@ def invert_dictionary( d ):
             inv_map[v] = inv_map.get(v, [])
             inv_map[v].append(k)
     return inv_map
-<<<<<<< HEAD
-    
-# =======
-# from scipy.io import loadmat
-
-# class Utils( object ):
-
-#     def convert_matlab_gens( self, genfile ):
-#         """
-#         Convert a Matlab (R) cell array to a dictionary. 
-#         """
-#         try:
-#             from scipy.io import loadmat
-#         except ImportError( "scipy.io.loadmat not found. Is scipy installed?" ):
-#             raise
-#         cell_array = loadmat( genfile )
-#         return self.cell2dict( cell_array )
-    
-#     def cell2dict( self, ca ):
-#         """
-#         Parameters:
-#         -----------
-
-#         ca : cell array from Matlab, loaded using scipy.io.loadmat()
-
-#         Returns a Python dictionary
-#         """
-#         keys = ca.keys()
-#         # there should only be one name for the cell array, the other keys
-#         # should be metadata (eg., '__globals__', etc.)
-#         name = [ k for k in keys if not k.startswith('__') ][0]
-#         gens = ca[name][0]
-#         gdict = {}
-#         for r,gen in enumerate( gens ):
-#             # Don't record regions with no generators
-#             if gen.shape == (0,0):
-#                 #gdict[r] = None
-#                 continue
-#             else:
-#                 # shift to align with 0-index
-#                 g = gen[0] -1
-#                 if len( g )==0:
-#                     continue
-#                 gdict[r] = set( g )
-#         return gdict
-# >>>>>>> adding-capd
-=======
 
 def array2chomp( arr, savename ):
     """
@@ -251,4 +199,3 @@ def to_sparse( G ):
     except AttributeError:
         return nx.to_scipy_sparse_matrix( G, dtype=int, format='csr' )        
 
->>>>>>> adding-capd

@@ -18,12 +18,9 @@ def show_uboxes(uboxes,S=None,col='b',ecol='k', fig=None):
 		art = mpatches.Rectangle(uboxes.corners[i],uboxes.width[0],uboxes.width[1])
 		patches.append(art)
 
-<<<<<<< HEAD
-	fig = plt.figure()
-=======
 	if not fig:
 		fig = plt.figure()
->>>>>>> adding-capd
+
 	ax = fig.gca()
 	ax.hold(True)
 	collection = PatchCollection(patches)
@@ -45,10 +42,6 @@ def show_uboxes_corners( corners, width, S=None, col='b', ecol='k' ):
 	if S is None:
 		S = range( len(corners) )
 
-<<<<<<< HEAD
-def show_box(b,col='b',ecol='k',alpha=1, fig=None):
-	patches = []
-=======
 	patches = []
 	for i in S:
 		art = mpatches.Rectangle( corners[i], width[0], width[1] )
@@ -69,7 +62,6 @@ def show_box(b,col='b',ecol='k',alpha=1, fig=None):
 
 def show_box(b,col='b',ecol='k',alpha=1, fig=None):
 	patches = []
->>>>>>> adding-capd
 	
 	# lower left corner at b[0], followed by width and height
 	art = mpatches.Rectangle(b[0],b[1,0],b[1,1])

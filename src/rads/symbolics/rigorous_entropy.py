@@ -18,12 +18,6 @@ import argparse
 
 class RigorousEntropy( object ):
     """
-<<<<<<< HEAD
-    Entry point for consfor working with multiple IMP's if/when there are multiple
-    disjoint strongly connected components in the map among regions in
-    phase space.
-
-=======
     Entry point for working with multiple IMP's if/when there are multiple
     disjoint strongly connected components in the map among regions in
     phase space.
@@ -31,7 +25,6 @@ class RigorousEntropy( object ):
     Data format: index_map is a matrix representation of a directed
     graph on generators of homology at level *.
 
->>>>>>> adding-capd
     Example:
 
     index_map = numpy.matrix( [[0,0,1,1,0],
@@ -66,11 +59,7 @@ class RigorousEntropy( object ):
         map f : X --> X on phase space.
         
         generator_map : dictionary -- Map that associates regions in
-<<<<<<< HEAD
-        phase space to generators. Indices in index_map must align with
-=======
         phase to generators. Indices in index_map must align with
->>>>>>> adding-capd
         """
         self.index_map = index_map
         self.region2gen = reg2gen
