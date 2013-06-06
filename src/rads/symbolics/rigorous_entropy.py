@@ -126,11 +126,11 @@ class RigorousEntropy( object ):
         to initialize these values.
         """
         self.map_on_regions = utils.index_map_to_region_map( self.index_map,
-                                                             self.region2gen,
-                                                             shift=-1)
+                                                             self.region2gen )
 
         # graph_mis from graphs.algorithms
-        scc_list, scc_components, recurrent_regions = graph_mis( self.map_on_regions )
+        scc_list, scc_components, recurrent_regions = graph_mis( self.map_on_regions,
+                                                                 return_rsccs=True )
         nbunch = [ scc_components[i] for i in recurrent_regions ]
         self.recurrent_subgraphs = []
 
@@ -171,7 +171,6 @@ class RigorousEntropy( object ):
         # now find the maximum entropy
         self._maximum_entropy()
             
-
     def _maximum_entropy( self ):
         """
         Returns the maximum entropy over all recurrent regions in
@@ -184,6 +183,9 @@ class RigorousEntropy( object ):
                 self.max_region = i
         if self.verbose:
             print "Maximum entropy found: ", self.max_entropy
+
+    def get_max_entropy( self ):
+        print "Maximum entropy found: ", self.max_entropy
 
 ########################################################################
 
@@ -253,22 +255,29 @@ def run( fargs ):
             fig.savefig( './figures/henon_symbol_map_scc'+str(i)+'.png' )
             #    IP.unverified_symbolic_system.draw( nodelist=n, node_color=color[i] )
 
-##############################
-#  PARSE COMMAND LINE ARGS
-##############################
-parser = argparse.ArgumentParser(description='Process input for RigorousEntropy class.')
-parser.add_argument( "index_map", help="Path to map on generators.", type=str )
-parser.add_argument( "generators", help="Path to region to generator map.", type=str )
-parser.add_argument( "-v", "--verbose", help="Increase output verbosity.",
-                    action="store_true" )
-parser.add_argument( "-d", "--debug", help="Show debugging output.",
-                    action="store_true" )
-parser.add_argument( "-m", "--matlab", help="Input data is in matlab matrices.",
-                     action="store_true" )
-args = parser.parse_args()
+if __name__ == "__main__":
 
-# crank out some entropy!
-run( args )
+    import sys
+    
+    ##############################
+    #  PARSE COMMAND LINE ARGS
+    ##############################
+    parser = argparse.ArgumentParser(description='Process input for RigorousEntropy class.')
+    parser.add_argument( "index_map", help="Path to map on generators.", type=str )
+    parser.add_argument( "generators", help="Path to region to generator map.", type=str )
+    parser.add_argument( "-v", "--verbose", help="Increase output verbosity.",
+                        action="store_true" )
+    parser.add_argument( "-d", "--debug", help="Show debugging output.",
+                        action="store_true" )
+    parser.add_argument( "-m", "--matlab", help="Input data is in matlab matrices.",
+                         action="store_true" )
+    args = parser.parse_args()
+
+    if len( sys.argv ) == 1:
+        parser.print_help()
+    else:
+        # crank out some entropy!
+         run( args )
 
 
 

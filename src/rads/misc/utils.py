@@ -118,7 +118,7 @@ def cell2dict( ca, genname ):
         aligned_dict[ key-1 ] = new_val
     return aligned_dict # gdict
 
-def index_map_to_region_map( hom_mat, reg2gen, shift=0 ):
+def index_map_to_region_map( hom_mat, reg2gen ):
     """
     hom_mat : numpy matrix representing a map on generators (index map).
 

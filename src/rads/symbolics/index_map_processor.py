@@ -133,7 +133,7 @@ class IndexMapProcessor( IndexMap ):
                 print ""
             if not edge.zero():
                 self.graph.add_edge( s, t, edge=edge )
-                self.library.add( edge )
+                # self.library.add( edge )
 
         # Unravel the underlying index map (stored as a graph) into
         # list of 1-step walks.

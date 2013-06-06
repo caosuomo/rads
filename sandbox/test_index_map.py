@@ -46,7 +46,7 @@ if 0:
                                         [0,0,0,0,0,1],
                                         [1,1,0,0,0,0]]
                                        )
-if 1:
+if 0:
 
     hom_matrix = numpy.matrix( [[0,0,1,1,0],
                                 [0,0,0,0,1],
@@ -68,7 +68,7 @@ if 1:
     map_on_regions = DiGraph()
     map_on_regions.from_numpy_matrix( symbols )
 
-if 0:
+if 1:
 
     hom_matrix = utils.load_matlab_matrix( 'henon_index.mat', 'hom_matrix' )
     region2gen = utils.convert_matlab_gens( 'henon_gens.mat' )
@@ -89,7 +89,8 @@ if 0:
 debug = True
 verbose = False
 
-scc_list, scc_components, recurrent_regions = algorithms.graph_mis( map_on_regions )
+scc_list, scc_components, recurrent_regions = algorithms.graph_mis( map_on_regions,
+                                                                    return_rsccs=True )
 # separate nodes by recurrent component
 nbunch = [ scc_components[i] for i in recurrent_regions ]
 recurrent_subgraphs = []
