@@ -317,9 +317,10 @@ class IndexMapProcessor( IndexMap ):
                 # save the best semi-conjugate subshift found
                 self.verified_symbolic_system = S
 
-        if self.entropy == -1 or self.entropy == 0:
-            print "No positive entropy found!"
-            print ""
+        if self.verbose:
+            if self.entropy == -1 or self.entropy == 0:
+                print "No positive entropy found in this region!"
+                print ""
             
 
     def _cut_edges( self, edges ):

@@ -42,14 +42,26 @@ def load_matlab_matrix( matfile, matname=None ):
     if not matname:
         out = spio.loadmat( matfile )
         mat = _extract_mat( out )
-        return np.matrix( mat )
+        # if mat is a sparse matrix, convert it to numpy matrix
+        try:
+            mat = np.matrix( mat.toarray() )
+        except AttributeError:
+            mat = np.matrix( mat )
+        return mat
     else:
-        mat = spio.loadmat( matfile )
-        return np.matrix( mat[ matname ] )
+        matdict = spio.loadmat( matfile )
+        mat = matdict[ matname ]
+        # if mat is a sparse matrix, convert it to numpy matrix
+        try:
+            mat = np.matrix( mat.toarray() )
+        except AttributeError:
+            mat = np.matrix( mat )
+        return mat #np.matrix( mat[ matname ] )
 
 def _extract_mat( mat ):
     keys = mat.keys()
     mat_key = filter( lambda x : not x.startswith( "__" ), keys )[0]
+    the
     return mat[ mat_key ]
 
 def convert_matlab_gens( genfile, genname='generators' ):

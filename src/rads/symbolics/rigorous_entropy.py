@@ -14,11 +14,12 @@ from rads.graphs import DiGraph
 from rads.symbolics.index_map_processor import IndexMapProcessor
 from rads.graphs.algorithms import graph_mis
 import argparse
+import matplotlib.pyplot as plt
 
 
 class RigorousEntropy( object ):
     """
-    Entry point for working with multiple IMP's if/when there are multiple
+    Entry point for working with multiple IndexMapProcessors if/when there are multiple
     disjoint strongly connected components in the map among regions in
     phase space.
 
@@ -162,6 +163,8 @@ class RigorousEntropy( object ):
         """
         Loop through regions in series and compute entropy.
         """
+        if self.verbose:
+            print "Computing entropy on each strongly connected component..."
         for region in self.phase_space:
             R = region[0]
             R.find_bad_edge_sets( max_path_length )
@@ -187,6 +190,50 @@ class RigorousEntropy( object ):
     def get_max_entropy( self ):
         print "Maximum entropy found: ", self.max_entropy
 
+    # only kinda working
+    def draw( self, region=None, draw_verified=False ):
+        """
+        Draws strongly connected components and verified
+        semi-conjugate systems.
+
+        Optional args:
+        -------------
+        
+        region : choose a region to draw. not implemented!
+
+        draw_verified : Draw only the verified semi-conjugate
+        subshift. Otherwise, draw all SCC's analyzed in phase space.
+        """
+        # print ""
+        # print "  Drawing both transition graphs..."
+
+        regions = self.phase_space
+
+        for i, region in enumerate( regions ):
+            # each region should be a list/tuple of length 2.  the IMP
+            # object sits in first position, entropy for that region
+            # in the second position
+            imp = region[0]
+
+            # fig1 = plt.figure()
+            # ax1 = fig1.gca()
+            # ax1.set_title( "Original transition map on regions" )
+            # pos1 = utils.nx.graphviz_layout( imp.graph )
+            # imp.unverified_symbolic_system.draw( ax=ax1, pos=pos1 )
+
+            fig2 = plt.figure()
+            ax2 = fig2.gca()
+            G = imp.verified_symbolic_system.graph
+            nn = G.number_of_nodes()
+            ne = G.number_of_edges()
+            ax2.set_title( "Semi-conjugate subshift on "+\
+                           str( nn ) +" nodes and " + str( ne ) +\
+                           " edges" )
+            pos2 = utils.nx.graphviz_layout( imp.verified_symbolic_system.graph )
+            imp.verified_symbolic_system.draw( ax=ax2, pos=pos2 )
+
+        plt.show()
+
 ########################################################################
 
 
@@ -198,7 +245,7 @@ def run( fargs ):
     index_fname = fargs.index_map
     gens_fname = fargs.generators
     
-    # load from file
+    # load index map and generators from files
     re = RigorousEntropy()
     if not fargs.matlab:
         re.load_from_file( index_fname, gens_fname )
@@ -219,41 +266,21 @@ def run( fargs ):
     else:
         print re.max_entropy
     
-    # NOT WORKING YET!!
-    def draw( self, region=None ):
-        """
-        """
-        print ""
-        print "  Drawing both transition graphs..."
+    return re
 
-        fig1 = plt.figure()
-        ax1 = fig1.gca()
-        ax1.set_title( "Original transition map on regions (subshift)" )
-        pos1 = utils.nx.graphviz_layout( imp.map.graph )
-        imp.unverified_symbolic_system.draw( ax=ax1, pos=pos1 )
+    # IP = IndexMapProcessor( IM, debug=debug )
 
-
-        fig2 = plt.figure()
-        ax2 = fig2.gca()
-        ax2.set_title( "Best subshift found after trimming edges" )
-        pos2 = utils.nx.graphviz_layout( imp.semi_conjugate_subshift.graph )
-        imp.verified_symbolic_system.draw( ax=ax2, pos=pos2 )
-
-        plt.show()
-
-        IP = IndexMapProcessor( IM, debug=debug )
-
-        nbunch = [ scc_components[i] for i in recurrent_regions[:5] ] # just plot 5 SCC's
-        color = ['r', 'g', 'b', 'm', 'c']
-        for i,n in enumerate(nbunch):
-            fig=plt.figure( i )
-            ax = fig.gca()
-            sg = IP.unverified_symbolic_system.graph.subgraph( nbunch=n )
-            pos = nx.graphviz_layout( sg )
-            print "s[",i,"] =", scc_components[i]
-            nx.draw_networkx(  sg, pos=pos, node_color=color[i], ax=ax )
-            fig.savefig( './figures/henon_symbol_map_scc'+str(i)+'.png' )
-            #    IP.unverified_symbolic_system.draw( nodelist=n, node_color=color[i] )
+    # nbunch = [ scc_components[i] for i in recurrent_regions[:5] ] # just plot 5 SCC's
+    # color = ['r', 'g', 'b', 'm', 'c']
+    # for i,n in enumerate(nbunch):
+    #     fig=plt.figure( i )
+    #     ax = fig.gca()
+    #     sg = IP.unverified_symbolic_system.graph.subgraph( nbunch=n )
+    #     pos = nx.graphviz_layout( sg )
+    #     print "s[",i,"] =", scc_components[i]
+    #     nx.draw_networkx(  sg, pos=pos, node_color=color[i], ax=ax )
+    #     fig.savefig( './figures/henon_symbol_map_scc'+str(i)+'.png' )
+    #     #    IP.unverified_symbolic_system.draw( nodelist=n, node_color=color[i] )
 
 if __name__ == "__main__":
 
@@ -277,7 +304,7 @@ if __name__ == "__main__":
         parser.print_help()
     else:
         # crank out some entropy!
-         run( args )
+        R = run( args )
 
 
 

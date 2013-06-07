@@ -3,13 +3,13 @@ from rads.misc import utils
 
 # TEXT and NPY
 fname_npy = 'leslie_index.npy'
+#fname_txt = '/Users/jberwald/github/local/caja-matematica/rads/sandbox/test_array.txt'
+
 reg_fname =  'leslie_gens.pkl'
 
 # MAT
-# fname_mat = '/Users/jberwald/github/local/caja-matematica/rads/sandbox/leslie_index.mat'
-# reg_mat = '/Users/jberwald/github/local/caja-matematica/rads/sandbox/leslie_gens.mat'
-fname_mat = 'index.mat'
-reg_mat = 'generators.mat'
+fname_mat = '/Users/jberwald/github/local/caja-matematica/rads/sandbox/leslie_index.mat'
+reg_mat = '/Users/jberwald/github/local/caja-matematica/rads/sandbox/leslie_gens.mat'
 matname = 'hom_matrix'
 
 # load from file
@@ -25,7 +25,7 @@ re1.draw()
 
 print ""
 
-## EXPECTED OUTPUT for Leslie map files
+## EXPECTED OUTPUT
 # >>> Testing with Numpy matices...
 # >>> Maximum entropy found:  0.150632111601
 
@@ -45,9 +45,6 @@ re2.prepare_regions()
 re2.compute_entropy()
 re2.get_max_entropy()
 
-print "Drawing all verified semi-conjugate subshifts..."
-re2.draw()
-
-## EXPECTED OUTPUT for Leslie map files
+## EXPECTED OUTPUT
 # Testing ability to start off with Matlab matrices...
 # Maximum entropy found:  0.150632111601
