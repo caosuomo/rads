@@ -529,7 +529,13 @@ class Graph( object ):
 		Draw graph using NetworkX. See nx.draw_networkx and friends
 		for kwargs.
 		"""
-		nx.draw_networkx( self.graph, **kwargs )
+		args = { 'node_size' : 30,
+			 'alpha' : 0.8,
+			 'node_color' : 'g'
+			 }
+		args.update( kwargs )
+		
+		nx.draw_networkx( self.graph, **args )
 
 	def save( self, **kwargs ):
 		"""

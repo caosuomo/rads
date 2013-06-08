@@ -74,7 +74,7 @@ def convert_matlab_gens( genfile, genname='generators' ):
     returned by loadmat. Otherwise, there's a bit of guess work in
     cell2dict to find where the generators are stored.
     """
-    cell_array = spio.loadmat( genfile, squeeze_me=True )
+    cell_array = spio.loadmat( genfile )#, squeeze_me=True )
     return cell2dict( cell_array, genname )
 
 def cell2dict( ca, genname ):
@@ -102,30 +102,34 @@ def cell2dict( ca, genname ):
     # should be metadata (eg., '__globals__', etc.)
     try:
         gens = ca[ genname ]
+    # this should work, as long as one does not use '__' in the name
+    # of the cell array.
     except KeyError:
         name = [ k for k in keys if not k.startswith('__') ][0]
         gens = ca[name][0]
-    gdict = {}
 
+    print "generators: ", gens
+    #gdict = {}
+
+    # ATTEMPT TO GET CELL ARRAY CONVERSION ONCE AND FOR ALL
+    # this is a list of arrays, of type uint8, of shape (1,n)
     # region (r) |--> gen map
-    # +1 to each region to aid with creation of index map
-    for r,gen in enumerate( gens ):
-        # dimensionless array
-        if not gen.shape: 
-            gdict[r+1] = [gen.item()]
-        # gen contains a vector of gnerators
-        else:
-            g = gen.tolist()
-            # no generators in this region
-            if len( g ) == 0:
-                # no generator on this region
-                continue
-            else:
-                gdict[r+1] = g
+    genmap = {}
+    gens = gens.tolist()
+    print "after tolist(): ", gens
+    
+    for r,g in enumerate( gens ):
+        try:
+            genmap[ r+1 ] = g.flatten().tolist()
+        except AttributeError:
+            genmap[ r+1 ] = g[0].flatten().tolist()
+
+    print "genmap: ", genmap
+
     # Now that we've created the hash, shift all region labels and
     # generator labels by (-1) to align with Python 0-based indexing.
     aligned_dict = {}
-    for key, val in gdict.items():
+    for key, val in genmap.items():
         new_val = [ x-1 for x in val ]
         aligned_dict[ key-1 ] = new_val
     return aligned_dict # gdict

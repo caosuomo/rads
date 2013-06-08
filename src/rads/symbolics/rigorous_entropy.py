@@ -137,7 +137,7 @@ class RigorousEntropy( object ):
 
         # the actual partition of phase space in graph format
         for n in nbunch:
-            # ignore disjoint regions that have self-loops => no
+            # ignore disjoint regions/nodes that have self-loops => no
             # entropy
             if len( n ) == 1:
                 continue

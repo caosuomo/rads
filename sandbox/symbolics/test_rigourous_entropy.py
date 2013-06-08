@@ -21,7 +21,7 @@ re1.compute_entropy()
 re1.get_max_entropy()
 
 print "Drawing all verified semi-conjugate subshifts..."
-re1.draw()
+#re1.draw()
 
 print ""
 

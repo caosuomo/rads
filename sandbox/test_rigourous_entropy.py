@@ -21,7 +21,7 @@ re1.compute_entropy()
 re1.get_max_entropy()
 
 print "Drawing all verified semi-conjugate subshifts..."
-re1.draw()
+#re1.draw()
 
 print ""
 
@@ -41,12 +41,12 @@ region2gen = utils.convert_matlab_gens( reg_mat )
 
 re2 = RigorousEntropy( index_map=hom_matrix,
                        reg2gen=region2gen )    
-re2.prepare_regions()
-re2.compute_entropy()
-re2.get_max_entropy()
+# re2.prepare_regions()
+# re2.compute_entropy()
+# re2.get_max_entropy()
 
-print "Drawing all verified semi-conjugate subshifts..."
-re2.draw()
+# print "Drawing all verified semi-conjugate subshifts..."
+# re2.draw()
 
 ## EXPECTED OUTPUT for Leslie map files
 # Testing ability to start off with Matlab matrices...
