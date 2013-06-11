@@ -1,4 +1,5 @@
 import networkx as nx
+import matplotlib.pyplot as plt
 
 class Graph( object ):
 	"""
@@ -528,14 +529,31 @@ class Graph( object ):
 		"""
 		Draw graph using NetworkX. See nx.draw_networkx and friends
 		for kwargs.
+
+		Defaults used for drawing:
+
+		node_size : 60
+		alpha : 0.8
+		node_color : 'g' (green)
+		with_labels : False
+
+		Use keyword args to change these and any others
+		accepted by networkx.draw_networkx().
 		"""
-		args = { 'node_size' : 30,
+		args = { 'node_size' : 60,
 			 'alpha' : 0.8,
-			 'node_color' : 'g'
+			 'node_color' : 'g',
+			 'with_labels' : False
 			 }
 		args.update( kwargs )
-		
-		nx.draw_networkx( self.graph, **args )
+
+		fig = plt.figure()
+		ax = fig.gca()
+		limits = ax.axis( 'off' )
+		pos = nx.graphviz_layout( self.graph )
+		nx.draw_networkx( self.graph, pos=pos, ax=ax, **args )
+		fig.show()
+		return fig
 
 	def save( self, **kwargs ):
 		"""

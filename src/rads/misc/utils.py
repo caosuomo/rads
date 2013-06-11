@@ -108,23 +108,16 @@ def cell2dict( ca, genname ):
         name = [ k for k in keys if not k.startswith('__') ][0]
         gens = ca[name][0]
 
-    print "generators: ", gens
-    #gdict = {}
-
-    # ATTEMPT TO GET CELL ARRAY CONVERSION ONCE AND FOR ALL
-    # this is a list of arrays, of type uint8, of shape (1,n)
+    # gens is a list of arrays, of type uint8, of shape (1,n)
     # region (r) |--> gen map
     genmap = {}
     gens = gens.tolist()
-    print "after tolist(): ", gens
     
     for r,g in enumerate( gens ):
         try:
             genmap[ r+1 ] = g.flatten().tolist()
         except AttributeError:
             genmap[ r+1 ] = g[0].flatten().tolist()
-
-    print "genmap: ", genmap
 
     # Now that we've created the hash, shift all region labels and
     # generator labels by (-1) to align with Python 0-based indexing.

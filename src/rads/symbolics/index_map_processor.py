@@ -282,7 +282,7 @@ class IndexMapProcessor( IndexMap ):
         Remove edges in bad_edges. Maximize entropy by checking all
         combinations of removed edges. We assume that there are less
         than ~10k bad edge sets so that an exhaustive search is still
-        fast.
+        reasonably fast.
         """
         # for each path in collection self.bad_edges.bads, choose one
         # edge from each path and cut it.
@@ -333,7 +333,8 @@ class IndexMapProcessor( IndexMap ):
         T = self.unverified_symbolic_system.copy()
         try:
             T.remove_edges_from( edges )
-        # occurs if bad_combos in cut_bad_edge_sets only contain one path
+        # occurs in some minimal cases when bad_combos in
+        # cut_bad_edge_sets only contain one path
         except (TypeError,IndexError):
             T.remove_edge( edges[0], edges[1] )            
         return T

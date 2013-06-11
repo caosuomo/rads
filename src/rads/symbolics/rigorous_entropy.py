@@ -126,6 +126,7 @@ class RigorousEntropy( object ):
         region2gen dictionary, or used one of the load_from_* methods
         to initialize these values.
         """
+        # returns a DiGraph
         self.map_on_regions = utils.index_map_to_region_map( self.index_map,
                                                              self.region2gen )
 
@@ -159,9 +160,12 @@ class RigorousEntropy( object ):
     def compute_entropy_parallel( self ):
         pass
 
-    def compute_entropy( self, max_path_length=16 ):
+    def compute_entropy( self, max_path_length=4 ):
         """
         Loop through regions in series and compute entropy.
+
+        max_path_length: Only verify paths of length <=
+        max_path_length. [default=4]
         """
         if self.verbose:
             print "Computing entropy on each strongly connected component..."
