@@ -1,6 +1,6 @@
 #include "ricker_cpp.h"
 
-
+// First argument is dimension, second map name
 RickerMapper::RickerMapper() : Mapper( 2, "ricker" )
 {
   params[r] = 5.0;

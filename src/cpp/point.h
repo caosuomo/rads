@@ -14,6 +14,7 @@ class PointBase
 {
     // vector of arbitrary length. 
     // below v( dim ) will initialize a n-dim vector of type T  
+    // This line define a vector of type T of arbitrary length.
     typedef capd::vectalg::Vector < T, 0 > DVector;
   
   public:

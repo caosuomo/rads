@@ -13,6 +13,7 @@ from rads.misc import utils
 from rads.graphs import DiGraph
 from rads.symbolics.index_map_processor import IndexMapProcessor
 from rads.graphs.algorithms import graph_mis
+from scipy import sparse, int8
 import argparse
 import matplotlib.pyplot as plt
 
@@ -50,7 +51,7 @@ class RigorousEntropy( object ):
 
     where the region2gen.keys() = indices of symbols.
     """
-    def __init__( self, index_map=None, reg2gen=None,
+    def __init__( self, index_map=None, reg2gen=None, use_sparse=False,
                   verbose=False, debug=False ):
         """
         Initialize the object and check for recurrent graph structures. 
@@ -62,7 +63,11 @@ class RigorousEntropy( object ):
         generator_map : dictionary -- Map that associates regions in
         phase to generators. Indices in index_map must align with
         """
-        self.index_map = index_map
+        if not use_sparse:
+            self.index_map = index_map
+        else:
+            # not fully implemented in walk_library and other deps
+            self.index_map = sparse.lil_matrix( index_map, dtype=int8 )
         self.region2gen = reg2gen
         self.verbose = verbose
         self.debug = debug
@@ -73,8 +78,13 @@ class RigorousEntropy( object ):
         # place holder for max entropy
         self.max_entropy = -1
         
-    def load_from_file( self, index_fname, generators_fname, dtype=int ):
+    def load_from_file( self, index_fname, generators_fname, dtype=int8 ):
+        """
+        Usage:
 
+        1. init class with no args, R = RigorousEntropy()
+        2. load data, R.load_from_file( index_fname, generators_fname )
+        """
         ## try to load numpy, fall through to loadtxt
         self.index_fname = index_fname
         self.generators_fname = generators_fname
@@ -114,9 +124,9 @@ class RigorousEntropy( object ):
         self.index_map = utils.load_matlab_matrix( self.index_fname, matname )
         self.region2gen = utils.convert_matlab_gens( self.generators_fname )
         
-        self.map_on_regions = utils.index_map_to_region_map( self.index_map,
-                                                             self.region2gen,
-                                                             shift=-1)
+        # self.map_on_regions = utils.index_map_to_region_map( self.index_map,
+        #                                                      self.region2gen,
+        #                                                      shift=-1)
             
     def prepare_regions( self ):
         """
@@ -158,9 +168,10 @@ class RigorousEntropy( object ):
                                        ] )
         
     def compute_entropy_parallel( self ):
+        # NOT IMPLEMENTED YET
         pass
 
-    def compute_entropy( self, max_path_length=4 ):
+    def compute_entropy( self, max_path_length=4, num_edge_sets=10 ):
         """
         Loop through regions in series and compute entropy.
 
@@ -172,7 +183,7 @@ class RigorousEntropy( object ):
         for region in self.phase_space:
             R = region[0]
             R.find_bad_edge_sets( max_path_length )
-            R.cut_bad_edge_sets()
+            R.cut_bad_edge_sets( num_edge_sets=num_edge_sets )
             region[1] = R.entropy
 
         # now find the maximum entropy

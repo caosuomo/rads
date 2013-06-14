@@ -4,6 +4,7 @@ from collections import deque
 import numpy as np
 from math import log
 from itertools import product
+from random import choice
 
 """
 index_map_processor.py
@@ -62,9 +63,10 @@ class IndexMap( DiGraph ):
             #self.library = UnverifiedLibrary()
 
         # Utility functions for packing and unpacking edge information into an integer
-        self.regioncount = len( self.regions )
-        self.edge2hash = lambda start, end: start * self.regioncount + end
-        self.hash2edge = lambda hashed: hashed / self.regioncount, #hashed%regioncount            
+        # self.regioncount = len( self.regions )
+        # self.edge2hash = lambda start, end: start * self.regioncount + end
+        # self.hash2edge = lambda hashed: hashed / self.regioncount, #hashed%regioncount      
+        
 
 class IndexMapProcessor( IndexMap ):
     """
@@ -145,14 +147,15 @@ class IndexMapProcessor( IndexMap ):
         # init with the 1-step walks above
         self.todo = deque( self.edge_walks.values() )
         
-        # Stores all edges that are unverified
-        # again, init with the 1-step walks
+        # Stores all edges that are unverified again, init with the
+        # 1-step walks
         self.unverified = UnverifiedLibrary( self.edge_walks.values() )
 
         # set initial entropy
         self.entropy = -1
         
-        # best symbolic system found 
+        # container for best verified symbolic system found after
+        # cutting bad edges
         self.verified_symbolic_system = None
 
     def __repr__( self ):
@@ -180,11 +183,11 @@ class IndexMapProcessor( IndexMap ):
                 return True
         return False        
 
-    def find_bad_edge_sets( self, maxLength ):
+    def find_bad_edge_sets( self, max_length ):
         """
         Version of Algorithm 6 in Day, Frongillo, Trevino.
 
-        maxLength -- maximum length of the paths allowed in edge verifications.
+        max_length -- maximum length of the paths allowed in edge verifications.
 
         Overview of algorithm:
         ---------------------
@@ -201,14 +204,15 @@ class IndexMapProcessor( IndexMap ):
             path = self.todo[0]
         except IndexError:
             raise
-        
-        while path.length <= maxLength:
+
+        while path.length <= max_length-1:
             # Grab the first walk to extend
             try:
                 old = self.todo.popleft()
             # exhausted the todo list!! 
             except IndexError:
-                return
+                break
+            #return
             if self.debug:
                 print "Extending:", old
                 print "-------------------"
@@ -219,14 +223,18 @@ class IndexMapProcessor( IndexMap ):
                     print "**** LENGTH ****", maxlen
                     print ""
                     
-            # Now take every edge that comes out from the end of the old walk
+            # Now do a breadth first search from the end of the old
+            # walk and check zero condition, etc.
             for succ in self.unverified_symbolic_system.graph.successors_iter( old.end ):
+                # for (t,u) \in E(G)
                 next_step = self.edge_walks[ (old.end, succ) ]
                 if self.debug:
                     print "Successor edge:", next_step
                     print " matrix"
                     print next_step.matrix
-                # Create a new walk by appending the new edge
+
+                # Create a new walk by appending the new edge. Matrix
+                # multiplication is implicit in redefined __add__.
                 new_walk = old + next_step
 
                 if self.debug:
@@ -239,8 +247,10 @@ class IndexMapProcessor( IndexMap ):
                 if new_walk.edges in self.bad_edges:
                     continue
                 
-                # Check if the walk is a zero matrix, or is a cycle with zero
-                # trace. If so, add it to the bad edge list.
+                # Check if the new walk results in a zero matrix
+                # product, or is a cycle with zero trace if we go this
+                # route. If so, add it to the bad edge list.
+                # if M' == 0 or (s==u and tr(M')==0)
                 if self.check_walk( new_walk ):
                     if self.debug:
                         print "------------------------------"
@@ -249,19 +259,25 @@ class IndexMapProcessor( IndexMap ):
                         print new_walk.edges
                         print new_walk.matrix
                         print "------------------------------"
+                    # B = B \cup {E'}
                     self.bad_edges.add( new_walk.edges )
+                    
+                    # set M(s',t',E",l)=\emptyset for all s',t' \in V,
+                    # E' \subset E" \subset E(G), l \le k
+                    self.unverified.set_matrix_list_to_null( new_walk )
                     continue
 
-                # Let p = new_walk. If there exists
-                # another walk, q, such that (i) p == s-u and q == s-u
-                # (share same edges), (ii) |q| <= |p| (p is longer
-                # than q), (iii) and q.matrix = a * p.matrix, then we
-                # can ignore new_walk "by induction"
+                # Let p = new_walk. If there exists another walk, q,
+                # such that (1) p == s->u and q == s->u (share same
+                # edge set), (2) |q| <= |p| (p is longer than q), (3) and
+                # q.matrix = a * p.matrix, then we can ignore new_walk
+                # "by induction"
                 if self.unverified.reduction_exists( new_walk, debug=self.debug ):
                     continue
 
-                # We have not decided if this path is bad or good, so it has to
-                # added back into the queue of edges to check
+                # We have not decided if this path is bad or good, so
+                # for goodness sake, it has to added _back into the
+                # queue_ of edges to be analyzed further by extension
                 self.todo.append( new_walk )
                 self.unverified.add( new_walk )
 
@@ -272,48 +288,63 @@ class IndexMapProcessor( IndexMap ):
                     path = self.todo[0]
                 # we've exhausted our todo list! woohoo!
                 except IndexError:
-                    return
+                    break
+                    #return
                 
                 if self.debug:
                     print "\n\n"
 
-    def cut_bad_edge_sets(self, edges=None, **kwargs):
+        for walk in self.todo:
+            self.bad_edges.add( walk.edges )
+        return
+
+    def _make_random_edge_collection( self ):
+        """
+        From the list of prohibited (bad) paths B, randomly choose one
+        edge, e_i, from each p_i \in B.
+
+        Returns collection of edges (e_1,...,e_n), where e_i \in p_i. 
+        """
+        # choice requires arg to be indexable
+        paths = [ choice( list(x) ) for x in self.bad_edges.bads ]
+        return set( paths )
+
+    def cut_bad_edge_sets(self, edges=None, num_edge_sets=100, **kwargs):
         """
         Remove edges in bad_edges. Maximize entropy by checking all
-        combinations of removed edges. We assume that there are less
-        than ~10k bad edge sets so that an exhaustive search is still
-        reasonably fast.
+        combinations of removed edges.
         """
-        # for each path in collection self.bad_edges.bads, choose one
-        # edge from each path and cut it.
-        # all combinations of one edge from each path
-        if edges:
-            bads = edges
-        else:
-            bads = self.bad_edges.bads
-       
-        bad_combos = list( product( *bads ) )
-        # product returns ((.),) format if only one bad edge set, so
-        # take first entry of each if this is the case.
-        if len( bads ) == 1:
-            bad_combos = [ x[0] for x in bad_combos ]
+        # take on edge from each bad edge set and add it to a list of
+        # edges to cut. Raf has found that randomly putting these
+        # lists together seems to be as effective as anything...
+        self.bad_combos = [ self._make_random_edge_collection() ]
+        for i in range( num_edge_sets ):
+            c = self._make_random_edge_collection()
+            if c in self.bad_combos:
+                continue
+            else:
+                self.bad_combos.append( c )
 
         # cycle through combinations looking for cut combo that
         # maximizes entropy.
         if self.verbose:
             print "Searching for best combination of edges to cut..."
-            print "  Collections (one from each bad path):", bad_combos
-        for edge_combo in bad_combos:
+            print "  Collections (one from each bad path):", self.bad_combos
+            
+        for edge_combo in self.bad_combos:
             if self.verbose:
                 print "  edges cut: ", edge_combo
             # symbolic system to check entropy (copy of full system
-            # with 'combo' edges cut.            
+            # with 'edge_combo' edges cut.            
             S = self._cut_edges( edge_combo )
             entropy = log_max_eigenvalue( S )
             if self.verbose:
                 print "   --> resulting entropy: ", entropy
+            # save the best entropy and corresponding edge_combo
             if entropy > self.entropy:
                 self.entropy = entropy
+                self.best_edge_combo = edge_combo
+                
                 # save the best semi-conjugate subshift found
                 self.verified_symbolic_system = S
 

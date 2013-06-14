@@ -9,6 +9,7 @@ import networkx as nx
 import numpy as np
 import cPickle as pkl
 import scipy.io as spio
+from scipy import sparse
 from rads.graphs import algorithms, DiGraph
 
 def load_numpy( fname ):
@@ -89,8 +90,8 @@ def cell2dict( ca, genname ):
 
         A = array([1, [2 3],[],...]), then
         
-        A[0] = array(1,dtype=uint8) <-- dimensionless array,
-        A[1] = array([2,3],dtype=uint8),
+        A[0] = array(1,dtype=int8) <-- dimensionless array,
+        A[1] = array([2,3],dtype=int8),
         etc.
 
     Empty lists (see above example) are quietly ignored.
@@ -131,33 +132,32 @@ def index_map_to_region_map( hom_mat, reg2gen ):
     """
     hom_mat : numpy matrix representing a map on generators (index map).
 
-    reg2gen : dictionary mapping region -> generator(s).
+    reg2gen : dictionary mapping region -> generator(s). (I.e, which
+    regions support which generators)
 
-    shift : align indices for numpy matrices. If generators produced
-    from Matlab matrix or cell array of generators, then must account
-    of 1-indexing in Matlab by shift = -1.
-
-    Uses NetworkX blockmodel to condense reg2gen 
-
-    Returns a numpy matrix representing the transition map on the
-    regions.
+    Returns a DiGraph object of the map on regions in phase space.
     """
     H = hom_mat
     R = reg2gen
     Rinv = invert_dictionary( R )
     G = DiGraph()
+    
+    # find where region k maps to based the index map
     for k in R.keys():
-        # # k is a tuple or set
-        # if shift:
-        #     idx = np.array( R[k] ) + shift
-        #     gen_conns = np.where( H[:,idx] != 0 )[0]
-        # else:
-        gen_conns = np.where( H[:,R[k]] != 0 )[0]
-        gen_conns = gen_conns.tolist()[0] # fix matrix formatting
+        # find generator connections
+        if hasattr( H, 'nnz' ):
+            if len( R[k] ) == 0:
+                continue
+            gen_conns, _J, _V = sparse.find( H[:,R[k]] )
+        else:
+            # dense matrix case
+            gen_conns = np.where( H[:,R[k]] != 0 )[0]
+            gen_conns = gen_conns.tolist()[0] # fix matrix formatting
         for edge in gen_conns:
             for glist in Rinv.keys():
                 if edge in glist:
                     G.add_edge( k, Rinv[glist][0] )
+
     # return the graph so that we have access to the nodes labels that
     # correspond directly to regions with generators.
     return G

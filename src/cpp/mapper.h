@@ -2,7 +2,6 @@
 #define _mapper_h
 
 #include "point.h"
-//#include "Functions.h"
 #include "box.h"
 #include "treeutil.h"
 #include <math.h>
