@@ -3,6 +3,15 @@ Running and experimenting with test_tent.py
 Building the tent map code:
 ---------------------------
 
+1. Copy rads folder to rads.bak.
+2. Download the zip folder of the latest version of RADS from here: https://github.com/caosuomo/rads
+3. unzip it and rename it 'rads'.
+4. Copy your config_* and makeit_* files from rads.bak into the new rads folder. 
+5. cd (change directory) into the rads folder (you have be in the terminal for this).
+6. type ./makeit_* and cross your fingers. :) 
+7. Assuming it build without any errors, cd build/lib.
+8. Copy the rads directory to where Canopy can see it: cp rads /Users/<username>/Library/Enthought/Canopy_64bit/User/lib/python2.7/site-packages, where <username> == your username. Note, there shouldn't be a "/" after rads. 
+9. From the rads root directory, you can find the test_tent.py file in src/rads/test.
 
 
 Procedure for running test_tent.py:
@@ -18,9 +27,11 @@ resolution is increased (up to the <depth> variable, first line below imports).
    -- Note, the indexing is 0-based, so if you divide [0,1] into
       subintervals, these will correspond to nodes {0,1,2,3}.
 
-3. You can explore the tree using 'ce.tree.boxes', the outer enclosure
-(called a Multivalued Map, or MVM) using ce.mvm.*. Pressing <tab> will
-get you a list of attributes of ce.mvm.
+3. You can explore the tree using 'ce.tree.boxes'. Make sure its
+structure makes sense. The outer approximation (called a Multivalued
+Map, or MVM) is stored in ce.mvm. By pressing <tab> in the terminal
+after 'ce.mvm.' will get you a list of attributes. This works for any
+Python object (super handy!).
 
 4. Of special note(!): I'm not sure the MVM is right. I need to ask
 Raf (the author of this part of the code) about this. Claire, you're
