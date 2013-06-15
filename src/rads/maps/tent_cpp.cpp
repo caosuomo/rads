@@ -14,9 +14,9 @@ IPoint TentMapper::map_point(const IPoint &v) const
     //double midpoint = 0.5; 
 
     if ( v[0] <= 0.5 )
-      w[0] = -params[r] * v[0];
-    else
       w[0] = params[r] * v[0];
+    else 
+      w[0] = params[r] * (1 - v[0]);
     
     return w;
 }

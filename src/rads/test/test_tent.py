@@ -5,7 +5,7 @@ from rads.maps.tent import TentMapper
 from rads.graphs.algorithms import graph_mis
 from rads.misc import gfx
 
-depth = 2
+depth = 1
 
 # main bounding box -- defined by lower left corner (row 0) and width
 # of each dimension (row 2). For the tent map, this should start out
