@@ -8,6 +8,8 @@ max_path = 4
 # Input data
 ###############
 # TEXT and NPY
+
+# simple full graph on two nodes (single generat
 fname_npy = 'test2_index.npy' #'leslie_index.npy'
 reg_fname =  'test2_gens.pkl' #'leslie_gens.pkl'
 

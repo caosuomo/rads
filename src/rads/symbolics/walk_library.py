@@ -91,33 +91,35 @@ class UnverifiedLibrary( object ):
             self.add(walk)
         
             
-    def set_matrix_list_to_null( self, problem_walk ):
-        """
-        Algorithm to set M(s',t',E',l)=\emptyset
+    # def set_matrix_list_to_null( self, problem_walk ):
+    #     """
+    #     Algorithm to set M(s',t',E',l)=\emptyset
 
-        for all s',t' \in V,
-         E' \subset E'' \subset E(G), l \le k
-        """
-        print "PROBLEM WALK", problem_walk
+    #     for all s',t' \in V,
+    #      E' \subset E'' \subset E(G), l \le k
+
         
-        k = problem_walk.length
-        start_nodes = self.start_end_dict.iterkeys()
-        for s in start_nodes:
-            for t in self.start_end_dict[s].iterkeys():
-                # all edgesets that start at s and end at t
-                for edges,walk in self.start_end_dict[s][t].items():
-                    print "WALK", walk
-                    if walk is None:
-                        continue
-                    elif (walk.length <= k) and problem_walk.edges.issubset( walk.edges ):
-                        # set the matrix collection defined by
-                        # (s,t,edges) to \emptyset
+    #     """
+    #     print "PROBLEM WALK", problem_walk
+        
+    #     k = problem_walk.length
+    #     start_nodes = self.start_end_dict.iterkeys()
+    #     for s in start_nodes:
+    #         for t in self.start_end_dict[s].iterkeys():
+    #             # all edgesets that start at s and end at t
+    #             for edges,walk in self.start_end_dict[s][t].items():
+    #                 print "WALK", walk
+    #                 if walk is None:
+    #                     continue
+    #                 elif (walk.length <= k) and problem_walk.edges.issubset( walk.edges ):
+    #                     # set the matrix collection defined by
+    #                     # (s,t,edges) to \emptyset
 
-                        print "problem edges", problem_walk.edges
-                        print "this walk edges", problem_walk.edges
+    #                     print "problem edges", problem_walk.edges
+    #                     print "this walk edges", problem_walk.edges
                         
-                        self.start_end_dict[s][t][edges] = None
-        print ""
+    #                     self.start_end_dict[s][t][edges] = None
+    #     print ""
                 
     def add(self, walk):
         """ Add a Walk to the library """ 
@@ -137,20 +139,31 @@ class UnverifiedLibrary( object ):
 
         M -- walk.matrix
         """
-        for other in self.start_end_dict[walk.start][walk.end].itervalues():
-            if other is None:
+        # for M' \in matrix_collection(s,u)
+        for collection in self.start_end_dict[walk.start][walk.end].itervalues():
+            # consider all matrix collections/walks of length < current walk.length
+            if not collection.length < walk.length:
+                continue
+            # this should never occur
+            if collection is None:
                 continue
             if debug:
-                print "IN REDUCTION", other
-            if other.edges.issubset( walk.edges ) and walk.is_multiple( other ):
+                print "IN REDUCTION", collection
+            # if collection.edges \subset walk.edges & M' = aM = walk.matrix
+            if collection.edges.issubset( walk.edges ) and walk.is_multiple( collection ):
                 if debug:
                     print "\nREDUCTION!\n\n"
-                    print "other", other.edges
-                    print "walk", walk.edges
+                    print " ** collection", collection.edges, collection.matrix
+                    print " ** walk", walk.edges, walk.matrix
                     print ""
                 return True
             else:
-                return False
+                continue
+            
+        # we didn't find a reduction in the entire collection of
+        # walk/matrices containing the walk in question
+        else:
+            return False
             
         
 class Walk( object ):
@@ -210,8 +223,12 @@ class Walk( object ):
     def is_multiple( self, other ):
         """
         Returns A = c*B, where A = self.matrix, B = other.matrix.
+
+        SPARSE ABILITIES NOT IMPLEMENTED YET!
         """
         B = other.matrix
+        if self.matrix.shape != B.shape:
+            return False
         if sparse.issparse( self.matrix ):
             w0, w1, V = sparse.find( self.matrix )
         else:

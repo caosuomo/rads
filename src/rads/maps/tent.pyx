@@ -11,7 +11,7 @@ cdef extern from "tent_cpp.h":
 cdef class TentMapper(Mapper):
 
 	def __cinit__(self):
-		print "in TentMapper cinit"
+		#print "in TentMapper cinit"
 		self.mapper = <cMapper *>new_Tent()
 
 	def __dealloc__(self):

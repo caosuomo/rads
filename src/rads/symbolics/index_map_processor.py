@@ -11,7 +11,7 @@ index_map_processor.py
 
 Opened: ~ June 13, 2012
 
-Authors: Jakub Gedeon and Jesse Berwald
+Authors: Jesse Berwald and Jakub Gedeon
 
 Processes objects contained in walk_library.py for calculation of the
 entropy of system semi-conjugate to the symbolic system represented by
@@ -184,19 +184,22 @@ class IndexMapProcessor( IndexMap ):
         return False        
 
     def find_bad_edge_sets( self, max_length ):
-        """
-        Version of Algorithm 6 in Day, Frongillo, Trevino.
+        """Version of Algorithm 6 in Day, Frongillo, Trevino.
 
         max_length -- maximum length of the paths allowed in edge verifications.
 
         Overview of algorithm:
-        ---------------------
+        ----------------------
 
-        self.todo -- Holds most recent Walks to be extended and verified.
+        self.todo -- Holds most recent Walks to be extended and
+        verified. If the walk remains unverified or irreducible, it is
+        added to end of self.todo, where it will cycle around to have
+        more edges added to it, until it reaches max_length.
 
         self.unverified -- Holds _all_ unverified Walks. Extended
         paths from todo are checked against those in unverified to see
         if a reduction exists.
+
         """
         if self.debug:
             maxlen = 1
@@ -205,7 +208,9 @@ class IndexMapProcessor( IndexMap ):
         except IndexError:
             raise
 
-        while path.length <= max_length-1:
+        # Extend paths up to length max_length. path.length
+        # incremented after while-statement, so < here.
+        while path.length < max_length:
             # Grab the first walk to extend
             try:
                 old = self.todo.popleft()
@@ -249,8 +254,8 @@ class IndexMapProcessor( IndexMap ):
                 
                 # Check if the new walk results in a zero matrix
                 # product, or is a cycle with zero trace if we go this
-                # route. If so, add it to the bad edge list.
-                # if M' == 0 or (s==u and tr(M')==0)
+                # route. If so, add it to the bad edge list.  if M' ==
+                # 0 or if check_trace==True, (s==u and tr(M')==0)
                 if self.check_walk( new_walk ):
                     if self.debug:
                         print "------------------------------"
@@ -261,11 +266,12 @@ class IndexMapProcessor( IndexMap ):
                         print "------------------------------"
                     # B = B \cup {E'}
                     self.bad_edges.add( new_walk.edges )
-                    
-                    # set M(s',t',E",l)=\emptyset for all s',t' \in V,
-                    # E' \subset E" \subset E(G), l \le k
-                    self.unverified.set_matrix_list_to_null( new_walk )
                     continue
+
+                    # # set M(s',t',E",l)=\emptyset for all s',t' \in V,
+                    # # E' \subset E" \subset E(G), l \le k
+                    # self.unverified.set_matrix_list_to_null( new_walk )
+                    # continue
 
                 # Let p = new_walk. If there exists another walk, q,
                 # such that (1) p == s->u and q == s->u (share same
@@ -286,7 +292,7 @@ class IndexMapProcessor( IndexMap ):
                 # and will work
                 try:
                     path = self.todo[0]
-                # we've exhausted our todo list! woohoo!
+                # we've exhausted our todo list! 
                 except IndexError:
                     break
                     #return
@@ -294,8 +300,8 @@ class IndexMapProcessor( IndexMap ):
                 if self.debug:
                     print "\n\n"
 
-        for walk in self.todo:
-            self.bad_edges.add( walk.edges )
+        # for walk in self.todo:
+        #     self.bad_edges.add( walk.edges )
         return
 
     def _make_random_edge_collection( self ):

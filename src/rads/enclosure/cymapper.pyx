@@ -4,10 +4,10 @@ from cyutils cimport *
 cdef class Mapper:
 
 	def __cinit__(self):
-		print "in Mapper cinit"
+		pass
+	#print "in Mapper cinit"
 
 	def set_params(self,object dict):
-		print "here"
 		cdef vector[std_string] names = self.mapper.get_param_names()
 		cdef cIPoint p = self.mapper.get_params()	# so we can only overwrite a few and leave the rest
 		for k in dict.keys():
@@ -16,7 +16,7 @@ cdef class Mapper:
 					p.set(i,array2interval(dict[k]))
 					break
 		self.mapper.set_params(p)
-		print "set params..."
+		#print "set params..."
 
 	def get_params(self):
 		cdef cIPoint p = self.mapper.get_params()	# so we can only overwrite a few and leave the rest

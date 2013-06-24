@@ -133,22 +133,23 @@ def isolated( A, oI, S ):
     else:
         return True
 
-def grow_iso( S, A, P ):
+def grow_isolating_neighborhood( invariant, adjacency, transition ):
     """
-    S : index set of boxes in invariant set
+    invariant : list of boxes in invariant set (any Python iterable)
+  
+    adjacency : Adjacency graph  
     
-    P : transition graph
-
-    A : Adjacency graph
+    transition : transition graph
 
     Grow a combinatorial isolating neighborhood N containing S. Return
     None if condition is not met.
 
     Algorithm 1 in Day, et al, 2008.
     """
+    S = invariant
     while 1:							
-        N = set( algorithms.graph_mis( P.subgraph( S ) ) )
-        oN = get_onebox( N, A )
+        N = set( algorithms.graph_mis( transition.subgraph( S ) ) )
+        oN = get_onebox( N, adjacency )
 
         # print "in grow_iso"
         # print oN - N
@@ -164,7 +165,7 @@ def get_onebox( S, A ):
     S. (This rather inefficiently includes S itself. There should be a
     nice way to keep S, and just add to it.)
     
-    S : box indices corresponding to nodes in transition map
+    S : indices of boxes corresponding to nodes in transition map
 
     A : adjacency graph
 
@@ -191,30 +192,31 @@ def max_inv_set( P, I ):
     S = algorithms.graph_mis( R )
     return set( S )
 
-def build_ip( P, A, I ):
+def build_index_pair( iso, adjacency, transition ):
     """
     Building modified combinatorial index pairs for the combinatorial
     isolating neighborhood I.
 
-    P : combinatorial map object
+    iso : isolating 'hood. List or set object
 
-    A : adjacency matrix (spacial)
+    adjacency : adjacency matrix (spacial)
 
-    I : invariant set. List or set object
+    transittion : combinatorial map object
 
     Returns the index pair X,A
     """
+    I = iso
+    A = adjacency
+    P = transition
+
     # create one box nhd about the invariant set
     I = set( I )
     oI = get_onebox( I, A )
-
-    print "oI - I", oI - I
     
     # initial X as the invariant set
     X = I.copy()
     
     # map the invariant set forward, F(I)
-    print len(X)
     for u in I:
         X.update( P.neighbors( u ) )
     # just keep the image that intersects the one box nhd
@@ -223,8 +225,6 @@ def build_ip( P, A, I ):
     # initial exit set A
     A = X - I
     onebox = oI - I
-
-    print "A init", A
     
     # grow the exit set
     while 1:
@@ -243,25 +243,35 @@ def build_ip( P, A, I ):
         if not new_boxes:
             break
     X = I.union(A)
-    return X,A,oI
+    return X,A
 
-def computeYB( X, I, P ):
+def computeYB( X, iso, P ):
     """
-    Returns F(X) and F(X)\I
+    Finding the image, (Y,B) of (X,A) under F.
+
+    X : from index pair (X,A)
+
+    A : Exit set. So we can find I=X\A below
+
+    Returns Y=F(X) and B=F(X)\I
     """
+    # if we don't copy, union below will be in-place
     X_ = X.copy()
-    I = set(I).copy()
+    I = set( iso ).copy()
     FX = set()
     # Find F(X)
     for u in X:
         FX.update( P.neighbors( u ) )
+
+    # F(X)
     Y = X_.union(FX)
+
+    # B = Y - I, where I = X\A
     B = Y - I
     return Y,B
 
 
-def run_homcubes( prefix,
-                  full_path='/Users/jberwald/Dropbox/Projects/entropy/lorenz/' ):
+def run_homcubes( prefix, save_dir ):
     """
     Sample command:
 
@@ -280,15 +290,53 @@ def run_homcubes( prefix,
     print command
     p=sp.call( command, shell=True )
 
-def make_index_pair( P, A, I ):
+def make_index_pair( iso, adjacency, transition ):
     """
-    P : transition graph on phase space
+    iso : list (set) of boxes in isolating neighborhood.
 
-    A : adjacency graph on boxes in phase space
+    transition : transition graph on phase space (combinatorial enclosure)
 
-    I : list (set) of boxes in isolated neighborhood.
+    adjacency : adjacency graph on boxes in phase space
+    
+    returns X,A,Y,B
     """
-    N = grow_iso( I, A )
-    X,A = build_ip( P, Adj, I )
-    Y,B = computeYB( X, I, P )
+    X,A = build_index_pair( iso, adjacency, transition )
+    Y,B = computeYB( X, iso, transition )
     return X,A,Y,B
+
+def box2cub( tree, idx, fname ):
+    """Write corners of boxes[idx], stored in tree, to disk.
+    
+    The scaling, done in order to put the corners on a unit grid,
+    assumes that the grid is *uniform* in all dimension. 
+
+    The format used is for homcubes (registered trademark of
+    P. Pilarcyk).
+
+    tree : box tree associated with the combinatorial enclosure.
+
+    idx : list of indices of the set of boxes to write to disk
+
+    fname : full path where we should write the cub file.
+
+    """
+    idx = list( idx )
+    dim = tree.dim
+    boxes = tree.boxes()
+    corners = boxes.corners
+
+    # diff finds the first difference along axis=-1 by default.
+    r = corners[1:] - corners[:-1]
+    
+    scaled = np.empty_like( corners )
+    for i in range( dim ):
+        # assume uniform box size in each dimension
+        scaled[:,i] = corners[:,i] / r[0,i]
+
+    scaled = np.asarray( scaled, dtype=np.int )
+
+    with open( fname, 'w' ) as fh:
+        fh.write( 'dimension '+str(dim)+'\n' )
+        # converts each row in A |--> (x,y,...) str coords 
+        rows = map( lambda x: str(x)+'\n', map( tuple, iter( scaled[idx] ) ) ) 
+        fh.writelines( rows )

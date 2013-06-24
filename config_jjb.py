@@ -8,17 +8,16 @@ exe = {
 # CAPD include and lib directories are loaded unsing the capd-config script
 dirs = {
 	'base': '/Users/jberwald/github/local/caja-matematica/rads/',
-	'capd_config': '/Users/jberwald/src/capd/bin/capd-config ', #--cflags --libs`'
-	'capd':  '/Users/jberwald/src/capd/'
+	#'capd_config': '/Users/jberwald/src/capd/bin/capd-config ', #--cflags --libs`'
+	'capd_config': '/Users/jberwald/local/lib/capd/bin/capd-config ',
+	'capd':  '/Users/jberwald/local/lib/capd/'
         }
 
 include = {
-	'sage': '/Applications/sage/devel/sage-main/',
-	'sage c': '/Applications/sage/devel/sage-main/c_lib/include/',
 	'python': '/Library/Frameworks/EPD64.framework/Versions/Current/include/python2.7/',
 	'cython': '/Library/Frameworks/EPD64.framework/Versions/Current/lib/python2.7/site-packages/Cython/Includes/',
 	'numpy': '/Library/Frameworks/EPD64.framework/Versions/Current/lib/python2.7/site-packages/numpy/core/include/',
-	'capd': '/Users/jberwald/src/capd/capdAlg/include/'
+	'capd': '/Users/jberwald/local/lib/capd/capdAlg/include/'
         }
 
 link = {

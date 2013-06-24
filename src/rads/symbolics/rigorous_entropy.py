@@ -181,12 +181,13 @@ class RigorousEntropy( object ):
         if self.verbose:
             print "Computing entropy on each strongly connected component..."
         for region in self.phase_space:
+            # IndexMapProcessor object
             R = region[0]
             R.find_bad_edge_sets( max_path_length )
             R.cut_bad_edge_sets( num_edge_sets=num_edge_sets )
             region[1] = R.entropy
 
-        # now find the maximum entropy
+        # now find and store the maximum entropy over all regions
         self._maximum_entropy()
             
     def _maximum_entropy( self ):
