@@ -26,6 +26,12 @@ class DiGraph( Graph ):
 	return "rads DiGraph object on %i nodes and %i edges" % (
 		self.number_of_nodes(),self.number_of_edges() )
 
+    def __getitem__( self, u ):
+        """Return the successor nodes of u. See nx.Graph.__getitem__() for
+        more info.
+        """
+        return self.graph[u]
+
     def is_directed(self):
         """Returns True. This is needed by blockmodel."""
         return self.graph.is_directed()
