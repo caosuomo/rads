@@ -6,39 +6,58 @@ from rads.graphs.algorithms import graph_mis
 from rads.misc import gfx
 from rads.homology import homology as hom
 
-# depth=2 ==> 4 subintervals
-depth = 5 
+#---------------------
+# set parameters here
+#---------------------
 
+# subdivision
+depth = 5
+
+# slope of the line
+r = 2.0
+
+# toggle some of the messages
+chatter = False
+
+#---------------------
+# 
+#---------------------
+    
 # main bounding box -- defined by lower left corner (row 0) and width
 # of each dimension (row 2). For the tent map, this should start out
 # as np.array([[0.0],[1]])
-
-# Test out 
-box = np.array([[0.],[1]]) # <-- Are there some edges missing. In
-                           # particular, at depth 2 shouldn't node 1
-                           # have a self loop plus more out edges??
+box = np.array([[0.],[1]])
 
 # our tree (with root box), mapper, enclosure
 tree = Tree( box, full=True )
-tent_map = TentMapper()
 
-p = tent_map.get_params()
-p['r'][:] = 2.0
-tent_map.set_params( p )
+# initialize the tent map
+mapper = TentMapper()
 
-ce = CombEnc( tree, tent_map )
+# set the parameter
+p = mapper.get_params()
+p['r'][:] = r
+mapper.set_params( p )
+
+# initialize the enclosure with the tree and the map
+ce = CombEnc( tree, mapper )
 
 for d in range(depth):
-	print 'at depth', d+1
 	ce.tree.subdivide()
-	print 'subdivided:', ce.tree.size, 'boxes'
 	ce.update()
-	print 'enclosure updated'
 	I = graph_mis(ce.mvm)
-	print 'len(I) = ', len(I)
 	# now remove all boxes not in I (the maximal invariant set)
 	nodes = set(range(ce.tree.size))
-	#ce.tree.remove(list(nodes-set(I)))
+	ce.tree.remove(list(nodes-set(I)))
+        if chatter:
+        	print 'at depth', d+1
+                print 'subdivided:', ce.tree.size, 'boxes'
+                print 'enclosure updated'
+        	print 'len(I) = ', len(I)
+
+# update the MVM by removing nodes not in I
+ce.mvm.remove_nodes_from( nodes - set(I) )
+ce.adj.remove_nodes_from( nodes - set(I) )
 
 # draw the outer enclosure. the 'mvm' is the MultiValued Map on the
 # nodes/intervals in the subdivided grid on [0,1]. 
@@ -102,10 +121,4 @@ for d,m in ph.index_map.items():
         print "f =", m
         print ""
 
-print "The map on homology for d=0 is trivial."
-print "For dimension 1, we read the map as follows:\n"\
-        "Generator 1 is mapped negatively (-1) across generator 1 (itself).\n"\
-        "More precisely, f(\gamma_1) = -1 * \gamma_1"
-
-## Now process the index map to verify the symbolics
-
+hom.index_map_to_matrix( ph.index_map, ph.prefix+ph.mapname+'-idx' )
