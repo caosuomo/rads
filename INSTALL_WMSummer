@@ -1,0 +1,7 @@
+From the command line, run 
+
+$ python setup.py install --prefix=<path/to/site-packages>
+
+where <path/to/site-packages> should be replaced by 
+
+"$HOME/Library/Enthought/Canopy_64bit/User" (without the quotes). 
