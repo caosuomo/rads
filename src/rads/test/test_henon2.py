@@ -38,7 +38,7 @@ prefix = '/Users/jberwald/github/local/caja-matematica/rads/src/rads/test/debug/
 #---------------------
 
 # main bounding box
-box = np.array([[-1.0,-1.0],[4,4]])
+box = np.array([[-2.,-2],[4,4]])
 
 # our tree, mapper, enclosure
 tree = Tree(box,full=True)
@@ -56,21 +56,33 @@ for d in range(depth):
 	ce.tree.subdivide()
 	ce.update()
         # grab the SCC's of size > 1 (R)
-	I,S,R = graph_mis(ce.mvm, return_rsccs=True)
+	#I,S,R = graph_mis(ce.mvm, return_rsccs=True)
+        I = graph_mis(ce.mvm)
 	# now remove all boxes not in I (the maximal invariant set)
 	nodes = set(range(ce.tree.size))
 	ce.tree.remove(list(nodes-set(I)))
         if chatter:
-        	print 'at depth', d+1
+        	print 'at depth', d
                 print 'subdivided:', ce.tree.size, 'boxes'
                 print 'enclosure updated'
         	print 'len(I) = ', len(I)
 
-# update the MVM and ADJ by removing nodes not in I
+
+
+# update the MVM and ADJ by removing nodes not in the invariant set I
 ce.mvm.remove_nodes_from( nodes - set(I) )
 
-# we have to relabel the nodes to go from 0..N
+# now display the tree!
+boxes = ce.tree.boxes()
+gfx.show_uboxes(boxes, col='c', ecol='b')
+
+
+
+# we have to relabel the nodes to go from 0..N-1
 new_mvm = nx.convert_node_labels_to_integers( ce.mvm.graph )
+
+print "new_mvm isomorphic to old mvm:", nx.is_isomorphic( ce.mvm.graph, new_mvm )
+
 ce.mvm.graph = new_mvm
 
 ce.adj.remove_nodes_from( nodes - set(I) )
@@ -79,12 +91,7 @@ ce.adj.graph = new_adj
 
 # draw the outer enclosure. the 'mvm' is the MultiValued Map on the
 # nodes/intervals in the subdivided grid on [0,1]. 
-#ce.mvm.draw( node_size=200, with_labels=True )
-
-# now display the tree!
-boxes = ce.tree.boxes()
-
-gfx.show_uboxes(boxes, col='c', ecol='b')
+# ce.mvm.draw( node_size=200, with_labels=True )
 
 print ""
 print"Edges in outer approximation:\n", len( ce.mvm.edges() )
@@ -132,11 +139,15 @@ for u,subH in regions_of_interest.iteritems():
 		cycles_conns.update( c ) 
 
 
+# now grow an isolating neighborhood around the region of interest
+region = cycles_conns
+iso = hom.grow_isolating_neighborhood( region, ce.adj, ce.mvm )
+
 # Now create the homology processing factory.
 # Focus on the cycles + connections found above
-ph = hom.ProcessHomology( ce.adj, ce.mvm, ce.tree, cycles_conns, 
-                          mapname=mapname, 
-                          prefix=prefix )
+CI = hom.ComputeIndex( ce.adj, ce.mvm, ce.tree, iso,
+                       mapname=mapname, 
+                       prefix=prefix )
 
 
 # Now, create the index pair (X,A) and compute its homology
@@ -148,33 +159,34 @@ print "Writing cubical files and map file to disk..."
 
 # First, scale all the boxes to an integer grid, and store this for
 # writing index pairs to disk.
-ph.scale_boxes()
+#CI.scale_boxes()
+X,A,Y,B = CI.make_index_pair( return_values=True )
 
-ph.grow_isolating_neighborhood()# idx, ce.adj, ce.mvm )
-X,A,Y,B = ph.make_index_pair( return_values=True )
+
+# Show the index pair
+fig = gfx.show_uboxes( boxes, S=X, col='c', ecol='b' )
+fig = gfx.show_uboxes( boxes, S=A, col='y', ecol='b', fig=fig )
+fig.show()
 
 # write the index pair to files
-# can also access ph.X, ph.A, etc for the index pair indices
-mapname_path = ph.prefix + ph.mapname
-for boxes,box_name in [(X,'X'), (A,'A'), (Y,'Y'), (B,'B')]:
-        ph.box2cub( boxes, mapname_path +'-'+ box_name + '.cub' )
+# can also access CI.X, CI.A, etc for the index pair indices
+mapname_path = CI.prefix + CI.mapname
+for bx,box_name in [(X,'X'), (A,'A'), (Y,'Y'), (B,'B')]:
+        CI.box2cub( bx, mapname_path +'-'+ box_name + '.cub' )
 
 # write the map to file
 # NOTE: map file has the suffix '.map' by default
-ph.map_writer()
+print ""
+print "Wrting map..."
+hom.map_writer( CI.mvm, CI.scaled_boxes, CI.prefix+CI.mapname )
 
 
 print ""
 print "Computing induced homology..."
 
-ph.run_homcubes( suffix='cub', debug=chatter )
+CI.run_homcubes( suffix='cub', debug=chatter )
 
-print ""
-print "The map on homology for dimensions 0 and 1:"
-for d,m in ph.index_map.items():
-        print "dim =", d
-        print "f =", m
-        print ""
+#CI.run_homcubes( suffix='cub' )
+CI.write_index_map( CI.prefix+CI.mapname+'-index' )
 
-hom.index_map_to_matrix( ph.index_map, ph.prefix+ph.mapname+'-idx' )
 

@@ -5,6 +5,9 @@
 *.aux
 *.bbl
 *.blg
+*.cub
+*.map
+*.out
 *.dvi
 *.fdb_latexmk
 *.glg

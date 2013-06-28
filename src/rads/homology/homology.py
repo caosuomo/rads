@@ -4,6 +4,7 @@ from rads.misc import utils
 import numpy as np
 import random, time
 import subprocess as sp
+import cPickle as pkl
 
 debug = True
 
@@ -13,9 +14,9 @@ factors = lambda n: set(reduce(list.__add__,
                    if n % i == 0)))
 
 
-class ProcessHomology( object ):
+class ComputeIndex( object ):
 
-    def __init__( self, adj, mvm, tree, region, mapname='', prefix='/var/tmp/' ):
+    def __init__( self, adj, mvm, tree, iso_hood, mapname='', prefix='/var/tmp/' ):
         """
         Process the homology of a map in a region of phase space.
 
@@ -39,94 +40,36 @@ class ProcessHomology( object ):
         self.adj = adj
         self.mvm = mvm
         self.tree = tree
-        self.region = region
+        self.isolating_nbhd = iso_hood
         self.mapname = mapname
         self.prefix = prefix
 
-        # to be populated later
-        self.isolating_nbhd = None
+        # scale the self.tree.boxes to an integer grid
+        self.scale_boxes()
+
+        # regions to be populated later
         self.X = None
         self.A = None
         self.Y = None
         self.B = None
 
-    # def isolated( self, A, oI, S ):
-    #     """
-    #     Check whether the maximal invariant set is in the interior of oI.
+    def __repr__( self ):
+        s = "ComputeIndex object on isolating region:" +\
+            str( self.isolating_neighborhood )
+        return s
 
-    #     A : adjacency graph
-
-    #     oI : one box neighborhood
-
-    #     S : maximal invariant set
-    #     """
-    #     inv_map = self.adj.inv_nodemap #convert.invert_dictionary( A.nodemap )
-    #     # does the inv_set have any one-box neighbors that are not in oI?
-    #     # Find adjacent boxes in order to figure this out.
-    #     oI_adj = set( [inv_map[u] for u in oI] )
-    #     S_adj = set( [inv_map[u] for u in S] )
-    #     # Are there any neighbors of u in S that are not in oI?  If
-    #     # so, then S can't be in the interior.
-    #     for u in S_adj:
-    #         nbrs_u = set( A.graph.neighbors( u ) )
-    #         if not nbrs_u.issubset( oI_adj ):
-    #             return False
-    #     else:
-    #         return True
-
-    def grow_isolating_neighborhood( self ): #, invariant, adjacency, transition ):
+    def mapper( self, nbunch ):
         """
-        invariant : list of boxes in invariant set (any Python iterable)
-
-        adjacency : Adjacency graph  
-
-        transition : transition graph
-
-        Grow a combinatorial isolating neighborhood N containing S. Return
-        None if condition is not met.
-
-        Algorithm 1 in Day, et al, 2008.
+        Apply the combinatorial MVM to a node or set of nodes.
         """
-        S = self.region
-        while 1:							
-            N = set( algorithms.graph_mis( self.mvm.subgraph( S ) ) )
-            oN = self.get_onebox( N )
-            if N.issubset( oN ):
-                self.isolating_nbhd = oN
-                return oN
-            N = oN
-
-    def get_onebox( self, S ):
-        """
-        Return an isolating, one-box neighborhood around the boxes in
-        S. 
-
-        S : indices of boxes corresponding to nodes in transition map
-
-        A : adjacency graph
-
-        Returns S \cup combinatorial neighborhood of S
-        """
-        # container for (x,y) box tuples
-        thehood = set()
-        oS = set() 
-
-        # loop over nodes contained in S, keep only those that are
-        # adjacent but not already in S.
-        for idx in S:
-            nbrs = self.adj.neighbors( idx )
-            oS.update( nbrs )
-        return oS
-
-    def max_inv_set( self, I ):
-        """
-        Restrict the map P to the maximal isolated invariant neighborhood.
-
-        Return indices of nodes in the maximal invariant set.
-        """
-        R = self.mvm.subgraph( I )
-        S = algorithms.graph_mis( R )
-        return set( S )
+        FX = set()
+        if type( nbunch ) == int:
+            FX.update( self.mvm.neighbors( nbunch ) )
+        else:
+            for u in nbunch:
+                FX.update( self.mvm.neighbors( u ) )    
+        return FX
+        
 
     def build_index_pair( self ):
         """
@@ -146,42 +89,31 @@ class ProcessHomology( object ):
         A = self.adj
         P = self.mvm
 
-        # create one box nhd about the invariant set
-        I = set( I )
-        # this include I, so we subtract it to get just the 'hood
-        oI = self.get_onebox( I )
-        onebox = oI - I
-
-        # initial X as the invariant set; this avoid in-place update
-        #X = I.copy()
-        FI = set()
+        # this includes elements in iso, I, so we subtract it to get
+        # just the 'hood
+        oI = self._get_onebox( I ) - I
 
         # map the invariant set forward to get I \cup F(I)
-        for u in I:
-            FI.update( P.neighbors( u ) )
+        FI = self.mapper( I )
+
         # just keep the image that intersects the one box nhd
         X = I.union( FI )
         X = X & oI
 
         # initial exit set A intersected with onebox 'hood
         A = X - I
-        A = A & oI
-        #onebox = oI - I
+        A = A & oI # this should be unnecessary, right?
 
         # grow the exit set
         while 1:
-
-            print "A", A
-
-            FA = set()
             # image of exit set, F(A)
-            for u in A:
-                FA.update( P.neighbors( u ) )
+            FA = self.mapper( A )
+
             # only keep images that intersect the one box 'hood            
-            FA = FA & onebox # oI
+            FA = FA & oI 
             if FA.intersection( I ):
                 print "eek!", len( FA.intersection( I ) )
-            # images we haven't seen in the one box 'hood
+            # images we haven't seen yet
             new_boxes = FA - A
             # print "new boxes", len(new_boxes)
             A.update( new_boxes )
@@ -190,6 +122,10 @@ class ProcessHomology( object ):
         X = I.union(A)
         self.X = X
         self.A = A
+
+    def _get_onebox( self, N ):
+        # call function below
+        return get_onebox( N, self.adj )
 
     def computeYB( self ):
         """
@@ -201,18 +137,11 @@ class ProcessHomology( object ):
 
         Returns Y=F(X) and B=F(X)\I
         """
-        # if we don't copy, union below will be in-place
-        X_ = self.X.copy()
-        I = set( self.isolating_nbhd ).copy()
-        FX = set()
-        # Find F(X)
-        for u in self.X:
-            FX.update( self.mvm.neighbors( u ) )
+        I = self.isolating_nbhd #.copy()
 
-        # F(X)
-        Y = X_.union(FX)
-
-        # B = Y - I, where I = X\A
+        # map X forward to get Y = X \cup F(X)
+        FX = self.mapper( self.X )
+        Y = self.X.union(FX)
         B = Y - I
         self.Y = Y
         self.B = B
@@ -232,29 +161,26 @@ class ProcessHomology( object ):
         if return_values:
             return self.X, self.A, self.Y, self.B
 
-    def scale_boxes( self, idx=None ):
+    def scale_boxes( self ):
         """
         Scale box corners so that they land on an integer grid.
         """
-        if idx is not None:
-            corners = self.tree.boxes().corners[idx]
-        else:
-            # scale the entire phase space
-            corners = self.tree.boxes().corners
+        # scale the entire phase space
+        boxes = self.tree.boxes()
 
-        # scaling in each dimension. uniform grid guarantees that we
-        # can just pull off first entry in each dimension
-        r = corners[1:] - corners[:-1]
+        # array of box widths in each dimension
+        r = boxes.width
+        corners = boxes.corners
 
-        self.boxes= np.empty_like( corners )
+        self.scaled_boxes= np.empty_like( corners )
         for i in range( self.tree.dim ):
             # assume uniform box size in each dimension
-            self.boxes[:,i] = corners[:,i] / r[0,i]
+            self.scaled_boxes[:,i] = corners[:,i] / r[i]
 
         # convert to int array since we should be on an integer
         # lattice based on the r vector, this should convert to an int
         # array just fine (i.e. no loss of precision)
-        self.boxes = np.asarray( self.boxes, dtype=np.int )
+        self.scaled_boxes = np.asarray( self.scaled_boxes, dtype=np.int )
 
     def box2cub( self, idx, fname ):
         """Write corners of boxes[idx], stored in tree, to disk.
@@ -273,7 +199,7 @@ class ProcessHomology( object ):
 
         """
         idx = list( idx )
-        boxes = self.boxes[idx]
+        boxes = self.scaled_boxes[idx]
 
         with open( fname, 'w' ) as fh:
             fh.write( 'dimension '+str( self.tree.dim )+'\n' )
@@ -281,66 +207,6 @@ class ProcessHomology( object ):
             # loop
             rows = map( lambda x: str(x)+'\n', map( tuple, iter( boxes ) ) ) 
             fh.writelines( rows )
-
-    def map_writer( self, region=None, suffix='map' ):
-        """tree : box tree associated with the combinatorial enclosure.
-
-        transition : combinatorial multivalued map (MVM)
-
-        mapname : filename to write map to in 'homcubes format'. Eg., each
-        grid box's image under the MVM is represented as:
-
-        (-145,-52)  -> {(-154,-44) (-153,-44) (-152,-44) (-151,-44) (-150,-44) }
-
-        P is a transition graph representing a combinatorial
-        enclosure. Write out the adjecency structure in a format readable
-        by homcubes.
-
-        The domain is X, and the range is Y. The points are scaled to an integer grid.
-
-        """
-        #dim = self.tree.dim
-        #boxes = self.tree.boxes()
-        #corners = boxes.corners
-    
-        if region is not None:
-            xbunch = set( self.mvm.subgraph( region ).nodes() )
-        else:
-            xbunch = set( self.mvm.nodes() )
-        
-        # scale all corners in domain since we will need more than just
-        # those the region being analyzed. A more efficient way to do this
-        # may be to call scale_boxes for domidx, and then for each u \in
-        # domidx
-        # sets self.scaled to the array of scaled box corners
-        #boxes = self.scale_boxes()
-
-        xmap = {}
-        for u in xbunch:
-            # image of every element of the domain of interest
-            ximage = set( self.mvm[u].keys() )
-            xmap[u] = ximage 
-
-        mapname = self.prefix + self.mapname+'.' + suffix
-        with open( mapname, 'w' ) as fh:
-            lines = []
-            for u in xmap:
-                # cube corresponding to the u'th index
-                cub_x = str( tuple( self.boxes[u] ) )
-                image = list( xmap[u] )
-
-                # image of u as a tuple of box corners
-                cub_y = map( tuple, iter( self.boxes[image] ) ) 
-                line = cub_x + ' -> ' + '{' 
-                for cub in cub_y:
-                    # cubes are space-separated
-                    line += str( cub ) + ' '
-                # strip off the last space
-                line = line[:-1]
-                line += '}\n'
-                lines.append( line )
-            fh.writelines( lines )
-
 
     def run_homcubes( self, suffix='cub', debug=False ):
         """
@@ -361,7 +227,7 @@ class ProcessHomology( object ):
                                prefix+'-X.'+suffix,
                                prefix+'-A.'+suffix,
                                prefix+'-Y.'+suffix,
-                               prefix+'-B.'+suffix,   #] )
+                               prefix+'-B.'+suffix, 
                                '-g', 
                                prefix+'.gen' ] )
                                #'>'+prefix+'.out'] )
@@ -369,22 +235,151 @@ class ProcessHomology( object ):
             print "homcubes called with the following command:"
             print command
         try:
-            p=sp.check_output( command, shell=True )
-            self.index_map = self._homcubes2pydict( p )
+            self._hom_output=sp.check_output( command, shell=True, stderr=sp.STDOUT )
+            if debug:
+                print "homcubes output:", self._hom_output
+            self.index_map_dict = self._homcubes2pydict()
+            # get the map as a matrix
+            self._index_map_to_matrix()
+        # this is dangerous!
         except:
             pass
 
-    def _homcubes2pydict( self, s ):
+    def _homcubes2pydict( self ):
         """Strip off the rest of homcubes' invisible characters. Search for
         the first '{' that starts the Python dictionary.
         """
+        s = self._hom_output
         pos = s.find( '{' )
         s = s[ pos: ]
         return eval( s )
 
+    def _index_map_to_matrix( self ):
+        self.index_map = index_homcubes_to_matrix( self.index_map_dict, return_mat=True )
+
+    def write_index_map( self, fname ):
+        with open( fname+'.pkl', 'w' ) as fh:
+            pkl.dump( self.index_map, fh )
+
 ##========================================================
 
-def get_cycles( P, max_period=2 ):
+
+def grow_isolating_neighborhood( region, adjacency, transition ):
+    """region : list of boxes (indices) to grow an isolating neighborhood
+    around. (any Python iterable)
+
+    adjacency : adjacency graph, nodes <--> box ids
+
+    transition : transition graph, nodes <--> box ids
+
+    Grow a combinatorial isolating neighborhood N containing region. Return
+    None if condition is not met.
+
+    Algorithm 1 in Day, et al, 2008.
+
+    """
+    assert len( region ) > 0, "Number of boxes must be greater than 0."
+    while 1:							
+        N = set( algorithms.graph_mis( transition.subgraph( region ) ) )
+        oN = get_onebox( N, adjacency )
+        if N.issubset( oN ):
+            mis_oN = max_invariant_set( oN, transition )
+            return oN
+        N = oN
+
+def get_onebox( S, adjacency ):
+    """
+    Return an isolating, one-box neighborhood around the boxes in
+    S consisting of node indices in self.adj
+
+    S : indices of boxes corresponding to nodes in transition map
+
+    A : adjacency graph
+
+    Returns S \cup combinatorial neighborhood of S
+    """
+    # the one box 'hood
+    oS = set() 
+
+    # loop over nodes contained in S, keep only those that are
+    # adjacent to nodes in S and not already in oS.
+    for idx in S:
+        nbrs = adjacency.neighbors( idx )
+        oS.update( nbrs )
+    return oS
+
+def max_invariant_set( I, transition ):
+    """Restrict a region I to the maximal invariant set within that
+    region. 
+
+    Return indices of nodes in the maximal invariant set.
+
+    """
+    R = transition.subgraph( I )
+    S = algorithms.graph_mis( R )
+    return set( S )
+
+
+def index_homcubes_to_matrix( index_map_from_homcubes, 
+                              fname=None, dim=None, return_mat=False ):
+    """Convert the index map (map on generators) to numpy matrix and save
+    to disk.
+
+    index_map_from_homcubes : Python dictionary of index maps on all
+    homology levels.
+
+    fname : the name of the file. The dimension will be appended to
+    the end. (full path to file.)
+
+    dim : the dimension to write to disk. If dim==None, all
+    dimensions, d, are dumped to disk with fname+d.npy
+    
+    Each dimension lists each generator and its image. 
+
+    Eg., [{ g1 : [(a2,g2),(a3,g3)], g2 : [(-1,g2)] } ]
+
+    means that f(g1) = a2g2 + a3g3, f(g2) = -1g2, where a* are integer
+    constants.
+
+    Returns dictionary keyed by dimension with index map matrices as
+    values.
+
+    """
+    I = index_map_from_homcubes
+
+    index_maps = dict.fromkeys( I.keys() )
+
+    print "IM", index_maps
+
+    for d in index_maps:
+        print "DIM", d
+        # list of generators and their maps on d'th
+        # dimension. gen_maps is a dictionary keyed by generators on
+        # homology level d
+        print len( I[d] )
+
+        if len( I[d] ) == 0:
+            index_maps[d] = np.matrix([0])
+            continue
+        else:
+            n = len( I[d] ) 
+            idx_mat = np.zeros( (n,n), dtype=np.int )
+            for gen_maps in I[d]:
+                for gen,image in gen_maps.items():
+                    # now we have a list representing the linear
+                    # combination of generators in gen's image
+                    for a,h in image:
+                        # align with 0-zero based index
+                        
+                        print gen
+                        print a,h
+                        
+                        idx_mat[h-1,gen-1] = a
+            index_maps[d] = idx_mat 
+    
+    return index_maps
+
+def get_cycles( P, max_period=2, debug=False ):
     """
     P : Directed graph
 
@@ -415,6 +410,7 @@ def get_cycles( P, max_period=2 ):
     cycles = {}
     for k in range( 1, max_period+1 ):
         Ck = C**k 
+        # period-k nodes
         pk = set( np.where( Ck.diagonal() )[0] )
 
         # don't repeat multiples of cycles
@@ -427,8 +423,14 @@ def get_cycles( P, max_period=2 ):
                 # if a shorter cycle of length j is a factor of the
                 # cycles length k then we want to exclude it. see
                 # above.
+                print j
+                print "cycles", cycles
+                print facs
                 if j in facs:
-                    pk.difference_update( cycles[ j ] )
+                    try:
+                        pk.difference_update( cycles[ j ] )
+                    except KeyError:
+                        pass
         if len( pk ) == 0:
             continue
         cycles[ k ] = pk
@@ -477,5 +479,66 @@ def connections( G, u, v ):
     Find connections from one set of nodes to another (preds and
     succs, resp.).
     """
-    conns = nx.dijkstra_path( G.graph, u, v )
-    return conns[1:-1] # trim endpoints
+    try:
+        conns = nx.dijkstra_path( G.graph, u, v )
+        return conns[1:-1] # trim endpoints
+    except nx.NetworkXNoPath:
+        return []
+        
+  
+def map_writer( transition, scaled_boxes, mapname, region=None, suffix='.map' ):
+    """The transition graph representing a combinatorial enclosure. Write
+    out the adjecency structure in a format readable by homcubes.
+
+    tree : box tree associated with the combinatorial enclosure.
+
+    transition : combinatorial multivalued map (MVM)
+
+    scaled_boxes : array of boxes that have been scaled to an integer grid.
+
+    mapname : filename to write map to in 'homcubes format'. Eg., each
+    grid box's image under the MVM is represented as:
+
+    (-145,-52)  -> {(-154,-44) (-153,-44) (-152,-44) (-151,-44) (-150,-44) }
+
+    region : Subregion --> subgraph, which will be written to disk instead.
+
+    suffix : [default = .map] homcubes_rads will read anything, but
+    user can change this to align with his/her naming convention.
+
+    """
+    mvm = transition
+
+    if region is not None:
+        xbunch = set( mvm.subgraph( region ).nodes() )
+    else:
+        xbunch = set( mvm.nodes() )
+
+    xmap = {}
+    for u in xbunch:
+        # image of every element of the domain of interest
+        ximage = set( mvm[u].keys() )
+        xmap[u] = ximage 
+
+        #mapname = self.prefix + self.mapname+'.' + suffix
+    with open( mapname+suffix, 'w' ) as fh:
+        lines = []
+        for u in xmap:
+            # cube corresponding to the u'th index
+            cube_x = str( tuple( scaled_boxes[u] ) )
+            image = list( xmap[u] )
+
+            # image of u as a tuple of box corners
+            cube_y = map( tuple, iter( scaled_boxes[image] ) ) 
+            # if len( cube_y ) == 0:
+            #     continue
+            line = cube_x + ' -> ' + '{' 
+            for cube in cube_y:
+                # cubes are space-separated
+                line += str( cube ) + ' '
+            # strip off the last space
+            if not len( cube_y ) == 0:
+                line = line[:-1]
+            line += '}\n'
+            lines.append( line )
+        fh.writelines( lines )

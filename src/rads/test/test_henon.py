@@ -16,8 +16,8 @@ tree = Tree(box,full=True)
 m = HenonMapper()
 
 p = m.get_params()
-p['a'][:] = 1.2
-p['b'][:] = 0.2
+p['a'][:] = 1.4
+p['b'][:] = 0.3
 m.set_params( p )
 
 ce = CombEnc(tree,m)
@@ -29,10 +29,11 @@ for d in range(depth):
 	ce.update()
 	print 'enclosure updated'
 	I = graph_mis(ce.mvm)
-	print 'len(I) = ', len(I[0]) # fix the extra stuff returned by graph_mis
+	print 'len(I) = ', len(I) # fix the extra stuff returned by graph_mis
 	# now remove all boxes not in I (the maximal invariant set)
 	nodes = set(range(ce.tree.size))
 	ce.tree.remove(list(nodes-set(I)))
+        print ""
 
 # remove nodes not in I
 ce.mvm.remove_nodes_from( list(nodes-set(I)) )

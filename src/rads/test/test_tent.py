@@ -19,6 +19,9 @@ r = 2.0
 # toggle some of the messages
 chatter = False
 
+mapname = 'tent'
+prefix = '/Users/jberwald/github/local/caja-matematica/rads/src/rads/test/debug/'
+
 #---------------------
 # 
 #---------------------
@@ -73,7 +76,8 @@ print ""
 print "Computing homology:\n"
 
  # at depth 5, this is the region containing the non-zero fixed point
-idx = [21] 
+region = [21] 
+
 # Uncomment the region in order to specify other regions to analyze
 # ids = raw_input( "Based on the self-loops above,"\
 #                  " enter one or more grid id's to analyze, separated by ',': " )
@@ -82,43 +86,45 @@ idx = [21]
 # idx = [ int( x ) for x in regs ]
 
 print "Analyzing regions "
-for x in idx:
+for x in region:
         print x
 print ""
 print "Writing cubical files and map file to disk..."
 
-ph = hom.ProcessHomology( ce.adj, ce.mvm, ce.tree, idx, 
-                          mapname='tent', 
-                          prefix='/Users/jberwald/github/local/caja-matematica/rads/src/rads/test/debug/' )
 
+iso = hom.grow_isolating_neighborhood( region, ce.adj, ce.mvm )
+
+CI = hom.ComputeIndex( ce.adj, ce.mvm, ce.tree, iso, 
+                       mapname=mapname, 
+                       prefix=prefix )
 
 # scale all the boxes to an integer grid, and store this for writing
 # index pairs to disk.
-ph.scale_boxes()
-
-ph.grow_isolating_neighborhood()# idx, ce.adj, ce.mvm )
-X,A,Y,B = ph.make_index_pair( return_values=True )
+#CI.scale_boxes()
+X,A,Y,B = CI.make_index_pair( return_values=True )
 
 # write the index pair to files
-# can also access ph.X, ph.A, etc for the index pair indices
-mapname_path = ph.prefix + ph.mapname
-for boxes,box_name in [(X,'X'), (A,'A'), (Y,'Y'), (B,'B')]:
-        ph.box2cub( boxes, mapname_path +'-'+ box_name + '.cub' )
+# can also access CI.X, CI.A, etc for the index pair indices
+mapname_path = CI.prefix + CI.mapname
+for bx,box_name in [(X,'X'), (A,'A'), (Y,'Y'), (B,'B')]:
+        CI.box2cub( bx, mapname_path +'-'+ box_name + '.cub' )
+
+# draw the index pair. See gfx.py module for more details.
+boxes = ce.tree.boxes()
+fig = gfx.show_boxes1D( boxes, S=X, label='X', annotate=True )
+fig = gfx.show_boxes1D( boxes, S=A, label='A', col='y', fig=fig )
+fig.show()
 
 # write the map to file
 # NOTE: map file has the suffix '.map' by default
-ph.map_writer()
+print ""
+print "Wrting map..."
+hom.map_writer( CI.mvm, CI.scaled_boxes, CI.prefix+CI.mapname )
+
 
 print ""
 print "Computing induced homology..."
 
-ph.run_homcubes( suffix='cub' )
+CI.run_homcubes( suffix='cub' )
+CI.write_index_map( CI.prefix+CI.mapname+'-index' )
 
-print ""
-print "The map on homology for dimensions 0 and 1:"
-for d,m in ph.index_map.items():
-        print "dim =", d
-        print "f =", m
-        print ""
-
-hom.index_map_to_matrix( ph.index_map, ph.prefix+ph.mapname+'-idx' )

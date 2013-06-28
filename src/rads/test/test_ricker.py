@@ -2,16 +2,6 @@
 
 import numpy as np
 from rads.enclosure import CombEnc,Tree
-<<<<<<< HEAD
-from rads.maps.ricker import RickerMapper
-from rads.graphs.algorithms import graph_mis
-from rads.misc import gfx
-
-depth = 5
-
-# main bounding box
-box = np.array([[0.0,0],[4,4]])
-=======
 from rads.maps.ricker import RickerMapper # for some reason must have .ricker (??)
 from rads.graphs.algorithms import graph_mis
 from rads.misc import gfx, utils
@@ -29,20 +19,16 @@ box = np.array( [[0.1,0.1],[6,6]] )
 
 print "Initial bounding box"
 print box
->>>>>>> adding-capd
 
 # our tree, mapper, enclosure
 tree = Tree(box,full=True)
 m = RickerMapper()
-<<<<<<< HEAD
-=======
 
 # change params -- leave d alone for now
 p = m.get_params()
 p['r'][:] = rval
 m.set_params( p )
 
->>>>>>> adding-capd
 ce = CombEnc(tree,m)
 
 for d in range(depth):
@@ -53,24 +39,14 @@ for d in range(depth):
 	print 'enclosure updated'
 	I = graph_mis(ce.mvm)
 	print 'len(I) = ', len(I) # fix the extra stuff returned by graph_mis
-<<<<<<< HEAD
-	# now remove all boxes not in I (the maximal invariant set)
-	
-	ce.tree.remove(list(set(range(ce.tree.size))-set(I[0])))
-
-# now display the tree!
-boxes = ce.tree.boxes()
-gfx.show_uboxes(boxes, col='c', ecol='b')
-
-=======
-
 	# now remove all boxes not in I (the maximal invariant set)
 	nodes = set(range(ce.tree.size))
 	ce.tree.remove(list(nodes-set(I)))
 
-# remove nodes not in I from the mvm
-ce.mvm.remove_nodes_from( list(nodes-set(I)) )
+
+# now display the tree!
 boxes = ce.tree.boxes()
+gfx.show_uboxes(boxes, col='c', ecol='b')
 
 # now display the tree!
 if box.shape[1] == 2:
@@ -92,6 +68,4 @@ utils.array2chomp( fp,
 # check homology of the 
 # utils.array2chomp( boxes.corners,
 # 		   'ricker_r'+str( int(rval) ) + '_depth' + str( depth ) + '.cub' )
-		   
-		
->>>>>>> adding-capd
+	
