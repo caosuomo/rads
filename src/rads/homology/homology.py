@@ -346,18 +346,12 @@ def index_homcubes_to_matrix( index_map_from_homcubes,
 
     """
     I = index_map_from_homcubes
-
     index_maps = dict.fromkeys( I.keys() )
 
-    print "IM", index_maps
-
     for d in index_maps:
-        print "DIM", d
         # list of generators and their maps on d'th
         # dimension. gen_maps is a dictionary keyed by generators on
         # homology level d
-        print len( I[d] )
-
         if len( I[d] ) == 0:
             index_maps[d] = np.matrix([0])
             continue
@@ -370,10 +364,6 @@ def index_homcubes_to_matrix( index_map_from_homcubes,
                     # combination of generators in gen's image
                     for a,h in image:
                         # align with 0-zero based index
-                        
-                        print gen
-                        print a,h
-                        
                         idx_mat[h-1,gen-1] = a
             index_maps[d] = idx_mat 
     
