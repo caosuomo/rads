@@ -9,6 +9,7 @@ import cPickle as pkl
 debug = True
 
 # from SO http://stackoverflow.com/questions/6800193
+# used in get_cycles() below
 factors = lambda n: set(reduce(list.__add__, 
                   ([i, n//i] for i in range(1, int(n**0.5) + 1)
                    if n % i == 0)))
@@ -241,13 +242,15 @@ class ComputeIndex( object ):
             print "homcubes called with the following command:"
             print command
         try:
-            self._hom_output=sp.check_output( command, shell=True, stderr=sp.STDOUT )
+            self._hom_output = sp.check_output( command, shell=True, stderr=sp.STDOUT )
             if debug:
                 print "homcubes output:", self._hom_output
-            self.index_map_dict = self._homcubes2pydict()
-            # get the map as a matrix
+            #self.index_map_dict = self._homcubes2pydict()
+            self._homcubes2pydict()
+            self._homcubes_relative_homology()
+            # get the map as a matrix (or matrices)
             self._index_map_to_matrix()
-        # this is dangerous!
+        # this is dangerous! we could miss something...
         except:
             pass
 
@@ -263,7 +266,16 @@ class ComputeIndex( object ):
         s = self._hom_output
         pos = s.find( '{' )
         s = s[ pos: ]
-        return eval( s )
+        self.index_map_dict = eval( s )
+
+    def _homcubes_relative_homology( self ):
+        """
+        The relative homology of (X,A) is output as well. Extract it.
+        """
+        s = self._hom_output.split( '\n' )
+        hom = s[1].split()
+        self.homXA = extract_relative_homology( hom )
+       
 
     def _find_homcubes_warnings( self ):
         """
@@ -279,7 +291,6 @@ class ComputeIndex( object ):
         return warnings
                 
             
-
     def _index_map_to_matrix( self ):
         self.index_map = index_homcubes_to_matrix( self.index_map_dict, return_mat=True )
 
@@ -562,3 +573,71 @@ def map_writer( transition, scaled_boxes, mapname, region=None, suffix='.map' ):
             line += '}\n'
             lines.append( line )
         fh.writelines( lines )
+
+def compute_relative_homology( A, B, boxes, fname_prefix=None, keep_cub=False ):
+    """Computes relative homology of (A,B), where B \subset A, using
+    homcubes.
+
+    A, B : indices of cubical sets stored in boxes. Eg.,
+
+    dimension 1
+    (15,)
+    (16,)
+    (12,)
+    (13,)
+    (14,)
+
+
+    * or * file names to cubical complexes A and B.
+
+    boxes : numpy nd-array containing corners of boxes (each row is a
+    d-dimensional vector specifying a corner. These must be
+    integer-valued corners. See scale_boxes() method in ComputeIndex.
+
+    fname_prefix : full path to location to write cubical files. These
+    will be removed when done!
+
+    """
+    assert type( A ) == type( B ), "A and B must be the same type!"
+
+    # A and B are file names
+    if type( A ) == str:
+        fa = A
+        fb = B
+    # A and B are iterable lists 
+    elif hasattr( A, '__iter__' ):
+        fa = fname_prefix + '-A.cub'
+        fb = fname_prefix + '-B.cub'
+        idxA = list( A )
+        idxA.sort()
+        idxB = list( B )
+        idxB.sort()
+        utils.box2cub( boxes[idxA], fa )
+        utils.box2cub( boxes[idxB], fb )
+    else:
+        print "Unrecognized type of object of A and B. Must be filenames"\
+            "or iterable list/set object."
+        return
+        
+    command = [ 'homcubes_rads', fa, fb ]
+    out = sp.check_output( command )#, shell=True, stderr=sp.STDOUT ) 
+    hom = extract_relative_homology( out.split() )
+
+    return hom
+
+def extract_relative_homology( hom_out ):
+    """hom_out : output from homcubes_rads
+
+    Run alone (with no map) homcubes_rads should return simple
+    integers for the betti numbers on heach homology level. Eg.,
+    
+    X = [0,1,2,3,4]
+    A = [0,4]
+
+    will generate the following output from homcubes_rads,
+
+    '0 1'
+
+    """
+    hom = [ int( x ) for x in hom_out ]
+    return hom

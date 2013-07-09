@@ -30,8 +30,8 @@ prefix = '/Users/jberwald/github/local/caja-matematica/rads/src/rads/test/debug/
 # main bounding box -- defined by lower left corner (row 0) and width
 # of each dimension (row 2). For the tent map, this should start out
 # as np.array([[0.0],[1]])
-#box = np.array([[0.],[1.]])
-box = np.array([[-0.25],[1.5]])
+box = np.array([[0.],[1.]])
+#box = np.array([[-0.25],[1.5]])
 
 # our tree (with root box), mapper, enclosure
 tree = Tree( box, full=True )
@@ -108,7 +108,7 @@ print "** Use regions in collection of selfloops and period 2 orbits to determin
 # print ""
 # print "SETTING REGION TO 21. THIS IS JUST A DEFAULT AND ONLY MAKES SENSE FOR DEPTH=5!!"
 print ""
-region = [15] 
+region = [21] 
 
 # **********************
 # Uncomment the lines below in order to specify other regions to analyze

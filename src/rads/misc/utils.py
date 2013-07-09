@@ -197,6 +197,25 @@ def array2chomp( arr, savename ):
     with open( savename, 'w' ) as fh:
         fh.writelines( rows )
 
+def box2cub( boxes, fname ):
+    """Write collection of boxes to disk in homcubes format. 
+
+    X : indices (which boxes to write to disk
+
+    boxes : n x d array, where d is the dimension of the
+    complex. These are typically box corners from a tree
+
+    """
+    # (n,dim) shape
+    dim = boxes.shape[1] 
+    with open( fname, 'w' ) as fh:
+        fh.write( 'dimension '+str( dim )+'\n' )
+        # converts row \in A |--> (x,y,...) str coords in implicit
+        # loop
+        rows = map( lambda x: str(x)+'\n', map( tuple, iter( boxes ) ) ) 
+        fh.writelines( rows )
+
+
 
 def to_sparse( G ):
     """
