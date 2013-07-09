@@ -45,7 +45,7 @@ def condensation_nx( G, components) :
 	node in C_j.
 	"""
 	cG = DiGraph()
-	cG.graph = nx.condensation( G, components )
+	cG.graph = nx.condensation( G.graph, components )
 	return cG
 
 def graph_mis( G, return_rsccs=False ):
@@ -69,10 +69,11 @@ def graph_mis( G, return_rsccs=False ):
 	sccs,rsccs = scc_raf( G )
 	#C = condensation( G, sccs )
         # returns RADS digraph
-	C = condensation_nx( G.graph, sccs )
+	#C = condensation_nx( G, sccs )
+        C = condensation( G, sccs )
 	forward = set( descendants( C, rsccs ) )
-	C.reverse()
-	backward = set( descendants( C, rsccs ) )
+	rC = C.reverse()
+	backward = set( descendants( rC, rsccs ) )
 	cnodes = forward & backward
 	if return_rsccs:
 		return list(itertools.chain(*[sccs[c] for c in cnodes])), sccs, rsccs

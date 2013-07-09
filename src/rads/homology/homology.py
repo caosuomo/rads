@@ -54,9 +54,13 @@ class ComputeIndex( object ):
         self.B = None
 
     def __repr__( self ):
-        s = "ComputeIndex object on isolating region:" +\
-            str( self.isolating_neighborhood )
+        s = "ComputeIndex object for '"+self.mapname+\
+        "' map on isolating neighborhood with "+\
+        str( len( self.isolating_nbhd ) )+" boxes."
         return s
+
+    def get_corners( self ):
+        return self.tree.boxes().corners
 
     def mapper( self, nbunch ):
         """
@@ -177,10 +181,12 @@ class ComputeIndex( object ):
             # assume uniform box size in each dimension
             self.scaled_boxes[:,i] = corners[:,i] / r[i]
 
-        # convert to int array since we should be on an integer
-        # lattice based on the r vector, this should convert to an int
-        # array just fine (i.e. no loss of precision)
-        self.scaled_boxes = np.asarray( self.scaled_boxes, dtype=np.int )
+        # Use ceiling function to keep even deparation on integer lattice:
+        # Note: ceil( x_i / r ) +1 = ceil( x_{i+1}/ r )
+        # Proof: x_{i+1} = x_i + r => (x_{i+1}/r) = 
+        # (x_i + r)/r = x_i/r + 1 => ceil( x_i / r) + 1 = ceil( x_{i=1}/r)
+        c = np.ceil( self.scaled_boxes )
+        self.scaled_boxes = np.asarray( c, dtype=np.int )
 
     def box2cub( self, idx, fname ):
         """Write corners of boxes[idx], stored in tree, to disk.
@@ -249,10 +255,30 @@ class ComputeIndex( object ):
         """Strip off the rest of homcubes' invisible characters. Search for
         the first '{' that starts the Python dictionary.
         """
+        self._hom_warnings = self._find_homcubes_warnings()
+        if len( self._hom_warnings ) > 0:
+            print "Warnings returned by Homcubes!"
+            print self._hom_warnings
+
         s = self._hom_output
         pos = s.find( '{' )
         s = s[ pos: ]
         return eval( s )
+
+    def _find_homcubes_warnings( self ):
+        """
+        Perform a quick search of self._hom_output for warning messages.
+        """
+        warnings = []
+        output = self._hom_output.split( '\n' )
+        for line in output:
+            if line.find( 'SERIOUS WARNING' ) > 0:
+                warnings.append( line )
+            elif line.find( 'WARNING' ) and not line.find( 'SERIOUS' ):
+                warnings.append( line )
+        return warnings
+                
+            
 
     def _index_map_to_matrix( self ):
         self.index_map = index_homcubes_to_matrix( self.index_map_dict, return_mat=True )
@@ -279,14 +305,18 @@ def grow_isolating_neighborhood( region, adjacency, transition ):
 
     """
     assert len( region ) > 0, "Number of boxes must be greater than 0."
-    while 1:							
-        N = set( algorithms.graph_mis( transition.subgraph( region ) ) )
-        oN = get_onebox( N, adjacency )
-        if N.issubset( oN ):
-            mis_oN = max_invariant_set( oN, transition )
-            return oN
-        N = oN
+    N = region
+    while 1:
+        mis = max_invariant_set( N, transition ) 
+        oN = get_onebox( mis, adjacency )
 
+        # if nothing changed with the mis and onebox 'hood in this
+        # iteration, return mis
+        if oN.issubset( N ):
+            return mis
+        else:
+            N = oN
+ 
 def get_onebox( S, adjacency ):
     """
     Return an isolating, one-box neighborhood around the boxes in
