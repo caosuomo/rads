@@ -53,7 +53,7 @@ class ComputeIndex( object ):
         self.A = None
         self.Y = None
         self.B = None
-
+      
     def __repr__( self ):
         s = "ComputeIndex object for '"+self.mapname+\
         "' map on isolating neighborhood with "+\
@@ -249,7 +249,9 @@ class ComputeIndex( object ):
             self._homcubes2pydict()
             self._homcubes_relative_homology()
             # get the map as a matrix (or matrices)
-            self._index_map_to_matrix()
+            
+            if not self.index_map_is_trivial:
+                self._index_map_to_matrix()
         # this is dangerous! we could miss something...
         except:
             pass
@@ -260,13 +262,20 @@ class ComputeIndex( object ):
         """
         self._hom_warnings = self._find_homcubes_warnings()
         if len( self._hom_warnings ) > 0:
-            print "Warnings returned by Homcubes!"
+            print "Warnings returned by Homcubes:"
             print self._hom_warnings
 
         s = self._hom_output
         pos = s.find( '{' )
-        s = s[ pos: ]
-        self.index_map_dict = eval( s )
+        # If homcubes returns a trivial index map the non-verbose
+        # output will hide this. We handle this simply by setting
+        # self.index_map to None
+        if pos < 0:
+            self.index_map_is_trivial = True
+        else:
+            self.index_map_is_trivial = False
+            s = s[ pos: ]
+            self.index_map_dict = eval( s )
 
     def _homcubes_relative_homology( self ):
         """
@@ -286,7 +295,7 @@ class ComputeIndex( object ):
         for line in output:
             if line.find( 'SERIOUS WARNING' ) > 0:
                 warnings.append( line )
-            elif line.find( 'WARNING' ) and not line.find( 'SERIOUS' ):
+            elif line.find( 'WARNING' ):
                 warnings.append( line )
         return warnings
                 
@@ -295,8 +304,11 @@ class ComputeIndex( object ):
         self.index_map = index_homcubes_to_matrix( self.index_map_dict, return_mat=True )
 
     def write_index_map( self, fname ):
-        with open( fname+'.pkl', 'w' ) as fh:
-            pkl.dump( self.index_map, fh )
+        if self.index_map_is_trivial:
+            print "Index map is trivial, nothing to output"
+        else:
+            with open( fname+'.pkl', 'w' ) as fh:
+                pkl.dump( self.index_map, fh )
 
 ##========================================================
 
