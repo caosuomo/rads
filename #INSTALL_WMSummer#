@@ -1,5 +1,0 @@
-From the command line, run 
-
-$ python setup.py install --prefix=$HOME/Library/Enthought/Canopy_64bit/User
-
-This should install the rads package in a folder visible to Canopy. (I think both of you have Canopy 64 bit, but if n
