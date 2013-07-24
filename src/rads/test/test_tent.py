@@ -47,31 +47,51 @@ mapper.set_params( p )
 # initialize the enclosure with the tree and the map
 ce = CombEnc( tree, mapper )
 
+# subdivide and update the combinatorial enclosure at each depth
 for d in range(depth):
 	ce.tree.subdivide()
 	ce.update()
 	I = graph_mis(ce.mvm)
 	# now remove all boxes not in I (the maximal invariant set)
 	nodes = set(range(ce.tree.size))
-	ce.tree.remove(list(nodes-set(I)))
+
+        # if final depth, wait until we grow a one-box 'hood.
+        if not d == depth-1:
+                ce.tree.remove(list(nodes-set(I)))
         if chatter:
         	print 'at depth', d+1
                 print 'subdivided:', ce.tree.size, 'boxes'
                 print 'enclosure updated'
         	print 'len(I) = ', len(I)
 
-# update the MVM by removing nodes not in I
+# reset I by growing a one-box neighborhood around the final invariant
+# set
+oI = hom.get_onebox( I, ce.adj )
+I = oI
+
+# keep track of 'physical' box corners stored in B
+box_corners = ce.tree.boxes().corners
+idx_mapping = {}
+for i in I:
+        idx_mapping[i] = box_corners[i]
+
+# now trim the tree, which will reorder/renumber the corners
+ce.tree.remove( list( nodes - set(I) ) )
+# record this reordering as node attributes by searching for the index
+# of each box
+for i,u in idx_mapping.items():
+        ce.mvm.graph.node[i]['corner'] = ce.tree.search( u )
+
+
+# update the MVM and adjacency graphs by removing nodes not in I
 ce.mvm.remove_nodes_from( nodes - set(I) )
 ce.adj.remove_nodes_from( nodes - set(I) )
 
-new_mvm = nx.convert_node_labels_to_integers( ce.mvm.graph )
-ce.mvm.graph = new_mvm
-new_adj = nx.convert_node_labels_to_integers( ce.adj.graph )
-ce.adj.graph = new_adj
 
+#box_corners = ce.tree.boxes().corners
 
 # draw the outer enclosure. the 'mvm' is the MultiValued Map on the
-# nodes/intervals in the subdivided grid on [0,1]. 
+# nodes/intervals in the subdivided grid on root box. 
 #ce.mvm.draw( node_size=200, with_labels=True )
 
 print ""
@@ -108,7 +128,7 @@ print "** Use regions in collection of selfloops and period 2 orbits to determin
 # print ""
 # print "SETTING REGION TO 21. THIS IS JUST A DEFAULT AND ONLY MAKES SENSE FOR DEPTH=5!!"
 print ""
-region = [2] 
+region = [17] 
 
 # **********************
 # Uncomment the lines below in order to specify other regions to analyze

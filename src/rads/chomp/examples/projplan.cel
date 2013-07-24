@@ -1,0 +1,44 @@
+Type of set : C
+Space Dimension : 5
+dimension 5
+
+;Image of conv{v_0, v_1, v_4}
+[0,1] x [0] x [0] x [0,1] x [0]
+
+;Image of conv{v_0, v_1, v_5}
+[0,1] x [0] x [0] x [0] x [0,1]
+
+;Image of conv{v_0, v_2, v_3}
+[0] x [0,1] x [0,1] x [0] x [0]
+
+;Image of conv{v_0, v_2, v_4}
+[0] x [0,1] x [0] x [0,1] x [0]
+
+;Image of conv{v_0, v_3, v_5}
+[0] x [0] x [0,1] x [0] x [0,1]
+
+;Image of conv{v_1, v_2, v_3}
+[1] x [0,1] x [0,1] x [0] x [0]
+[0,1] x [1] x [0,1] x [0] x [0]
+[0,1] x [0,1] x [1] x [0] x [0]
+
+;Image of conv{v_1, v_2, v_5}
+[1] x [0,1] x [0] x [0] x [0,1]
+[0,1] x [1] x [0] x [0] x [0,1]
+[0,1] x [0,1] x [0] x [0] x [1]
+
+;Image of conv{v_1, v_3, v_4}
+[1] x [0] x [0,1] x [0,1] x [0]
+[0,1] x [0] x [1] x [0,1] x [0]
+[0,1] x [0] x [0,1] x [1] x [0]
+
+;Image of conv{v_2, v_4, v_5}
+[0] x [1] x [0] x [0,1] x [0,1]
+[0] x [0,1] x [0] x [1] x [0,1]
+[0] x [0,1] x [0] x [0,1] x [1]
+
+;Image of conv{v_3, v_4, v_5}
+[0] x [0] x [1] x [0,1] x [0,1]
+[0] x [0] x [0,1] x [1] x [0,1]
+[0] x [0] x [0,1] x [0,1] x [1]
+

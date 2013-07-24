@@ -187,6 +187,10 @@ class ComputeIndex( object ):
         # Proof: x_{i+1} = x_i + r => (x_{i+1}/r) = 
         # (x_i + r)/r = x_i/r + 1 => ceil( x_i / r) + 1 = ceil( x_{i=1}/r)
         c = np.ceil( self.scaled_boxes )
+        # now shift into the positive orthant 
+        # min_vec = c.min( axis=0 )
+        # c -= min_vec 
+        
         self.scaled_boxes = np.asarray( c, dtype=np.int )
 
     def box2cub( self, idx, fname ):
@@ -553,26 +557,44 @@ def map_writer( transition, scaled_boxes, mapname, region=None, suffix='.map' ):
     mvm = transition
 
     if region is not None:
-        xbunch = set( mvm.subgraph( region ).nodes() )
+        xbunch = set( mvm.subgraph( region ).nodes( data=True ) )
     else:
-        xbunch = set( mvm.nodes() )
+        nbunch = mvm.nodes( data=True )
+        xbunch = [ (u[0],u[1]['corner']) for u in nbunch ]
 
     xmap = {}
-    for u in xbunch:
+    # xbunch also includes 'corner' in second position
+    for u,c in xbunch:
         # image of every element of the domain of interest
         ximage = set( mvm[u].keys() )
-        xmap[u] = ximage 
+        xmap[(u,c)] = ximage  # u = tuple (node, 'corner' idx)
 
-        #mapname = self.prefix + self.mapname+'.' + suffix
     with open( mapname+suffix, 'w' ) as fh:
         lines = []
-        for u in xmap:
+        # node idx, and corner idx
+        for u,c in xmap:
+
             # cube corresponding to the u'th index
-            cube_x = str( tuple( scaled_boxes[u] ) )
-            image = list( xmap[u] )
+            #cube_x = str( tuple( scaled_boxes[u] ) )
+            # corner corresponding to u
+            cube_x = str( tuple( scaled_boxes[c] ) )
+
+            print "x", cube_x
 
             # image of u as a tuple of box corners
-            cube_y = map( tuple, iter( scaled_boxes[image] ) ) 
+            image = list( xmap[(u,c)] )
+            # translate graph nodes to corner idx in image
+            image_corners = [ mvm.graph.node[y]['corner']
+                              for y in image ]
+
+            print "u,c:", u,c
+            print "image:", image_corners
+            
+            cube_y = map( tuple, iter( scaled_boxes[image_corners] ) ) 
+
+            print "cubes y:", cube_y
+            print ""
+            
             # if len( cube_y ) == 0:
             #     continue
             line = cube_x + ' -> ' + '{' 

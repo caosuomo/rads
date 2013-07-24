@@ -1,0 +1,160 @@
+# This is the main portion of a 'makefile' for programs, included from
+# their makefiles. Copyright (C) 2004-2008 by Pawel Pilarczyk.
+# This is free software. No warranty. Consult 'license.txt' for details.
+# Created on October 26, 2004 by PwP. Last revision: September 27, 2005.
+
+
+# The following variables should be set before including this file:
+# PROGS  - a list of programs to make in the local project
+# OTHERS - a list of other modules which are part of the local project
+
+# This file is supposed to be included from ../subdir/subdir/makefile.
+
+
+# ===========================================================================
+# Set the directories if not defined yet.
+# ===========================================================================
+
+# Set up the home directory.
+HOMEDIR = ../../
+
+# Set up the directory for the source code files.
+ifndef SRC
+SRC = ./
+endif
+
+# Set up the directory for the program's header files.
+ifndef INC
+INC = ./
+endif
+
+# Determine the target configuration (see the file 'makecfg' for details).
+include ${HOMEDIR}make/makecfg
+
+# Include appropriate system-dependent definitions.
+include ${HOMEDIR}make/config/${TARGET}
+
+# Set up the directories.
+include ${HOMEDIR}make/makedirs
+
+# Set up a subdirectory for the program's object files
+OBJBASE := ${OBJ}
+ifneq (${SUBDIR},)
+OBJ := ${OBJ}${SUBDIR}/
+OBJ := ${OBJ:%//=%/}
+endif
+
+
+# ===========================================================================
+# Special compiler definitions.
+# ===========================================================================
+
+# prepare the compiler command with the source include directory
+CCI = ${COMPILE} ${INC:%/=-I%} ${SYSINCL}
+ifneq (${GUI},0)
+CC = ${LINKGUI}
+else
+CC = ${LINK}
+endif
+
+# the main library and the system libraries
+ifndef LIBRARY
+LIBFILES = ${LIB}lib${LIBNAME}${LIBEXT}
+endif
+LIBFILES := ${LIBFILES} ${LIBRARY:%=${LIB}lib${LIBNAME}%${LIBEXT}}
+
+ifneq (${GUI},0)
+CCLIB = ${LIBFILES} ${SYSLIBG}
+else
+CCLIB = ${LIBFILES} ${SYSLIB}
+endif
+
+
+# ===========================================================================
+# Main targets.
+# ===========================================================================
+
+.PHONY: all
+all: rundeps makedeps bindir objbasedir objsubdir ${PROGS:%=${BIN}%${EXE}}
+
+# The directory to store the programs in.
+.PHONY: bindir
+bindirfile = $(wildcard ${BIN})
+bindir:
+ifeq (${bindirfile},)
+	-${MKDIR} ${BIN}
+else
+endif
+
+# The base object directory.
+.PHONY: objbasedir
+objbasedirfile = $(wildcard ${OBJBASE})
+objbasedir:
+ifeq (${objbasedirfile},)
+	-${MKDIR} ${OBJBASE}
+else
+endif
+
+# The object subdirectory directory.
+.PHONY: objsubdir
+ifneq (${OBJBASE},${OBJ})
+objsubdirfile = $(wildcard ${OBJ})
+objsubdir:
+ifeq (${objsubdirfile},)
+	-${MKDIR} ${OBJ}
+else
+endif
+endif
+
+# Make sure the programs are re-linked if the libraries are updated.
+${PROGS:%=${BIN}%${EXE}}: ${LIBFILES}
+
+
+# ===========================================================================
+# Clean targets.
+# ===========================================================================
+
+.PHONY: cleanobj
+cleanobj:
+	-${REMOVE} ${OTHERS:%=${OBJ}%${OBJEXT}} ${PROGS:%=${OBJ}%${OBJEXT}}
+
+.PHONY: cleanexe
+cleanexe:
+	-${REMOVE} ${PROGS:%=${BIN}%*}
+
+.PHONY: purge
+purge: cleanobj cleanexe
+
+.PHONY: clean
+clean: cleanobj
+
+
+# ===========================================================================
+# Rules for MAKE on how to create the dependencies list.
+# ===========================================================================
+
+.PHONY: rundeps
+ifneq (${wildcard ${HOMEDIR}bin/filedeps*},)
+rundeps:
+	-${HOMEDIR}bin/filedeps${EXE} --quiet -o makedeps \
+	${INC:%=-I%} -s${SRC} ${PROGS:%=${SRC}%} ${OTHERS:%=-l${SRC}%}
+makedeps:
+	-${HOMEDIR}bin/filedeps${EXE} --quiet -o makedeps \
+	${INC:%=-I%} -s${SRC} ${PROGS:%=${SRC}%} ${OTHERS:%=-l${SRC}%}
+	-touch makedeps
+endif
+
+
+# ===========================================================================
+# Rules for MAKE on how to compile the object files and executables.
+# ===========================================================================
+
+vpath %.h ${INC}
+vpath %.hpp ${INC}
+vpath %.hxx ${INC}
+SRCLIB=${SRC}
+include makedeps
+
+
+# That's all, folks!
+

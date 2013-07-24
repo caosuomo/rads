@@ -1,0 +1,18 @@
+# Settings for the MinGW GNU C++ compiler in Windows.
+# Note: PERL presence is recommended.
+
+SYSLIB  = -lwsock32
+SYSLIBG = -lwsock32
+SYSINCL =
+CXX = g++
+COMPILE = $(CXX) -mwindows -O2 -ansi -pedantic -Wall
+LINK    = $(CXX) -s
+LINKGUI = $(CXX) -mwindows -mconsole -s
+MAKELIB = ar cru
+IDXLIB  = ranlib
+REMOVE  = perl ${HOMEDIR}make/slashes.pl del
+MKDIR   = perl ${HOMEDIR}make/slashes.pl mkdir
+EXE     = .exe
+LIBEXT  = .a
+OBJEXT  = .o
+

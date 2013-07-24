@@ -1,0 +1,286 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="author" content="Pawel Pilarczyk">
+<title>Computational Homology Project</title>
+<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<link rel="stylesheet" media="screen" type="text/css" href="screen.css" />
+<link rel="stylesheet" media="print" type="text/css" href="print.css" />
+</head>
+<body><div id="text">
+<div id="menu">
+<table width="100%" align="center" valign="center"><tbody>
+<tr>
+<td width="*">&nbsp;</td><td align="center"><a href="index.html">&nbsp;Home&nbsp;</a></td>
+<td width="*">&nbsp;</td><td align="center"><a href="programs.html">&nbsp;Programs&nbsp;</a></td>
+<td width="*">&nbsp;</td><td align="center"><a href="textdata.html">&nbsp;Text&nbsp;Data&nbsp;</a></td>
+<td width="*">&nbsp;</td><td align="center"><a href="examples.html">&nbsp;Examples&nbsp;</a></td>
+<td width="*">&nbsp;</td></tr>
+</tbody>
+</table>
+</div>
+
+<H1>
+CHomP Examples
+</H1>
+
+<p>Several examples on how to use the Homology Programs are gathered
+in the <em>examples/</em> subdirectory of the source code package
+of the advanced version of the Homology Software.
+Each example consists of a text file with brief explanation,
+a script file that displays this information and runs the computations,
+and a few additional files.
+A relatively up-to-date list of these examples is given below,
+with brief explanation what they illustrate
+(browse the <em>exemples/</em> subdirectory of CHomP
+or run the script <em>python/examples.py</em> for an up-to-date list).
+To run each of the examples, type the command listed in the left column
+of the table below (add the extension ".bat" in Windows
+or ".sh" in Linux/MacOS/Unix). Note that in some systems it may be necessary
+to precede the command with "./", that is, for example,
+type <tt>./bing.sh</tt> to run the example named <em>bing</em> below.</p>
+
+<p><table border="1" cellspacing="1" cellpadding="4">
+<tr><td align="center"><b>NAME</b></td>
+<td align="center"><b>DESCRIPTION</b></td></tr>
+
+<tr><td>bing</td><td>
+Bing's house with two rooms is an example of a contractible cubical set,
+built of squares embedded in <b>R</b><sup>3</sup>,
+which cannot be reduced by means of free face collapses.
+This example shows how to define a general cubical set
+in which each cube is a Cartesian product of intervals.
+It also shows how to compute homology of such a set
+using the program <em>homcubes</em>.
+</td></tr>
+
+<tr><td>circle</td><td>
+In this example a map of a circle onto itself with double winding 
+is defined. The map in homology thus maps the 1-dimensional generator 
+onto itself with the coefficient of 2. The map is given as a cubical 
+multivalued map. This example shows how to use the old program
+<em>chmap</em> to compute the homomorphism induced by such a map in homology,
+and also how easy it is to do the same using the new features
+of the program <em>homcubes</em>.
+</td></tr>
+
+<tr><td>circthin</td><td>
+This is a modification of the "circle" example, described above.
+The map is given as a multivalued map defined on cubical cells
+of dimension lower than the space dimension.
+This example shows how to use the program <em>homcelmp</em>.
+</td></tr>
+
+<tr><td>dim10</td><td>
+In this example the homology module of a 10-dimensional cube in R^10 
+is computed. It is a simple example which shows how to use
+the <em>homcubes</em> program. It also illustrates how difficult
+computations in high dimensions can be.
+</td></tr>
+
+<tr><td>excision</td><td>
+This is an example of an index pair (for a discrete dynamical system)
+which does not satisfy the excision property, as explained in the paper
+"Excision-preserving Cubical Approach to the Algorithmic Computation
+of the Discrete Conley Index" by K. Stolot and P. Pilarczyk.
+Instead of using the <em>homcubes</em> program, one must do the
+computations using the new program <em>homcub2l</em> to overcome
+the difficulty.
+</td></tr>
+
+<tr><td>incl</td><td>
+This is an example which shows how to compute the homomorphism
+induced in relative homology by a continuous map on a pair of cubical sets.
+It also illustrates a potential problem that may occur if one uses
+the <em>-i</em> switch of the <em>homcubes</em> program.
+</td></tr>
+
+<tr><td>kleinbot</td><td>
+In this example, the homology module of the Klein bottle
+is computed with coefficients in Z and in Z_2.
+The homology module is computed by the program <em>homcubes</em>. We first 
+compute the homology module with integer coefficients, and then with 
+coefficients in <b>Z</b><sub>2</sub>.
+This example contains two pictures of the Klein bottle. One consists 
+of 4-dimensional cubes which was created with the use of a parametrization
+for embedding of this manifold into R^4. The other one consists of
+2-dimensional elementary cubes (cubical cells) in R^4 and was obtained
+from the first one by geometric reduction programmed in <em>homcubes</em>.
+</td></tr>
+
+<tr><td>maze</td><td>
+In this example the homology of a closed maze stored in a bitmap file 
+is computed. The external wall forms the circle in which the maze is
+contained. If the maze picture has the homology of the circle, 
+then this means that all the internal walls can be homotopically 
+contracted towards the external wall and, as a consequence, from 
+every place inside the maze to every other place there exists 
+a path between the walls and this path is unique.
+This example shows how to convert BMP files to a text list of squares,
+and then how to compute the homology of this set of 2-dimensional cubes.
+</td></tr>
+
+<tr><td>nonacycl</td><td>
+This is an example of an acyclic cubical multivalued map F: X -> Y such that
+its restriction to the subset A of X is not acyclic. Therefore, the map
+induced by F: (X, A) -> (Y, B) cannot be computed by "homcubes".
+This example illustrates how to use the program <em>chkmvmap</em>
+which verifies whether a cubical map satisfies the necessary assumptions
+for the homology computation.
+</td></tr>
+
+<tr><td>nonred</td><td>
+This is an example of two geometric figures which are unions of cubes 
+which are difficult to reduce, although they are acyclic, that is, their 
+homology is the homology of a one-point space.
+This is a small example that illustrates how to use the <em>homcubes</em>
+program for the computation of homology of full cubical sets.
+</td></tr>
+
+<tr><td>num</td><td>
+This is a technical example that illustrates how to use
+a compact representation of cubical sets and maps.
+</td></tr>
+
+<tr><td>probl</td><td>
+This is a real example of a map which seems to be good for homology
+computation, but the program <em>homcubes</em> reduces the cubes in such a way
+that after the reduction the map is no longer acyclic. This example shows
+how to turn on the careful reduction method which does preserve the acyclicity
+of the map (this is done by the <em>-a</em> switch) to get
+the right result.</td></tr>
+
+<tr><td>projplan</td><td>
+In this example the homology module over <b>Z</b>
+and over <b>Z</b><sub>2</sub> of the projective 
+plane is computed.
+This example shows how to use the <em>homchain</em> program
+to compute homology over <b>Z</b> and over <b>Z</b><sub>2</sub>.
+It also shows an embedding of a simplicial complex into the boundary
+of a high-dimensional hypercube; a PDF file with detailed explanation
+was prepared by Navin Sivakumar.
+</td></tr>
+
+<tr><td>qexample</td><td>
+This is a series of examples of simplicial complexes represented in terms
+of faces of an n-dimensional cube in <b>R</b><sup><em>n</em></sup>.
+These examples were prepared by Anik Trahan, and they include
+the Klein bottle, M&ouml;bius band, real projective plane and torus.
+The elementary cubes are defined as Cartesian products of intervals,
+and the homology computation is done by the <em>homcubes</em> program.
+</td></tr>
+
+<tr><td>relative</td><td>
+In this example, relative homology of a pair of sets (X, Y) painted in 
+a BMP file is computed. The set Y consists of black pixels, and the set 
+X\Y is painted in grey.
+This example shows how to use the program <em>bmp2pset</em> which extracts
+pixels from BMP images, and how to compute relative homology
+with <em>homcubes</em>.
+</td></tr>
+
+<tr><td>repeller</td><td>
+This example illustrates how to compute the discrete Conley index of a 
+repelling fixed point in <b>R</b>.
+It is an illustration of how to use the program <em>cnvmvmap</em>
+to convert between different formats of cubical maps,
+how to run the program <em>indxpair</em> which constructs
+an index pair, and then how to compute the Conley index
+of this index pair with the <em>homcubes</em> program.
+</td></tr>
+
+<tr><td>simklein<br/>simproj2<br/>simtorus</td><td>
+This is a series of examples in which various simplicial complexes
+are defined, and their homology is computed.
+In the first step, a chain complex is created from the list of simplices 
+of the highest dimension by the program <em>simchain</em>.
+Then the homology of  this chain complex
+is computed by the program <em>homchain</em>,
+either with coefficients in the ring <b>Z</b>,
+or in some field <b>Z</b><sub><em>p</em></sub>.
+The usage of the program <em>homsimpl</em> is also illustrated.
+This program can perform both steps
+of the computations at one fell swoop.
+</td></tr>
+
+<tr><td>simrelat</td><td>
+In this example, the relative homology of a pair of simplicial complexes 
+is computed in two ways: either with the use of the programs
+<em>simchain</em> and <em>homchain</em> in a sequence,
+or with the program <em>homsimpl</em> which does the same computations
+as both other programs.
+</td></tr>
+
+<tr><td>slicing</td><td>
+This is an example of a big cube with some small cubes removed from it 
+in such a way that the resulting set is homotopically equivalent to the 
+wadge sum of 2 circles, 2 spheres and one torus of genus 2. This example 
+was created with a program by T. Grudskaya, which I got from G. Watson.
+If this set is sliced along one of the coordinate axes into several pieces 
+which overlap for the width of one or more cubes, then these pieces 
+can be reduced separately, provided the overlapping parts are preserved. 
+After gluing the reduced pieces together, one can compute the homology of 
+this set and the result should be the same as for the entire set, but the 
+computations should be faster.
+This example illustrates how to use the program <em>cubslice</em>
+to cut a large cubical set into slices, then how to use the program
+<em>homcubes</em> to do the full-dimensional geometric cubical reduction
+only (without computing homology), and then how to use the program
+<em>psetglue</em> to join cubical sets together (compute their union).
+</td></tr>
+
+<tr><td>torus</td><td>
+In this example the homology module of the torus is computed.
+A chain complex of the torus is stored in a file and its homology 
+module is computed by the program <em>homchain</em>.
+An extra file illustrates some details of the text data format
+for defining chain complexes.
+</td></tr>
+
+<tr><td>vanderpl</td><td>
+This is an example of a cubical map generated for the Van der Pol
+equations embedded in <b>R</b><sup>3</sup>.
+An isolating neighbourhood of an attracting
+trajectory was chosen here and a map corresponding to a discretization
+of the dynamical system was generated. Each cube is mapped into
+a rectangular set in <b>R</b><sup>3</sup> (a prism)
+contained in this neighbourhood.
+This example shows two methods of computing the homomorphism
+induced in homology by a cubical map: either with the programs
+<em>chmap</em>, <em>chvchmap</em>, and <em>homchain</em>
+(the program <em>chkperf</em>
+is also used to verify the assumptions), or with <em>homcubes</em>
+directly (the program <em>chkmvmap</em> is used to check the assumptions).
+Note the usage of the command-line option <em>-i</em>.
+</td></tr>
+
+<tr><td>wind3</td><td>
+This is a very simple example of a chain map which maps the circle 
+onto itself with triple winding up.
+It shows how to define chain complexes and a chain map between them,
+and also how to compute the homomorphism induced in homology by such a map.
+</td></tr>
+
+<tr><td>wrapped</td><td>
+This example illustrates the idea of space wrapping (a.k.a. periodic
+boundary conditions), and explains how to use the program
+<em>homcubes</em> to compute homology of cubical sets
+with identified edges.
+</td></tr>
+
+</table></p>
+
+
+
+</div>
+<div id="footer">
+Webmaster: <a href="http://www.pawelpilarczyk.com/">&nbsp;Pawel Pilarczyk&nbsp;</a><br>
+All trademarks, registered trademarks or brand names
+are property of the respective holders and used in this document
+for descriptive purposes only.<br>
+Copyright &copy; 2002-2007 by Pawel Pilarczyk. All rights reserved.
+</div>
+</body>
+</html>

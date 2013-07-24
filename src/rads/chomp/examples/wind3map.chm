@@ -1,0 +1,13 @@
+chainmap
+
+dimension 0
+	image A = A
+	image B = C
+	image C = A
+	image D = C
+
+dimension 1
+	image a = a + b + c
+	image b = b + c + d
+	image c = c + d + a
+	image d = d + a + b

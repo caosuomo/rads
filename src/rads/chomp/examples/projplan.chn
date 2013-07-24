@@ -1,0 +1,29 @@
+; Projective plane
+
+chain complex
+
+maximal dimension = 2
+
+dimension 1
+	# a = B - A
+	# b = C - B
+	# c = A - D
+	# d = D - C
+	# e = B - D
+	# f = B - D
+	# g = E - B
+	# h = E - D
+	# i = E - D
+	# j = E - B
+	# k = B - D
+	# l = B - D
+
+dimension 2
+	# S = a - e + c
+	# T = e + g - h
+	# U = i - g - f
+	# V = d + f + b
+	# W = k + b + d
+	# X = h - j - k
+	# Y = j - i + l
+	# Z = c + a - l

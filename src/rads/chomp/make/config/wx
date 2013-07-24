@@ -1,0 +1,19 @@
+# Settings for a typical GNU C++ compiler in Linux/Unix
+# with the wxWidgets library to be used for graphics.
+
+WXBIN   = 
+SYSLIB  = `$(WXBIN)wx-config --libs`
+SYSLIBG = `$(WXBIN)wx-config --libs --gl_libs`
+SYSINCL = `$(WXBIN)wx-config --cxxflags`
+CXX = g++
+COMPILE = $(CXX) -O2 -Wall
+LINK    = $(CXX) -s
+LINKGUI = $(CXX) -s
+MAKELIB = ar cru
+IDXLIB  = ranlib
+REMOVE  = rm -f
+MKDIR   = mkdir
+EXE     = 
+LIBEXT  = .a
+OBJEXT  = .o
+

@@ -1,0 +1,119 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="author" content="Pawel Pilarczyk">
+<title>Computational Homology Project</title>
+<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<link rel="stylesheet" media="screen" type="text/css" href="screen.css" />
+<link rel="stylesheet" media="print" type="text/css" href="print.css" />
+</head>
+<body><div id="text">
+<div id="menu">
+<table width="100%" align="center" valign="center"><tbody>
+<tr>
+<td width="*">&nbsp;</td><td align="center"><a href="index.html">&nbsp;Home&nbsp;</a></td>
+<td width="*">&nbsp;</td><td align="center"><a href="programs.html">&nbsp;Programs&nbsp;</a></td>
+<td width="*">&nbsp;</td><td align="center"><a href="textdata.html">&nbsp;Text&nbsp;Data&nbsp;</a></td>
+<td width="*">&nbsp;</td><td align="center"><a href="examples.html">&nbsp;Examples&nbsp;</a></td>
+<td width="*">&nbsp;</td></tr>
+</tbody>
+</table>
+</div>
+
+<p align="center">
+<table align="center" valign="center"
+border="0" cellspacing="0" cellpadding="0">
+<tr>
+<td align="right" valign="center">
+<a href="http://chomp.rutgers.edu/" target="_top">
+<img src="chomp3d.gif" border="0"/></a>
+</td>
+<td>&nbsp;&nbsp;&nbsp;</td>
+<td align="left" valign="center">
+<div id="title">
+<FONT COLOR="800080">C</FONT><font color="0000A0">omputational</font><br>
+<FONT COLOR="800080">Hom</FONT><font color="0000A0">ology</font><br>
+<FONT COLOR="800080">P</FONT><font color="0000A0">roject</font>
+</div>
+</td>
+</tr>
+</table>
+
+<p>These few HTML pages included in the CHomP Software source code
+package have been extracted from the
+<a href="http://chomp.rutgers.edu/">CHomP website</a>.
+Please, consult that website
+for the most up-to-date version of these web pages, and also
+for additional information.</p>
+
+<p>The software provided here is related to algorithmic
+homology computation of cubical sets and maps, simplicial complexes,
+and chain complexes. In addition to that, some software useful
+in related fields is also supplied here, including software for
+manipulating cubical sets and maps.</p>
+
+<p>The software package consists of <A HREF="programs.html">programs</A>
+and a C++ library, both available at the CHomP website for download
+with their source code under the terms of the
+<A HREF="license.html">GNU&nbsp;General&nbsp;Public&nbsp;License</A>
+(note that this license applies also to the library!).</p>
+
+<p>This package also includes a set of <a href="examples.html">examples</a>
+which illustrate some aspects of the data formats
+that are used by the programs, and also how to use the programs
+themselves.</p>
+
+<p>A nice interactive program called <a href="chooser.html">CHomP
+Software Chooser</a> is a portable Python script
+which allows one to compose the command line
+of most CHomP programs in an easy way just by filling out a form.
+It shows descriptions of all the programs
+and their command line arguments.</p>
+
+<P>The main program in the package is <EM>homcubes</EM> which is an advanced
+program for the computation of homology of cubical sets, including relative
+homology, and also for the computation of homomorphisms induced in homology
+by combinatorial cubical multivalued maps.
+This program follows an algorithm
+described in the paper <EM>Graph approach to the computation
+of the homology of continuous maps</EM> by K. Mischaikow, M. Mrozek,
+and P. Pilarczyk.</P>
+
+<P>The most important of the other programs contained in this package
+are <EM>homchain</EM> - a program for the homology computation
+of finitely generated free chain complexes (with the support for coefficients
+in <EM>Z</EM> or <EM>Z<SUB>p</SUB></EM>),
+and <EM>homsimpl</EM> - a program for the homology computation
+of finite simplicial complexes.
+In addition to these programs, the package contains
+many other (hopefully useful) <A HREF="programs.html">programs</A>.</p>
+
+<p>The package also contains a C++ library interface
+to the homology computation routines, which one can use in one's own software.
+The CHomP library allows a C++ programmer to access the data structures
+and homology computation procedures directly from their own programs,
+without the need to write data to files and then run homology programs
+which would read them in turn. This makes it easy to write fast software
+that utilizes homology computation algorithms.</p>
+
+<p>A new version of the homology computation algorithms for full cubical sets
+based on bitmaps and algebraic coreductions is implemented in the
+program <em>chomp</em> (contained in the basic version of the
+Homology Package). This program is capable of reading several
+formats of input files, including the text formats supported by
+<em>homcubes</em>, and a binary bitmap format as well. It contains
+multiple engines for the homology computation, both the new algorithms
+and the ones available in <em>homcubes</em> and <em>chom</em>.</p>
+
+</div>
+<div id="footer">
+Webmaster: <a href="http://www.pawelpilarczyk.com/">&nbsp;Pawel Pilarczyk&nbsp;</a><br>
+All trademarks, registered trademarks or brand names
+are property of the respective holders and used in this document
+for descriptive purposes only.<br>
+Copyright &copy; 2002-2007 by Pawel Pilarczyk. All rights reserved.
+</div>
+</body>
+</html>

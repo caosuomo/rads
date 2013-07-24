@@ -1,0 +1,19 @@
+# Settings for the GNU C++ compiler at SUN Solaris.
+# No graphics is supported in this configuration in order to avoid
+# potential linking problems with the X Window library.
+
+SYSLIB  = -lpthread -lsocket
+SYSLIBG = -lpthread -lsocket
+SYSINCL =
+CXX = g++
+COMPILE = $(CXX) -O2 -ansi -pedantic -Wall
+LINK    = $(CXX) -s
+LINKGUI = $(CXX) -s
+MAKELIB = ar cru
+IDXLIB  = ranlib
+REMOVE  = rm -f
+MKDIR   = mkdir
+EXE     = 
+LIBEXT  = .a
+OBJEXT  = .o
+

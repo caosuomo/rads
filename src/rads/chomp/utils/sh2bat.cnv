@@ -1,0 +1,40 @@
+; This is a conversion table for the program Turbo Convert by PwP.
+; It may be used to convert the script files in the "examples" subdirectory
+; to batch files appropriate under DOS/Windows.
+; Author: Pawel Pilarczyk.
+
+#tab 0
+
+"#!/bin/sh\r" - "@echo off\r"
+"PATH=../bin:$PATH\r" - "set OLDPATH=%PATH%\r\nset PATH=..\\bin;%PATH%\r\n\r" #goto 1
+
+"\nrm -f " - "\ndel "
+"\nrm -f " - "\ndel "
+"~/" -
+"$HOME/" -
+"\nrm " - "\ndel "
+"\ncat " - "\ntype "
+"\necho\r" - "\necho.\r"
+"/tmp/" - 
+
+
+#tab 1
+
+#include 0
+
+"\nread -p \"" - "\necho " #goto 2
+"\nread XXXX" - "\npause>nul"
+"\necho \"" - "\necho " #goto 3
+
+#end "\r\nset PATH=%OLDPATH%\r\nset OLDPATH=\r\n"
+
+
+#tab 2
+
+": \"\r" - "\r\npause>nul\r" #goto 1
+
+#tab 3
+
+": \"" - ":" #goto 1
+"\"" - "" #goto 1
+

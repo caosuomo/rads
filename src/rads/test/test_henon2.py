@@ -16,7 +16,7 @@ import networkx as nx
 #---------------------
 
 if len( sys.argv ) == 1:
-	depth = 7
+	depth = 4
 else:
 	depth = int( sys.argv[1] )
 
@@ -28,7 +28,7 @@ b = 0.3
 max_cycle = 2
 
 # toggle verbose output
-chatter = True
+chatter = False
 
 # for ProcessHomology object below
 mapname = 'henon'
@@ -60,7 +60,9 @@ for d in range(depth):
         I = graph_mis(ce.mvm)
 	# now remove all boxes not in I (the maximal invariant set)
 	nodes = set(range(ce.tree.size))
-	ce.tree.remove(list(nodes-set(I)))
+	
+        if not d+1 == depth:
+                ce.tree.remove(list(nodes-set(I)))
         if chatter:
         	print 'at depth', d
                 print 'subdivided:', ce.tree.size, 'boxes'
@@ -68,26 +70,36 @@ for d in range(depth):
         	print 'len(I) = ', len(I)
 
 
+oI = hom.get_onebox( I, ce.adj )
 
-# update the MVM and ADJ by removing nodes not in the invariant set I
+# keep track of 'physical' box corners
+B = ce.tree.boxes().corners
+idx_mapping = {}
+for i in I:
+        idx_mapping[i] = B[i]
+
+# now trim the tree, which will reorder/renumber the corners
+ce.tree.remove( list( nodes - set(I) ) )
 ce.mvm.remove_nodes_from( nodes - set(I) )
+for i,u in idx_mapping.items():
+        ce.mvm.graph.node[i]['corner'] = ce.tree.search( u )
 
-# now display the tree!
+
+#now display the tree!
 boxes = ce.tree.boxes()
 gfx.show_uboxes(boxes, col='c', ecol='b')
 
 
+# # we have to relabel the nodes to go from 0..N-1
+# new_mvm = nx.convert_node_labels_to_integers( ce.mvm.graph )
 
-# we have to relabel the nodes to go from 0..N-1
-new_mvm = nx.convert_node_labels_to_integers( ce.mvm.graph )
+# print "new_mvm isomorphic to old mvm:", nx.is_isomorphic( ce.mvm.graph, new_mvm )
 
-print "new_mvm isomorphic to old mvm:", nx.is_isomorphic( ce.mvm.graph, new_mvm )
+# ce.mvm.graph = new_mvm
 
-ce.mvm.graph = new_mvm
-
-ce.adj.remove_nodes_from( nodes - set(I) )
-new_adj = nx.convert_node_labels_to_integers( ce.adj.graph )
-ce.adj.graph = new_adj
+# ce.adj.remove_nodes_from( nodes - set(I) )
+# new_adj = nx.convert_node_labels_to_integers( ce.adj.graph )
+# ce.adj.graph = new_adj
 
 # draw the outer enclosure. the 'mvm' is the MultiValued Map on the
 # nodes/intervals in the subdivided grid on [0,1]. 
@@ -148,7 +160,6 @@ iso = hom.grow_isolating_neighborhood( region, ce.adj, ce.mvm )
 CI = hom.ComputeIndex( ce.adj, ce.mvm, ce.tree, iso,
                        mapname=mapname, 
                        prefix=prefix )
-
 
 # Now, create the index pair (X,A) and compute its homology
 print ""

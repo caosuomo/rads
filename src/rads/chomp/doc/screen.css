@@ -1,0 +1,143 @@
+a:hover
+{
+	color: #FFFFFF;
+	background-color: #7F7FFF;
+	text-decoration: none;
+}
+h1 a
+{
+	text-decoration: none;
+}
+h2 a
+{
+	text-decoration: none;
+}
+h3 a
+{
+	text-decoration: none;
+}
+#menu a
+{
+	font-weight: bold;
+	text-decoration: none;
+}
+#submenu a
+{
+	font-weight: bold;
+	text-decoration: none;
+}
+#footer a
+{
+	font-weight: bold;
+	text-decoration: none;
+}
+body
+{
+	background-color: #FFFFFF;
+	font-family: Arial, Tahoma, Verdana, sans-serif;
+}
+tt
+{
+	font-family: Courier New, Courier, monospace;
+}
+#menu
+{
+	background-color: #CFCFFF;
+}
+#submenu
+{
+	background-color: #AFFFFF;
+}
+#title
+{
+	text-align: left;
+	font-weight: bold;
+	font-size: 32px;
+}
+#title tt
+{
+	font-weight: bold;
+	font-size: 35px;
+}
+#text
+{
+	text-align: justify;
+	font-weight: normal;
+	font-size: 16px;
+}
+#text tt
+{
+	font-weight: normal;
+	font-size: 18px;
+}
+#small
+{
+	text-align: justify;
+	font-weight: normal;
+	font-size: 13px;
+}
+#small tt
+{
+	font-weight: normal;
+	font-size: 15px;
+}
+#tiny
+{
+	text-align: justify;
+	font-weight: normal;
+	font-size: 10px;
+}
+#tiny tt
+{
+	font-weight: normal;
+	font-size: 12px;
+}
+#footer
+{
+	background-color: #CFCFFF;
+	text-align: center;
+	font-weight: normal;
+	font-size: 10px;
+}
+h1
+{
+	font-weight: bold;
+	font-size: 32px;
+	text-align: center;
+}
+#text h1 tt
+{
+	font-weight: bold;
+	font-size: 35px;
+}
+h2
+{
+	font-weight: bold;
+	font-size: 26px;
+	text-align: center;
+}
+#text h2 tt
+{
+	font-weight: bold;
+	font-size: 29px;
+}
+h3
+{
+	font-weight: bold;
+	font-size: 22px;
+	text-align: center;
+}
+#text h3 tt
+{
+	font-weight: bold;
+	font-size: 24px;
+}
+li
+{
+	text-align: left;
+}
+thead
+{
+	background-color: rgb(230,230,230);
+	font-weight: bold;
+}

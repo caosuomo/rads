@@ -1,0 +1,242 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="author" content="Pawel Pilarczyk">
+<title>Computational Homology Project</title>
+<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<link rel="stylesheet" media="screen" type="text/css" href="screen.css" />
+<link rel="stylesheet" media="print" type="text/css" href="print.css" />
+</head>
+<body><div id="text">
+<div id="menu">
+<table width="100%" align="center" valign="center"><tbody>
+<tr>
+<td width="*">&nbsp;</td><td align="center"><a href="index.html">&nbsp;Home&nbsp;</a></td>
+<td width="*">&nbsp;</td><td align="center"><a href="programs.html">&nbsp;Programs&nbsp;</a></td>
+<td width="*">&nbsp;</td><td align="center"><a href="textdata.html">&nbsp;Text&nbsp;Data&nbsp;</a></td>
+<td width="*">&nbsp;</td><td align="center"><a href="examples.html">&nbsp;Examples&nbsp;</a></td>
+<td width="*">&nbsp;</td></tr>
+</tbody>
+</table>
+</div>
+
+<H1>
+CHomP Programs
+</H1>
+
+<p>There are numerous programs included in the advanced version of the
+Homology Package. All of them are command-line driven utilities that can be
+launched from the text terminal by typing a suitable command. Moreover, all
+these programs run in the text mode, except for <em>showcubes</em>.</p>
+
+<P>The programs that are contained in the Homology Package are described
+in short below. Moreover, each program displays a brief message on its
+purpose and usage if called without arguments.
+The <A HREF="textdata.html">text&nbsp;data&nbsp;format</A> page explains how
+to understand the format of the input/output files used by the programs.
+Also, several <a href="examples.html">examples</a> are included in the
+Homology Package. They can be helpful in understanding how to use the
+programs.</p>
+
+<p>It is recommended that one downloads the source code of the programs and
+compiles them oneslef; nevertheless, the executable programs already
+compiled for some popular systems (including Windows and Linux) are also
+available for download in the <em>Download</em> section
+of the CHomP website.</P>
+
+<HR>
+
+<H2>Common command-line arguments</H2>
+
+<P>Most programs in the package support the following common
+command-line arguments:</P>
+
+<UL>
+<LI> --help - displays brief information on the purpose of the program
+and its command-line syntax (also if invoked with no arguments)
+<LI> --quiet - suppresses output to the screen (makes the program run quietly)
+<LI> --log filename - saves all the output except for progress indicators
+to the given file
+</UL>
+
+<HR>
+
+<H2>Programs for homology computation</H2>
+
+<P><B>homchain</B> - computes the homology groups over <B>Z</B>
+or <B>Z</B><SUB><EM>p</EM></SUB> of a chain complex, as well as
+the homomorphisms induced in homology by chain maps</P>
+
+<P><B>homcubes</B> - computes the (relative) homology of a set of cubes
+or a cubical set, as well as the homomorphism induced in homology
+by an acyclic combinatorial cubical multivalued map</P>
+
+<P><B>homsimpl</B> - computes the homology of a finite abstract simplicial
+complex or relative homology of a pair of simplicial complexes</P>
+
+<P><B>indxpair</B> - finds an index pair with Andrzej Szymczak's algorithm</P>
+
+<p><b>homcub2l</b> - computes the index map using double-layer cubical sets
+to overcome the problem with excision, as introduced in a paper
+by P. Pilarczyk and K. Stolot</p>
+
+<P><B>chmap</B> - constructs a chain selector of an almost perfect
+combinatorial cubical multivalued map; this program was written
+by Marcin Mazur and Jacek Szybowski (note: it does not support
+the common command-line arguments listed above)</P>
+
+<p><b>chom</b> - computes homology of a cubical sets using
+a geometric reduction approach; this program was written by Bill Kalies
+(note: it does not support the common command-line arguments listed above)</p>
+
+<p><b>chomp</b> - computes homology of cubical sets using one of the
+bitmap-based homology computation algorithms developped recently
+by Marian Mrozek; the program is capable of reading data in a variety of
+input formats, and it allows to use multiple homology computation engines,
+including the ones implemented in <em>homcubes</em> and <em>chom</em></p>
+
+<HR>
+
+<H2>Programs for data verification</H2>
+
+<P><B>chkmvmap</B> - verifies whether a combinatorial cubical
+multivalued map is suitable for the (relative) homology computation
+with <EM>homcubes</EM></P>
+
+<P><B>chkperf</B> - verifies whether a combinatorial cubical
+multivalued map satisfies the <EM>almost-perfectness</EM>assumption
+of the <EM>chmap</EM> program</P>
+
+<HR>
+
+<H2>Programs for converting data files</H2>
+
+<P><B>bit2pset</B> - converts a set of cubes between the format used in the
+Bill Kalies' <em>chom</em> program and the format used
+in this Homology Package</P>
+
+<P><B>bmp2pset</B> - extracts a list of squares from an uncompressed Windows
+bitmap file</P>
+
+<P><B>cell2cub</B> - converts a set of cubical cells into a set of cubes;
+for every cell defined in the input file, if it spans across several cubes,
+then all the cubes it contains are written to the output file</P>
+
+<P><B>cnvchmap</B> - converts a chain map from the output format of the
+<EM>chmap</EM> program written by Marcin Mazur and Jacek Szybowski
+to the input format for <EM>homchain</EM>,
+which is necessary if one wants to compute the homomorphism
+induced in homology by such a map</P>
+
+<P><B>cnvmvmap</B> - converts a combinatorial cubical multivalued map
+from the format used in <EM>chmap</EM> by Marcin Mazur and Jacek Szybowski
+to the format used in the Homology Package, in which each cube is mapped to
+a set of cubes, not necessarily convex</P>
+
+<P><B>cub2cell</B> - converts a set of cubes to a set of corresponding
+cubical cells</P>
+
+<P><B>cub2map</B> - creates a map whose graph is stored as a set of cubes,
+or creates the combinatorial cubical multivalued indentity map on the
+given set of cubes</P>
+
+<P><B>map2cub</B> - extracts the domain, image, and/or graph of a
+combinatorial cubical multivalued map</P>
+
+<P><B>pgm2pset</B> - extracts a list of pixels or voxels from a raw
+bitmap data</P>
+
+<P><B>pset2bmp</B> - draws a 2-dimensional projection of a set of cubes
+onto one of the planes spanned by selected two axes</P>
+
+<HR>
+
+<H2>Programs for data manipulation</H2>
+
+<P><B>cubchain</B> - creates a chain complex of a set of cubes</P>
+
+<P><B>cubiproj</B> - creates chain maps corresponding to the projections
+of a map whose graph is given onto its domain and codomain</P>
+
+<P><B>cubdiff</B> - computes the difference of two sets of cubes </P>
+
+<P><B>cubslice</B> - divides a set of cubes into subsets separated by
+hyperplanes</P>
+
+<P><B>simchain</B> - creates a chain complex of a simplicial complex</P>
+
+<P><B>maprestr</B> - computes the restriction of a map to the given subset
+of its domain</P>
+
+<P><B>psetcomm</B> - computes the common part of given sets of cubes</P>
+
+<P><B>psetconn</B> - splits a set of cubes into connected components </P>
+
+<P><B>psetglue</B> - computes the union of given sets of cubes </P>
+
+<p><b>cubtop</b> - manipulates with cubical sets; this program was written
+by Sylvain B&eacute;rub&eacute; and Anik Trahan
+(note: it does not support the common command-line arguments listed above)</p>
+
+<HR>
+
+<H2>Homolgy Library demonstration programs</H2>
+
+<P><B>celbetti</B> - computes the Betti numbers of a cubical complex
+or a pair of cubical complexes over <B>Z</B> or <B>Z</B><SUB>p</SUB>
+(compare this program with <EM>cubbetti</EM> and <EM>simbetti</EM>)</P>
+
+<P><B>celreduc</B> - collapses a cubical complex
+or a pair of cubical complexes
+and saves the result so that one can use <EM>homcubes -d</EM> to compute
+the homology (compare this program with <EM>simreduc</EM>)</P>
+
+<P><B>cubbetti</B> - computes the Betti numbers of a set of cubes
+or a pair of sets of cubes over <B>Z</B> or <B>Z</B><SUB>p</SUB>
+(compare this program with <EM>celbetti</EM> and <EM>simbetti</EM>)</P>
+
+<P><B>cubinclu</B> - computes maps induced in homology by the inclusion maps
+of each set of cubes in a series into the next one</P>
+
+<P><B>cubklein</B> - creates a cubical approximation of the Klein bottle
+embedded in <B>R</B><SUP>4</SUP></P>
+
+<P><B>cubreduc</B> - verifies whether the union of two sets of cubes
+can be reduced to the first of them proving in this way that the inclusion
+of the first set into the union induces an isomorphism in homology</P>
+
+<p><b>homcelmp</b> - computes the homomorphism induced
+in homology by a given cubical multivalued map defined on cubical cells
+instead of full cubes</p>
+
+<P><B>maphomol</B> - computes the homomorphism induced in homology
+by a given combinatorial cubical multivalued map</P>
+
+<P><B>simbetti</B> - computes the Betti numbers of a simplicial complex
+or a pair of simplicial complexes over <B>Z</B> or <B>Z</B><SUB>p</SUB>
+(compare this program with <EM>celbetti</EM> and <EM>cubbetti</EM>)</P>
+
+<P><B>simreduc</B> - collapses a simplicial complex
+or a pair of simplicial complexes
+and saves the result so that one can use <EM>homsimpl -d</EM> to compute
+the homology (compare this program with <EM>celreduc</EM>)</P>
+
+<HR>
+
+<H2>Visualization software</H2>
+
+<p><b>showcubes</b> - displays 3-dimensional sets of cubes using OpenGL;
+note: this program must be compiled with the wxWidgets library</p>
+
+</div>
+<div id="footer">
+Webmaster: <a href="http://www.pawelpilarczyk.com/">&nbsp;Pawel Pilarczyk&nbsp;</a><br>
+All trademarks, registered trademarks or brand names
+are property of the respective holders and used in this document
+for descriptive purposes only.<br>
+Copyright &copy; 2002-2007 by Pawel Pilarczyk. All rights reserved.
+</div>
+</body>
+</html>

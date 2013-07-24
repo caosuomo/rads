@@ -1,0 +1,9 @@
+chain complex
+
+maximal dimension = 1
+
+dimension 1
+	boundary a = B - A
+	boundary b = C - B
+	boundary c = D - C
+	boundary d = A - D

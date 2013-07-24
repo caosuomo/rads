@@ -1,0 +1,32 @@
+; This is an example of a chain complex corresponding to a surface of a torus.
+; The resulting Betti numbers are: 1 (dim 0), 2 (dim 1) and 1 (dim 2).
+
+chain complex
+
+maximal dimension 2
+
+dimension 0: 4
+
+dimension 1: 12
+	boundary A = p - q
+	boundary B = q - p
+	boundary C = r - p
+	boundary D = p - r
+	boundary E = s - q
+	boundary F = q - s
+	boundary G = r - q
+	boundary H = p - s
+	boundary I = s - p
+	boundary J = q - r
+	boundary K = r - s
+	boundary L = s - r
+
+dimension 2: 8
+	boundary one	=  C - G + A
+	boundary two	= -K - E + G
+	boundary three	=  D - H + K
+	boundary four	= -A - F + H
+	boundary five	=  E - I + B
+	boundary six	= -L - C + I
+	boundary seven	=  F - J + L
+	boundary eight	= -B - D + J

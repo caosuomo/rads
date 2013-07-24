@@ -1,0 +1,44 @@
+# This file defines the directories in which all the files are located.
+# Copyright (C) 2004-2008 by Pawel Pilarczyk.
+# This is free software. No warranty. Consult 'license.txt' for details.
+# Created on October 26, 2004 by PwP. Last revision: September 27, 2005.
+
+
+# object files
+ifndef OBJ
+OBJ = ${HOMEDIR}obj/
+endif
+
+# executable binary files
+ifndef BIN
+BIN = ${HOMEDIR}bin/
+endif
+
+# the library file(s)
+ifndef LIB
+LIB = ${HOMEDIR}lib/
+endif
+
+# header files
+INC := ${INC} ${HOMEDIR}include/
+
+# source CPP files
+ifndef SRC
+SRC = ${HOMEDIR}src/
+endif
+
+# the example programs
+EXAMPLES = ${HOMEDIR}examples/
+
+# the test programs
+TESTS = ${HOMEDIR}tests/
+
+# the general programs
+PROGRAMS = ${HOMEDIR}programs/
+
+# # the general example programs
+# PROGRAMS = ${HOMEDIR}programs/examples/
+
+# private programs
+PRIVATE = ${HOMEDIR}private/
+

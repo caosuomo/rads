@@ -1,7 +1,80 @@
-To build:
+RADS: Rigorous Analysis of Dynamical Systems
 
-1. Copy a suitable config_*.py file to config.py
-2. Edit entries of config.py to match your system
-3. Run makeit in the base directory
-4. Compiled files should now appear in build/lib
+RADS is a Python-based software toolkit which provides various
+components for the rigorous analysis of a dynamical
+system. Capabilities include:
 
+* Construction of an outer approximation of the system in question
+  using interval arithmetic (requires external CAPD library, see
+  below)
+
+* Analysis of maximal invariant sets.
+
+* Pythonic interface to Chomp and Homcubes, with appropriate
+  conversion of output.
+
+* Given an index map (in the form of a Numpy matrix) and a map
+  (dictionary) assigning generators to regions in phase space, RADS
+  provides a stand alone construction of a symbolic system
+  semi-conjugate to the original system.
+
+
+Requirements:
+
+Python 2.6 or higher
+Numpy 1.0 or higher
+NetworkX 1.0 or higher
+
+Recommended (necessary for combinatorial enclosure/outer approximation)
+
+*Included:
+
+A working version of chomp and homcubes_rads (source)
+fabricate.py 
+
+*External:
+
+CAPD (http://capd.ii.uj.edu.pl/) -- for interval arithmetic
+
+GNU gcc/g++ -- for compilation of CAPD and internal RADS interval
+arithmetic and outer approximation library
+
+Cython -- internal RADS interval arithmetic and outer approximation
+library. Standard in Enthought distributions of Python, or from
+package repo on most (any?) Linux flavor.
+
+
+Installation:
+
+* To build the full package (cython and g++ required):
+
+1. Copy a suitable config_*.py file to config.py. Set appropriate
+paths to CAPD, Cython, etc.
+
+2. Edit entries of config.py to match your system (see previous
+versions included for examples)
+
+3. Make sure 'make_rads' is executable (eg. run 'chmod u+x make_rads'
+if necessary).
+
+4. Run 
+
+   python setup.py build	
+
+4'. Compiled files should now appear in build/lib
+
+5. Run
+
+   python setup.py install --prefix=<dir where you want RADS to live>
+
+
+* To build only the symbolic system portion (excluding the compilation
+  of the combinatorial enclosure/outer approximation library):
+
+1. Run 
+
+   python setup.py build --sym
+
+2. Run
+
+   python setup.py install --prefix=<dir where you want RADS to live>
