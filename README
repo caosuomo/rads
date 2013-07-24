@@ -1,4 +1,5 @@
-RADS: Rigorous Analysis of Dynamical Systems
+RADS -- Rigorous Analysis of Dynamical Systems
+----------------------------------------------
 
 RADS is a Python-based software toolkit which provides various
 components for the rigorous analysis of a dynamical
@@ -19,22 +20,22 @@ system. Capabilities include:
   semi-conjugate to the original system.
 
 
-Requirements:
+Dependencies:
+--------------
 
-Python 2.6 or higher
-Numpy 1.0 or higher
-NetworkX 1.0 or higher
+* Required:
 
-Recommended (necessary for combinatorial enclosure/outer approximation)
+Python >= 2.6
+Numpy >= 1.0 
+NetworkX >= 1.0
 
-*Included:
+chomp and homcubes_rads (source included)
+fabricate.py (included)
 
-A working version of chomp and homcubes_rads (source)
-fabricate.py 
+* Recommended dependencies:
 
-*External:
-
-CAPD (http://capd.ii.uj.edu.pl/) -- for interval arithmetic
+CAPD (http://capd.ii.uj.edu.pl/) -- for interval arithmetic, a
+dependency of RADS' internal interval arithmetic library
 
 GNU gcc/g++ -- for compilation of CAPD and internal RADS interval
 arithmetic and outer approximation library
@@ -43,13 +44,19 @@ Cython -- internal RADS interval arithmetic and outer approximation
 library. Standard in Enthought distributions of Python, or from
 package repo on most (any?) Linux flavor.
 
+The interval arithmetic library is necessary for combinatorial
+enclosure/outer approximation. The Chomp package is required for
+computation of the Conley index.
 
 Installation:
+-------------
 
-* To build the full package (cython and g++ required):
+* To build the full package:
+  --------------------------
 
-1. Copy a suitable config_*.py file to config.py. Set appropriate
-paths to CAPD, Cython, etc.
+1. Copy a suitable sample_config.py file to config.py. Set appropriate
+paths to CAPD, Cython, etc. There are two sample configuration files
+in sample_configs.
 
 2. Edit entries of config.py to match your system (see previous
 versions included for examples)
@@ -68,8 +75,8 @@ if necessary).
    python setup.py install --prefix=<dir where you want RADS to live>
 
 
-* To build only the symbolic system portion (excluding the compilation
-  of the combinatorial enclosure/outer approximation library):
+* To build only the symbolic system subpackage 
+  --------------------------------------------
 
 1. Run 
 
@@ -78,3 +85,12 @@ if necessary).
 2. Run
 
    python setup.py install --prefix=<dir where you want RADS to live>
+
+   The package built in this way will exclude the compilation of the
+   combinatorial enclosure/outer approximation library. It will,
+   however, be necessary to compile the Chomp library. Hence, GNU g++
+   is necessary.
+
+Remark:  --prefix=<dir where you want RADS to live> will automatically install all files in, eg.,
+
+	 <dir where you want RADS to live>/lib/python2.7/site-packages/

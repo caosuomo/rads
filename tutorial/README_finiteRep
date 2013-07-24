@@ -1,0 +1,18 @@
+Procedure for running finite_representation.py:
+-----------------------------------------------
+
+1. From the command line in Canopy, type 'run test_tent.py', or open
+'test_tent.py' and click the green arrow. A few messages will print --
+eg., the subdivision depth and the size of the invariant set as the
+resolution is increased (up to the <depth> variable, first line below imports).
+
+2. Next, a plot of the graph of the outer enclosure will pop up. 
+
+   -- Note, the indexing is 0-based, so if you divide [0,1] into
+      subintervals, these will correspond to nodes {0,1,2,3}.
+
+3. You can explore the tree using 'ce.tree.boxes'. Make sure its
+structure makes sense. The outer approximation (called a Multivalued
+Map, or MVM) is stored in ce.mvm. By pressing <tab> in the terminal
+after 'ce.mvm.' will get you a list of attributes. This works for any
+Python object (super handy!).

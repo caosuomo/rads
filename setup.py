@@ -58,9 +58,16 @@ os.chdir( ROOT+'/src/rads/chomp' )
 val = os.system( 'make' )
 if val != 0:
     print "Chomp/Homcubes build failed! See output for clues."
-                
+            
+
 # move back to root directory
 os.chdir( ROOT )
+   
+# setup does not want to copy binary files from chomp/bin directory,
+# so we'll do it manually
+copydirs('src/rads/chomp/bin', lib_dir+'rads/bin', ext='')
+ 
+
 
 # install everything into build folder
 setup( name='rads',
@@ -91,7 +98,5 @@ setup( name='rads',
                     'Topic :: Software Development :: Libraries :: Python Modules']
        )
 
-# setup does not want to copy binary files from chomp/bin directory,
-# so we'll do it manually
-copydirs('src/rads/chomp/bin', lib_dir+'rads/bin', ext='')	
+	
 
