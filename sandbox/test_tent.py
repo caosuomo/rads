@@ -22,7 +22,7 @@ chatter = False
 
 mapname = 'tent'
 #prefix = '/Users/clairebobst/Desktop/Research/data/'
-#prefix = '/Users/jberwald/github/local/caja-matematica/rads/sandbox/'
+prefix = '/Users/jberwald/github/local/caja-matematica/rads/sandbox/'
 
 #---------------------
 # 
@@ -32,8 +32,8 @@ mapname = 'tent'
 # of each dimension (row 2). For the tent map, this should start out
 # as np.array([[0.0],[1]])
 
-#box = np.array([[-0.25],[1.25]])
-box = np.array([[0],[1.]])
+box = np.array([[-0.25],[1.25]])
+#box = np.array([[0],[1.]])
 
 # our tree (with root box), mapper, enclosure
 tree = Tree( box, full=True )

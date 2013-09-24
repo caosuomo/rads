@@ -217,9 +217,6 @@ class ComputeIndex( object ):
             # converts row \in A |--> (x,y,...) str coords in implicit
             # loop
             rows = map( lambda x: str(x)+'\n', map( tuple, iter( boxes ) ) ) 
-            
-            print "ROWS", rows
-
             fh.writelines( rows )
 
     def run_homcubes( self, suffix='cub', debug=False ):
