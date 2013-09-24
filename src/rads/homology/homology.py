@@ -217,6 +217,9 @@ class ComputeIndex( object ):
             # converts row \in A |--> (x,y,...) str coords in implicit
             # loop
             rows = map( lambda x: str(x)+'\n', map( tuple, iter( boxes ) ) ) 
+            
+            print "ROWS", rows
+
             fh.writelines( rows )
 
     def run_homcubes( self, suffix='cub', debug=False ):
@@ -579,21 +582,12 @@ def map_writer( transition, scaled_boxes, mapname, region=None, suffix='.map' ):
             # corner corresponding to u
             cube_x = str( tuple( scaled_boxes[c] ) )
 
-            print "x", cube_x
-
             # image of u as a tuple of box corners
             image = list( xmap[(u,c)] )
             # translate graph nodes to corner idx in image
             image_corners = [ mvm.graph.node[y]['corner']
                               for y in image ]
-
-            print "u,c:", u,c
-            print "image:", image_corners
-            
             cube_y = map( tuple, iter( scaled_boxes[image_corners] ) ) 
-
-            print "cubes y:", cube_y
-            print ""
             
             # if len( cube_y ) == 0:
             #     continue

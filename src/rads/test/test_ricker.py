@@ -15,7 +15,7 @@ rval = 22
 # simulations with dispersal > 0, assumption is that the region is
 # square, so dim *must be a square*.
 #box = np.array([[0.],[4]])
-box = np.array( [[0.1,0.1],[6,6]] )
+box = np.array( [[0.,0.],[6,6]] )
 
 print "Initial bounding box"
 print box
