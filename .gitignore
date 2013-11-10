@@ -37,6 +37,9 @@
 
 *~
 *.py[co]
+*.o 
+*.so
+
 
 # for fabricate
 .deps
