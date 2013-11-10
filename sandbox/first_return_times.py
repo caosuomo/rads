@@ -20,6 +20,6 @@ def first_return_times(G,k):
 
 
 if __name__ == "__main__":
-	G = nx.binomial_graph(20,0.1,directed=True)
+	G = nx.binomial_graph(10,0.1,directed=True)
 	d, ld = first_return_times(G,4) # return times <= 4
 	print "return times", d

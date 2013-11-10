@@ -573,3 +573,4 @@ class Graph( object ):
 		if not fargs['fname']:
 			raise ValueError( "Must provide a file name" )
 		nx.write_gpickle( self, fargs['fname'] )
+        

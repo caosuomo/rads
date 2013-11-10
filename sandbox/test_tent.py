@@ -21,7 +21,10 @@ r = 2
 chatter = False
 
 mapname = 'tent'
-prefix = '/Users/clairebobst/Desktop/Research/data/'
+
+#prefix = '/Users/clairebobst/Desktop/Research/data/'
+prefix = '/Users/jberwald/github/local/caja-matematica/rads/sandbox/'
+
 
 #---------------------
 # 
@@ -32,6 +35,7 @@ prefix = '/Users/clairebobst/Desktop/Research/data/'
 # as np.array([[0.0],[1]])
 
 box = np.array([[-0.25],[1.25]])
+#box = np.array([[0],[1.]])
 
 # our tree (with root box), mapper, enclosure
 tree = Tree( box, full=True )
@@ -69,16 +73,20 @@ for d in range(depth):
 oI = hom.get_onebox( I, ce.adj )
 I = oI
 
-# keep track of 'physical' box corners stored in B
+
+# keep track of 'physical' box corners stored boxes()
 box_corners = ce.tree.boxes().corners
 idx_mapping = {}
+
+# map boxes to their index
 for i in I:
         idx_mapping[i] = box_corners[i]
 
-# now trim the tree, which will reorder/renumber the corners
+
+# array indices now start at zero, so we have to work with this
 ce.tree.remove( list( nodes - set(I) ) )
 
-# record this reordering as node attributes by searching for the index
+# record the box reordering as node attributes by searching for the index
 # of each box
 for i,u in idx_mapping.items():
         ce.mvm.graph.node[i]['corner'] = ce.tree.search( u )
@@ -89,14 +97,21 @@ ce.mvm.remove_nodes_from( nodes - set(I) )
 ce.adj.remove_nodes_from( nodes - set(I) )
 
 
+
 #box_corners = ce.tree.boxes().corners
+
+# now that we've removed noninvariant nodes, convert labeling to start
+# at zero (for proper indexing). replace current graphs by converted graphs.
+#ce.mvm.graph = nx.convert_node_labels_to_integers( ce.mvm.graph, discard_old_labels=False )
+#ce.adj.graph = nx.convert_node_labels_to_integers( ce.adj.graph, discard_old_labels=False )
+
 
 # draw the outer enclosure. the 'mvm' is the MultiValued Map on the
 # nodes/intervals in the subdivided grid on root box. 
 #ce.mvm.draw( node_size=200, with_labels=True )
 
 print ""
-print"Edges in outer approximation:\n", ce.mvm.edges()
+print "Edges in outer approximation:\n", ce.mvm.edges()
 print ""
 print "Self loops in the outer enclosure\n", ce.mvm.graph.selfloop_edges() 
 
@@ -136,7 +151,9 @@ print "** Use regions in collection of selfloops and period 2 orbits to determin
 
 print ""
 
-region = [8, 13] 
+#region = [8, 13] 
+region = [10]
+
 
 # **********************
 # Uncomment the lines below in order to specify other regions to analyze

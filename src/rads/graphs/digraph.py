@@ -238,3 +238,34 @@ class DiGraph( Graph ):
         container is not in the graph it is silently ignored.
         """
         self.graph.remove_nodes_from( nbunch )
+
+    def first_return_times( self, k ):
+        """Computes:
+        
+        length = shortest path lengths <= k 
+
+        length[i][j] = length of shortest path i->j, if <= k, using
+	NX.all_pairs_shortest_path_length
+
+        length[i] is a dict keyed by neighbors of node i, with values
+	length of path to j
+
+        Returns dictionary of return times <= k, length dictionary
+        described above.
+        """
+	return_times = dict()
+
+	# length = shortest path lengths <= k
+	# length[i][j] = length of shortest path i->j, if <= k
+        # length[i] a dict keyed by neighbors of node i, with values
+        # length of path to j
+	length = nx.all_pairs_shortest_path_length( self.graph, k )
+	for i in G.nodes_iter():
+		# nodes = list of successors j which return to i
+		nodes = filter(lambda j: length[j].has_key(i),G.successors(i))
+		# distances for each successor j
+		distances = [length[j][i]+1 for j in nodes]
+		if distances:
+			return_times[i] = min(distances)
+
+	return return_times, length
