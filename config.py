@@ -2,32 +2,33 @@
 exe = {
 	'cython': 'cython --cplus'.split(), 
 	'c++': 'g++',
-	'c': 'gcc',
+	'c': 'gcc -std=c99'.split(),
 	}
 
-# CAPD include and lib directories are loaded unsing the capd-config script
+# CAPD include and lib directories are loaded using the capd-config script
 dirs = {
-	'base': '/Users/jberwald/github/local/caja-matematica/rads/',
+	'base': '/ima/imausr1/jberwald/github/local/caja-matematica/rads/',
 	#'capd_config': '/Users/jberwald/src/capd/bin/capd-config ', #--cflags --libs`'
-	'capd_config': '/Users/jberwald/local/lib/capd/bin/capd-config ',
-	'capd':  '/Users/jberwald/local/lib/capd/'
+	'capd_config': '/ima/imausr1/jberwald/local/capd/bin/capd-config ',
+	'capd':  '/ima/imausr1/jberwald/local/capd/'
         }
 
 include = {
-	'python': '/Library/Frameworks/EPD64.framework/Versions/Current/include/python2.7/',
-	'cython': '/Library/Frameworks/EPD64.framework/Versions/Current/lib/python2.7/site-packages/Cython/Includes/',
-	'numpy': '/Library/Frameworks/EPD64.framework/Versions/Current/lib/python2.7/site-packages/numpy/core/include/',
-	'capd': '/Users/jberwald/local/lib/capd/capdAlg/include/'
+	'python': '/ima/imausr1/jberwald/sage/local/include/python2.7/',
+	'cython': '/ima/imausr1/jberwald/sage/local/lib/python2.7/site-packages/Cython/Includes/',
+	'numpy': '/ima/imausr1/jberwald/sage/local/lib/python2.7/site-packages/numpy/core/include/',
+	'capd': '/ima/imausr1/jberwald/local/capd/include/'
         }
 
 link = {
 	'capd': dirs['capd'],
-	'c++ cython': '-L/Library/Frameworks/EPD64.framework/Versions/Current/lib -lpython2.7'.split(),
-	'c++': '-L/Library/Frameworks/EPD64.framework/Versions/Current/lib -lpython2.7'.split()
+	'c++ cython': '-L/ima/imausr1/jberwald/sage/local/lib -lpython2.7'.split(),
+	'c++': '-L/ima/imausr1/jberwald/sage/local/lib -lpython2.7'.split()
 	}
         
 
-flags = {
-	'c': '-fno-strict-aliasing -fno-common -arch x86_64 -DNDEBUG -O1'.split(),
-	 'c++ cython': '-arch x86_64 -bundle -undefined dynamic_lookup'.split()
-        }
+flags = {'c': '-pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -fPIC'.split(),
+         'c++ cython': '-O2 -frounding-math  -pthread -shared -Bsymbolic-functions'.split(),
+    #'c': '-O2 -Wall -fPIC'.split(),
+        # 'c++ cython': ''
+         }

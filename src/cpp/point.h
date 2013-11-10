@@ -4,9 +4,11 @@
 #include <iostream>
 #include <iomanip>
 #include <vector>
-#include "capd/capdAlglib.h"
-#include "capd/intervals/Interval.h"
+#include "rinterval.hpp"
+/* #include "capd/capdAlglib.h" */
+/* #include "capd/intervals/Interval.h" */
 
+using namespace cxsc;
 using namespace std;
 
 template < class T >
@@ -14,9 +16,12 @@ class PointBase
 {
     // vector of arbitrary length. 
     // below v( dim ) will initialize a n-dim vector of type T  
-    // This line define a vector of type T of arbitrary length.
-    typedef capd::vectalg::Vector < T, 0 > DVector;
+    // This line defines a vector of type T of arbitrary length.
+    //typedef capd::vectalg::Vector < T, 0 > DVector;
   
+  typedef ivector < T, 0 > DVector; 
+
+
   public:
     DVector v;
     PointBase() {};
@@ -35,8 +40,9 @@ class PointBase
 };
 
 typedef PointBase < double > Point;
+typedef PointBase< interval > IPoint;
 //typedef capd::intervals::Interval< double > DInterval;
-typedef PointBase< capd::intervals::Interval< double > > IPoint;
+//typedef PointBase< capd::intervals::Interval< double > > IPoint;
 
 #include "treeutil.h"			// for the vector operator<< 
 #endif
@@ -44,34 +50,34 @@ typedef PointBase< capd::intervals::Interval< double > > IPoint;
 /////////
 // FOR DEBUGGING PURPOSES 
 /////////
-/* int main() */
-/* {  */
-/*     typedef capd::intervals::Interval< double > DInterval; */
+int main()
+{
+  //typedef capd::intervals::Interval< double > DInterval;
 
-/*     double y; */
-/*     int i; */
-/*     cout << "enter a number: "; */
-/*     cin >> y; */
-/*     cout << "enter an integer: "; */
-/*     cin >> i; */
-/*     cout << "you entered " << y << " and " << i << endl; */
+    double y;
+    int i;
+    cout << "enter a number: ";
+    cin >> y;
+    cout << "enter an integer: ";
+    cin >> i;
+    cout << "you entered " << y << " and " << i << endl;
 
-/*     // initialize an i-dim iinterval vector */
-/*     //PointBase < capd::intervals::Interval < double > > P ( i ); */
+    // initialize an i-dim iinterval vector
+    //PointBase < capd::intervals::Interval < double > > P ( i );
 
-/*     IPoint P ( i ); */
+    IPoint P ( i );
 
-/*     cout << "P.v is " << i << " dimensional: P.v = " << P.v << endl; */
+    cout << "P.v is " << i << " dimensional: P.v = " << P.v << endl;
 
-/*     // fill P.v[0] */
-/*     DInterval x0[] = { DInterval( 1., 2. ) }; */
-/*     DInterval x1( 3., 4. ); */
+    // fill P.v[0]
+    DInterval x0[] = { DInterval( 1., 2. ) };
+    DInterval x1( 3., 4. );
 
-/*     P.v[0] = x0[0]; */
-/*     P.v[1] = x1; */
+    P.v[0] = x0[0];
+    P.v[1] = x1;
 
-/*     cout << "Set entries in P ==> P.v = " << P.v << endl; */
+    cout << "Set entries in P ==> P.v = " << P.v << endl;
     
-/*     return 0; */
+    return 0;
 
-/* } */
+}

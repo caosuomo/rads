@@ -49,9 +49,10 @@ else:
 if full:
     # compile cython libs (req == cython & g++)
     print "Compiling combinatorial enclosure library...\n"
-    check_rads = os.system( './make_rads' )
+    check_rads = os.system( ROOT + '/make_rads.py' )
     if check_rads != 0:
-        print "Enclosure library failed to buld."
+        print check_rads
+        print "Enclosure library failed to build."
 
 # build chomp/homcubes libraries (req == g++)
 os.chdir( ROOT+'/src/rads/chomp' )
