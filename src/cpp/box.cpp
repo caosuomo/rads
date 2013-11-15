@@ -29,7 +29,8 @@ Box::operator IPoint()
 {
   IPoint ints(size());
   for (int i=0; i<size(); i++)
-	ints[i] = capd::intervals::Interval< double > ( beg(i), end(i) );
+    //ints[i] = capd::intervals::Interval< double > ( beg(i), end(i) );
+    ints[i] =  ( beg(i), end(i) );
   return ints;
 }
 

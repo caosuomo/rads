@@ -13,73 +13,67 @@ using namespace std;
 template < class T >
 class PointBase 
 {
-  typedef ivector DVector; 
+  //typedef ivector DVector; 
 
-  public:
-  DVector v;
+public:
+
+  vector<T> v;
   PointBase() {};
   PointBase(int size) : v ( size ) {};
   PointBase(int size, const T &t) : v(size,t) {};
   T& operator[] (int i) { return v[i]; };
   void set (int i, const T& t) { v[i]=t; };
   const T& operator[] (int i) const { return v[i]; };
-  int size() const { return VecLen( v ); }; // C-XSC version of dimension
+  //int size() const { return VecLen( v ); }; // C-XSC version of dimension
+  int size() const { return v.size(); };
     
-    friend ostream& operator<< (ostream &out, const PointBase<T> &p)
-    {
-      out << p.v;
-      return out;
-    };
+  friend ostream& operator<< (ostream &out, const PointBase<T> &p)
+  {
+    //out << SetPrecision(20,15);
+    for ( int i=0; i < p.size(); i++ ) {
+      //out << p.v[i] << endl;
+      out << p.v[i] << endl;
+    }
+    return out;
+  };
+
 };
 
-typedef interval DInterval;
 typedef PointBase< interval > IPoint;
-//typedef capd::intervals::Interval< double > DInterval;
-//typedef PointBase< capd::intervals::Interval< double > > IPoint;
+//typedef PointBase< double > IPoint;
 
-#include "treeutil.h"			// for the vector operator<< 
+//#include "treeutil.h"			// for the vector operator<< 
 #endif
 
 /////////
 // FOR DEBUGGING PURPOSES 
 /////////
-// int main()
-// {
-//   //typedef capd::intervals::Interval< double > DInterval;
+int main()
+{
+    double y;
+    int d;
+    cout << "enter a number: ";
+    cin >> y;
+    cout << "enter an integer dimension >= 2: ";
+    cin >> d;
+    cout << "you entered " << y << " and " << d << endl;
 
-//     double y;
-//     int i;
-//     cout << "enter a number: ";
-//     cin >> y;
-//     cout << "enter an integer dimension >= 2: ";
-//     cin >> i;
-//     cout << "you entered " << y << " and " << i << endl;
-
-//     // initialize an i-dim iinterval vector
-//     //PointBase < capd::intervals::Interval < double > > P ( i );
-
-//     IPoint P ( i );
-
-//     cout << "P.v is a " << P.size() 
-// 	 << " dimensional interval vector and is intialized as:\n P.v =\n" 
-// 	 << P.v << endl;
-
-//     // fill P.v[0]
-//     DInterval x0[] = { DInterval( 1., 2. ) };
-//     DInterval x1( 3., 4. );
-
-//     interval a,b,c;
-//     a = y;
-//     b = 3.14;
-//     c = 1.1;
+    // initialize a vector of intervals (an interval point)
+    IPoint P ( d );
     
-//     P.v[1] = a;
-//     P.v[2] = b;
-//     P.set(i,c);
+    cout << "P is a " << P.size() 
+    	 << " dimensional interval vector and is intialized as:\n P =\n" 
+	 << P << endl;
 
-//     cout << "Set entries in P ==> P.v =\n" << P.v << endl;
-//     cout << "(The first and last are hardcoded. See the code.)" << endl;
+    interval b;
+    b = 3.14;
     
-//     return 0;
+    P[1] = y;
+    P[2] = b;
 
-// }
+    cout << "Set entries in P\n" << P << endl;
+    cout << "(The second entry is hardcoded. See the code.)" << endl;
+    
+    return 0;
+
+}
