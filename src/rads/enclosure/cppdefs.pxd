@@ -5,7 +5,15 @@ from libc cimport string
 # C++ declarations
 #------------------------------
 
-cdef extern from "capd/intervals/Interval.h":
+# cdef extern from "capd/intervals/Interval.h":
+# 	cdef cppclass cIVAL "capd::intervals::Interval < double >":
+# 		cIVAL(double)
+# 		cIVAL(double,double)
+# 	cdef double Inf "leftBound" ( cIVAL & ) 
+# 	cdef double Diam "diam" ( cIVAL & )
+# 	cdef double Sup "rightBound" ( cIVAL & )
+
+cdef extern from "interval.hpp":
 	cdef cppclass cIVAL "capd::intervals::Interval < double >":
 		cIVAL(double)
 		cIVAL(double,double)
