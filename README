@@ -37,6 +37,9 @@ fabricate.py (included)
 CAPD (http://capd.ii.uj.edu.pl/) -- for interval arithmetic, a
 dependency of RADS' internal interval arithmetic library
 
+C-XSC (http://www2.math.uni-wuppertal.de/wrswt/xsc/cxsc_new.html) --
+alternate interval arithmetic library
+
 GNU gcc/g++ -- for compilation of CAPD and internal RADS interval
 arithmetic and outer approximation library
 
