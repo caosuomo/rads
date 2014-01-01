@@ -14,13 +14,30 @@
 from fabricate import *
 from subprocess import Popen, PIPE, STDOUT
 import sys, os, stat, commands
-import config
+import sample_config as config
 from shutil import copy2,copytree, ignore_patterns
+
+
+# populate cfg dicts with local values
+config.make_links()
+config.make_includes()
+if 'linux' not in sys.platform:
+	config.fiddle_with_flags()
+
+if config.dirs['base'] == '':
+	config.dirs['base'] = os.getcwd()
+		
+def list_dirs(path):
+	"""Returns a list of all top-level subdirectories in directory 'path'"""
+	return [ name for name in os.listdir(path)
+		 if os.path.isdir(os.path.join(path, name)) ]
+
 ### EXAMPLE: copytree(source, destination, ignore=ignore_patterns('*.pyc', 'tmp*'))
 # We might have to find the OS for the proper extension. There is no
 # Windows option.
 extension = '.so'
 
+# local directory structures, do not alter!
 dependencies = { # dependencies for cython (or c++!) files
 	'cyboxset': ['box','boxset'],
 	'cytree': ['tree','box','boxset','treedata'],
@@ -29,7 +46,7 @@ dependencies = { # dependencies for cython (or c++!) files
 	'cycombenc': ['tree','treedata','mapper','box','boxset'],
 	'treetest': ['tree','treedata','box','boxset'],
 	'debugtree': ['tree','treedata','box','boxset'],
-}
+	}
 
 cpp_progs = ['treetest','debugtree'] # c++ programs
 
@@ -39,11 +56,15 @@ map_dir = 'src/rads/maps'
 cpp_source_dir = 'src/cpp/' # look for c++ files here (in the current dir)
 cpp_object_dir = tmp_dir+'cpp/' # compile them to object files here
 
-				
-def list_dirs(path):
-	"""Returns a list of all top-level subdirectories in directory 'path'"""
-	return [ name for name in os.listdir(path)
-		 if os.path.isdir(os.path.join(path, name)) ]
+# top-level directories in rads
+rads_dirs = ['src/rads/'+d for d in list_dirs('src/rads')+['','../cpp/']]
+
+# all include directories!
+includes = [config.include['cython']+'libc/',
+	    config.include['cython']+'libcpp/',
+	    config.include['numpy'],
+	    config.include['python'],
+	    config.include['cxsc']] + rads_dirs
 
 def copydirs(src, dst, ext=''):
 	"""
@@ -73,15 +94,6 @@ def copydirs(src, dst, ext=''):
 			errors.extend(err.args[0])
 	if errors:
 		raise Exception(errors)	
-
-# top-level directories in rads
-rads_dirs = ['src/rads/'+d for d in list_dirs('src/rads')+['','../cpp/']]
-# all include directories!
-includes = [config.include['cython']+'libc/',
-	    config.include['cython']+'libcpp/',
-	    config.include['numpy'],
-	    config.include['python'],
-		config.include['cxsc']] + rads_dirs
 
 
 def compile_cpp(inputs,output):
@@ -244,6 +256,13 @@ def clean():
 	run('rm -r build'.split())
 	autoclean()
 
-if __name__ == "__main__":
+def run_main( cxsc_path ):
+	# setup should have passed in one argument, which is the local path to
+	# the CXSC library provided by the user as an optional arg to
+	# setup.py. this should be the last argument in the sys.argv list
+	config.include['cxsc'] = cxsc_path #sys.argv[-1]
+	main()
 
-        main()
+# if __name__ == "__main__":
+
+#         main()

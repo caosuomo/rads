@@ -85,25 +85,25 @@ includes = [config.include['cython']+'libc/',
 	    #	    config.include['capd']] + rads_dirs
 
 # grab CAPD cflags and lib paths
-p_flags = Popen( config.dirs['capd']+'/bin/capd-config --cflags',
-		 shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
-p_libs = Popen( config.dirs['capd']+'/bin/capd-config --libs',
-		shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
+# p_flags = Popen( config.dirs['capd']+'/bin/capd-config --cflags',
+# 		 shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
+# p_libs = Popen( config.dirs['capd']+'/bin/capd-config --libs',
+# 		shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True)
 
-capd_flags = p_flags.stdout.read().split()
-capd_libs = p_libs.stdout.read().split()
+# capd_flags = p_flags.stdout.read().split()
+# capd_libs = p_libs.stdout.read().split()
 
-print "capd_flags"
-print capd_flags
-print ""
-print "capd_libs"
-print capd_libs
-print ""
+# print "capd_flags"
+# print capd_flags
+# print ""
+# print "capd_libs"
+# print capd_libs
+# print ""
 
-# now split the output, cython does not like D__USE_FILIB flag
-capd_flags = [ i for i in capd_flags ]
-#capd_links = capd_libs[-1]
-capd_libs = capd_libs #[ i for i in capd_libs ]#.append( capd_libs[:-2][:] )
+# # now split the output, cython does not like D__USE_FILIB flag
+# capd_flags = [ i for i in capd_flags ]
+# #capd_links = capd_libs[-1]
+# capd_libs = capd_libs #[ i for i in capd_libs ]#.append( capd_libs[:-2][:] )
 
 def compile_cpp(inputs,output):
 	run(config.exe['c'],

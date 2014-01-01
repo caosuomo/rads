@@ -1,3 +1,5 @@
+from distutils.sysconfig import get_python_lib, get_python_inc
+import numpy as np
 
 exe = {
 	'cython': 'cython --cplus'.split(), 
@@ -5,29 +7,48 @@ exe = {
 	'c': 'gcc',
 	}
 
-# CAPD include and lib directories are loaded unsing the capd-config script
+
 dirs = {
-	'base': '/Users/jberwald/github/local/caja-matematica/rads/',
-	#'capd_config': '/Users/jberwald/src/capd/bin/capd-config ', #--cflags --libs`'
-	'capd_config': '/Users/jberwald/local/lib/capd/bin/capd-config ',
-	'capd':  '/Users/jberwald/local/lib/capd/'
+	'base': '',
         }
 
 include = {
-	'python': '/Library/Frameworks/EPD64.framework/Versions/Current/include/python2.7/',
-	'cython': '/Library/Frameworks/EPD64.framework/Versions/Current/lib/python2.7/site-packages/Cython/Includes/',
-	'numpy': '/Library/Frameworks/EPD64.framework/Versions/Current/lib/python2.7/site-packages/numpy/core/include/',
-	'capd': '/Users/jberwald/local/lib/capd/capdAlg/include/'
+	'python': '',
+	'cython': '',
+        'numpy' : '',
+        'cxsc' : ''
         }
 
+# change to override defaults below
 link = {
-	'capd': dirs['capd'],
-	'c++ cython': '-L/Library/Frameworks/EPD64.framework/Versions/Current/lib -lpython2.7'.split(),
-	'c++': '-L/Library/Frameworks/EPD64.framework/Versions/Current/lib -lpython2.7'.split()
+	'c++ cython': '',
+	'c++': ''
 	}
         
-
 flags = {
-	'c': '-fno-strict-aliasing -fno-common -arch x86_64 -DNDEBUG -O1'.split(),
-	 'c++ cython': '-arch x86_64 -bundle -undefined dynamic_lookup'.split()
+	'c': '-fno-strict-aliasing -fno-common -DNDEBUG -O1'.split(),
+	 'c++ cython': '-undefined dynamic_lookup'.split()
         }
+
+def make_links():    
+    # populate with defaults unless altered above
+    if link['c++ cython'] == '':        
+        link['c++ cython'] = '-L'+ get_python_lib() + '-l python2.7'#.split()
+        link['c++ cython'] = link['c++ cython'].split()
+    if link['c++'] == '':
+        link['c++'] = link['c++ cython']
+
+def make_includes():
+    if include['python'] == '':
+        include['python'] = get_python_inc()
+    if include['cython'] == '':
+        include['cython'] = get_python_inc() + '/Cython/Includes/'
+    if include['numpy'] == '':
+        include['numpy'] = np.get_include()
+
+def fiddle_with_flags():
+    """
+    Mostly to account for some jacked up s*!t on Mac's
+    """
+    flags['c++'] += '-arch x86_64 -bundle'
+    flags['c'] += '-arch x86_64'
