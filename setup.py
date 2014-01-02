@@ -33,12 +33,6 @@ def copydirs(src, dst, ext=''):
     if errors:
         raise Exception(errors)	
 
-def run_make_rads():
-    """
-    """
-    # locate directories
-
-
 ###############################
 # BEGIN BUILD SYSTEM
 ###############################
@@ -90,6 +84,7 @@ if build_full:
         print check_rads
         print "Enclosure library failed to build."
 
+# debugging cutoff
 sys.exit(1)
 
 if build_chomp:

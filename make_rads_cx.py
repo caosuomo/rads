@@ -60,6 +60,7 @@ cpp_object_dir = tmp_dir+'cpp/' # compile them to object files here
 rads_dirs = ['src/rads/'+d for d in list_dirs('src/rads')+['','../cpp/']]
 
 # all include directories!
+global includes
 includes = [config.include['cython']+'libc/',
 	    config.include['cython']+'libcpp/',
 	    config.include['numpy'],
@@ -260,7 +261,14 @@ def run_main( cxsc_path ):
 	# setup should have passed in one argument, which is the local path to
 	# the CXSC library provided by the user as an optional arg to
 	# setup.py. this should be the last argument in the sys.argv list
+	global includes
 	config.include['cxsc'] = cxsc_path #sys.argv[-1]
+	includes += [config.include['cxsc']]
+
+	print "Your include paths: "
+	print includes
+	print ""
+
 	main()
 
 # if __name__ == "__main__":
