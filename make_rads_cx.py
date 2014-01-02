@@ -14,7 +14,7 @@
 from fabricate import *
 from subprocess import Popen, PIPE, STDOUT
 import sys, os, stat, commands
-import sample_config as config
+import config
 from shutil import copy2,copytree, ignore_patterns
 
 

@@ -57,19 +57,16 @@ Installation:
 * To build the full package:
   --------------------------
 
-1. Copy a suitable sample_config.py file to config.py. Set appropriate
-paths to CAPD, Cython, etc. There are two sample configuration files
-in sample_configs.
+1. Make sure C-XSC is compiled and installed on your system.
 
-2. Edit entries of config.py to match your system (see previous
-versions included for examples)
+2. If your Python and Numpy install are different from the defaults found by get_python_lib() and friends, you should enter the appropriate values by hand in config.py. (There are two sample configuration files in sample_configs.) 
 
 3. Make sure 'make_rads' is executable (eg. run 'chmod u+x make_rads'
 if necessary).
 
 4. Run 
 
-   python setup.py build	
+   python setup.py build --cxsc=/path/to/cxsc/include	
 
 4'. Compiled files should now appear in build/lib
 
@@ -78,7 +75,7 @@ if necessary).
    python setup.py install --prefix=<dir where you want RADS to live>
 
 
-* To build only the symbolic system subpackage 
+* To build only the symbolic system subpackage (this process NOT IMPLEMENTED CURRENTLY)
   --------------------------------------------
 
 1. Run 
