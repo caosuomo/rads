@@ -4,7 +4,7 @@
 #include <iostream>
 #include <iomanip>
 #include <vector>
-#include "interval.hpp"  // predefined interval arithmetic
+#include "interval.hpp"  // CXSC interval lib
 //#include "ivector.hpp"
 
 using namespace cxsc;
