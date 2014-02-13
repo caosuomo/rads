@@ -3,8 +3,8 @@ import numpy as np
 
 exe = {
 	'cython': 'cython --cplus'.split(), 
-	'c++': 'g++',
-	'c': 'gcc',
+	'c++': 'clang', #'g++',
+	'c': 'clang', #'gcc',
 	}
 
 
@@ -42,7 +42,7 @@ def make_includes():
     if include['python'] == '':
         include['python'] = get_python_inc()
     if include['cython'] == '':
-        include['cython'] = get_python_inc() + '/Cython/Includes/'
+        include['cython'] = get_python_lib() + '/Cython/Includes/'
     if include['numpy'] == '':
         include['numpy'] = np.get_include()
 
