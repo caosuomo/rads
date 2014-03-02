@@ -54,7 +54,7 @@ int main()
     int d;
     cout << "enter a number: ";
     cin >> y;
-    cout << "enter an integer dimension >= 2: ";
+    cout << "enter an integer dimension > 2: ";
     cin >> d;
     cout << "you entered " << y << " and " << d << endl;
 
