@@ -3,8 +3,10 @@ import numpy as np
 
 exe = {
 	'cython': 'cython --cplus'.split(), 
-	'c++': 'clang', #'g++',
-	'c': 'clang', #'gcc',
+	'c++': 'clang', 
+        #'c++': 'g++',
+	'c': 'clang', 
+        #'c': 'gcc',
 	}
 
 
@@ -22,21 +24,25 @@ include = {
 # change to override defaults below
 link = {
 	'c++ cython': '',
-	'c++': ''
+	'c++': '',
+        'cxsc': '-lcxsc'
 	}
         
 flags = {
-	'c': '-fno-strict-aliasing -fno-common -DNDEBUG -O1'.split(),
+	'c': ' -pedantic -fno-strict-aliasing -fno-common -DNDEBUG -O1'.split(),
 	 'c++ cython': '-undefined dynamic_lookup'.split()
         }
 
 def make_links():    
     # populate with defaults unless altered above
     if link['c++ cython'] == '':        
-        link['c++ cython'] = '-L'+ get_python_lib() + '-l python2.7'#.split()
+        link['c++ cython'] = '-L'+ get_python_lib() + ' -lpython2.7 -lcxsc'#.split()
         link['c++ cython'] = link['c++ cython'].split()
     if link['c++'] == '':
-        link['c++'] = link['c++ cython']
+        print link['c++ cython'] 
+        print link['cxsc']
+
+        link['c++'] = link['c++ cython'] + [link['cxsc']]
 
 def make_includes():
     if include['python'] == '':
@@ -48,7 +54,7 @@ def make_includes():
 
 def fiddle_with_flags():
     """
-    Mostly to account for some jacked up s*!t on Mac's
+    Mostly to account for some quirks on Macs
     """
     flags['c++'] += '-arch x86_64 -bundle'
     flags['c'] += '-arch x86_64'

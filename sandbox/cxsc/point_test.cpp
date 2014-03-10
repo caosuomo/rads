@@ -31,7 +31,6 @@ public:
   {
     //out << SetPrecision(20,15);
     for ( int i=0; i < p.size(); i++ ) {
-      //out << p.v[i] << endl;
       out << p.v[i] << endl;
     }
     return out;

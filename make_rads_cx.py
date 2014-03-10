@@ -262,8 +262,12 @@ def run_main( cxsc_path ):
 	# the CXSC library provided by the user as an optional arg to
 	# setup.py. this should be the last argument in the sys.argv list
 	global includes
-	config.include['cxsc'] = cxsc_path #sys.argv[-1]
+	config.include['cxsc'] = cxsc_path+'/include' #sys.argv[-1]
 	includes += [config.include['cxsc']]
+	config.link['cxsc'] = '-Wl,-R'+cxsc_path+'/lib'
+
+        config.link['c++ cython'] += ['-L'+ cxsc_path+'/lib -lcxsc']
+
 
 	print "Your include paths: "
 	print includes

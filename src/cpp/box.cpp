@@ -20,8 +20,8 @@ Box::Box(const IPoint &ints) : v(ints.size()), w(ints.size())
 {
   for (int i=0; i<size(); i++)
   {
-    v[i] = leftBound( ints[i] );//Inf(ints[i]);
-    w[i] = diam( ints[i] ).leftBound(); // this should give the first entry of [d,d]
+    v[i] = _double( Inf( ints[i] ) ); // leftBound( ints[i] );
+    w[i] = _double( diam( ints[i] ) ); //.leftBound(); // this should give the first entry of [d,d]
   }
 }
 
@@ -100,7 +100,7 @@ vector<int> Box::children_hit(const Box &b) const
   unsigned int second=0;		// second half
 
   vector<int> children;
-  int num_children = power(2,v.size());
+  int num_children = int( _double( power(2,v.size()) ) );
   children.reserve(num_children);
 
   for (int i=0; i<v.size(); i++)

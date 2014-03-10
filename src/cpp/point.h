@@ -1,10 +1,18 @@
 #ifndef _point_h
 #define _point_h
 
+#include "interval.hpp"  // CXSC interval lib
 #include <iostream>
+
+/* // attempt to circumvent evil macro in some random header */
+/* #undef isset */
+
 #include <iomanip>
 #include <vector>
-#include "interval.hpp"  // CXSC interval lib
+#undef isset
+
+
+//#include "interval.hpp"  // CXSC interval lib
 //#include "real.hpp"
 //#include "ivector.hpp"
 
@@ -30,8 +38,14 @@ class PointBase
 
     friend ostream& operator<< (ostream &out, const PointBase<T> &p)
     {
-      out << p.v;
+      for ( int i=0; i < p.size(); i++ ) {
+      //out << p.v[i] << endl;
+      out << p.v[i] << endl;
+      }
       return out;
+      
+      //out << p.v;
+      //return out;
     };
 };
 
