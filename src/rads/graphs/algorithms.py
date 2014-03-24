@@ -30,7 +30,7 @@ def condensation( G, components, loops=False ):
 	   The condensed graph.
 	"""
 	# convert list to dict
-	if isinstance(components,list)
+	if isinstance(components,list):
 		components = {c:components[c] for c in range(len(components))}
 		
 	mapping = {n:c for c in components for n in components[c]}
@@ -39,7 +39,8 @@ def condensation( G, components, loops=False ):
 		cG.add_node(mapping[u])
 		for v in G.successors(u):
 			# if v~u and u,v are in the same component, don't add the loop
-			if not loops and v not in components[mapping[u]]:
+			# (unless we allow loops)
+			if loops or v not in components[mapping[u]]:
 				cG.add_edge(mapping[u], mapping[v])
 	return cG
 

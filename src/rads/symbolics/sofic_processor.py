@@ -1,11 +1,12 @@
 from rads.graphs.digraph import DiGraph
-from rads.graphs import algorthms
+from rads.graphs import algorithms
 from collections import deque
 import numpy as np
+import sympy as sp
 from math import log
 from itertools import product
 from random import choice
-from fractions import gcd 
+from fractions import gcd
 import string
 
 def log_max_eigenvalue( S ):
@@ -17,10 +18,10 @@ def log_max_eigenvalue( S ):
 	"""
 	# S is not an array, so it must be a DiGraph object (no type
 	# checking past this).
-	if isinstance(obj, DiGraph):
+	if isinstance(S, DiGraph):
 		M = S.to_numpy_matrix()
 	# S is already a numpy matrix
-	elif isinstance(obj, (numpy.matrix, numpy.ndarray)):
+	elif isinstance(S, (numpy.matrix, numpy.ndarray)):
 		M = S
 	# compute the eigenvalues, take |v| of each, and store the largest
 	# in eigmax
@@ -55,7 +56,7 @@ class HashableMatrix( object ):
 	def iszero(self):
 		return not np.any(self.mat)
 	
-	def normalize(self):
+	def normalize_gcd(self):
 		"""
 		Returns a HashableMatrix given by dividing this matrix by the
 		first nonzero entry.  If this is the zero matrix, this matrix
@@ -76,15 +77,38 @@ class HashableMatrix( object ):
 		return HashableMatrix( self.mat * np.sign(nz[0])
 							   / reduce(gcd, map(abs, nz)) )
 
+	def normalize(self):
+		"""
+		Returns a HashableMatrix describing the image of this matrix.
+		"""
+
+		A = sp.Matrix(self.mat).transpose() # cols -> rows
+		#print A
+		A = A.rref()[0]			# row reduce
+		#print A
+		# see https://groups.google.com/forum/#!topic/sympy/e8hcF4QAldc
+		A = np.array(sp.lambdify((), A, 'numpy')()) # convert to numpy array
+		print A
+		A = A[np.any(A,1),:]	# remove 0 rows
+		A = A.transpose()		# back into original dimensions
+		print A
+		
+		return HashableMatrix( np.matrix(A) )
+	
 		
 class SoficProcessor( object ):
 	"""
 	Processes a given index map of generators into a sofic shift using
 	VOODOO MAGIC.
 
-	NOTE: WP right now assumes edge (i,j) means i points to j and will
-	multiply matrices in edge order; this is opposite of the
-	convention in the matlab code.
+	NOTE ON EDGE DIRECTION: to match the interpretation of the index
+	map as a linear transformation, we consider index_map[i,j] to be
+	the coefficient of generator i in the image of generator j.  This
+	means our matrix multiplication along a path of symbols (i,j,k)
+	will index_map[g(k),g(j)] * index_map[g(j),g(i)], where g(i) is
+	the indices of generators corresponding to symbol i.  We will
+	however continue to write (i,j) and (j,k) in the *graph*, as is
+	standard.
 	
 	Pseudocode for the algorithm, in different notation:
 
@@ -112,7 +136,7 @@ class SoficProcessor( object ):
 	def __init__( self,
 				  index_map=None,
 				  reg2gen=None,
-				  symbol_graph=None,
+		#symbol_transitions=None,
 				  debug=False,
 				  max_iter = 30 ):
 		"""
@@ -127,9 +151,6 @@ class SoficProcessor( object ):
 		reg2gen -- a dictionary of lists representing generators
 		per region.
 
-		symbol_graph -- An adjacency matrix representing the
-		transitions between regions in phase space.
-
 		debug -- turn on debugging messages (default = False)
 
 		max_iter -- after how many iterations should we give
@@ -137,12 +158,14 @@ class SoficProcessor( object ):
 		"""
 
 		self.max_iter = max_iter
-		self.symbol_graph = symbol_graph
-		if not self.symbol_graph:
-			self.symbol_graph = \
-			  algorithms.condensation(DiGraph(data=index_map), reg2gen)
-			
 		self.debug = debug
+		
+		# construct the starting graph on symbols
+		# by the above, we must reverse the edge direction!
+		generator_graph = DiGraph(data=index_map.transpose())
+		self.symbol_graph = algorithms.condensation(generator_graph,
+													reg2gen,
+													loops=True)
 
 		# dictionary of matrices from the index map for each symbol
 		# transition in symbol_graph
@@ -151,10 +174,15 @@ class SoficProcessor( object ):
 		# graph with nodes (symbol,matrix)
 		self.mgraph = DiGraph()
 		for e in self.symbol_graph.edges_iter():
-			# hashable, as we will use it in dictionaries
-			mat = HashableMatrix( index_map[np.ix_(reg2gen[e[0]],
-												   reg2gen[e[1]])] )
+			# hashable, as we will use it in dictionaries.
+			#
+			# note that an edge (i,j) means we are mapping generators
+			# in region i to those in region j, so this is a n_j by
+			# n_i matrix
+			mat = HashableMatrix( index_map[np.ix_(reg2gen[e[1]],
+												   reg2gen[e[0]])] )
 			self.edge_matrices[e] = mat
+			# we are mapping to region j, with matrix mat
 			self.mgraph.add_node( (e[1],mat.normalize()) )
 
 		# nodes to explore next; init with all (symbol,matrix) nodes
@@ -167,11 +195,13 @@ class SoficProcessor( object ):
 		
 	def matrix_product( self, node, symbol ):
 		"""
-		Comput the normalized matrix product of (s,M) and t
+		Compute the normalized matrix product of (s,M) and t
 		"""
-		# TODO: REVERSE MULT ORDER!
-		return HashableMatrix( node[1].mat *
-							  self.edge_matrices[(node[0],symbol)].mat
+		# NOTE the order of multiplication: M is a matrix mapping into
+		# region s, and E=edge_matrices[(s,t)] is mapping from s to t,
+		# so we want S*M
+		return HashableMatrix( self.edge_matrices[(node[0],symbol)].mat
+							   * node[1].mat
 							  ).normalize()
 
 								
@@ -215,6 +245,9 @@ class SoficProcessor( object ):
 		for node in self.explore_nodes:
 			self.mgraph.add_edge(node,'unexplored')
 
+	def entropy( self ):
+		return log_max_eigenvalue(self.mgraph.to_numpy_matrix())
+	
 	def __repr__( self ):
 		s = "SoficProcessor on " + str( len( self.symbol_graph ) ) + " symbols"
 		return s
@@ -252,8 +285,8 @@ if __name__ == "__main__":
 							  )
 	
 	generators = numpy.matrix( [[1, 0, 1],
-								[0,-1,-1],
-								[1, 1, 1]] )
+								[0,-1, 1],
+								[1,-1, 1]] )
 	
 	regions = { 0 : [0,1], 1 : [2] }
 
@@ -262,5 +295,5 @@ if __name__ == "__main__":
 							  )
 
 
-	sp = SoficProcessor( generators, regions, DiGraph(data=adjmatrix), debug=True, max_iter=2 )
+	sof = SoficProcessor( generators, regions, debug=True, max_iter=2 )
 	
