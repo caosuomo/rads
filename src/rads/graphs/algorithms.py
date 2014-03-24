@@ -2,7 +2,7 @@ import networkx as nx
 from rads.graphs import Graph, DiGraph
 import itertools
 
-def condensation( G, components ):
+def condensation( G, components, loops=False ):
 	"""Return the condensation of G with respect to the given components.
 
 	Given components C_1 .. C_k which partition the nodes of G, the
@@ -19,19 +19,27 @@ def condensation( G, components ):
 	----------
 	G : DiGraph
 
-	components : list of lists of component nodes.
+	components : list of lists of component nodes, or dictionary of
+	component label -> component nodes
+
+	loops : whether to allow condensed nodes to have self loops (default: False)
 
 	Returns
 	-------
 	cG : DiGraph
 	   The condensed graph.
 	"""
-	mapping = dict([(n,c) for c in range(len(components)) for n in components[c]])
+	# convert list to dict
+	if isinstance(components,list)
+		components = {c:components[c] for c in range(len(components))}
+		
+	mapping = {n:c for c in components for n in components[c]}
 	cG = DiGraph()
-	for u in mapping:
+	for u in mapping.keys():
 		cG.add_node(mapping[u])
-		for _,v in G.graph.edges_iter(u, data=False):
-			if v not in components[mapping[u]]:
+		for v in G.successors(u):
+			# if v~u and u,v are in the same component, don't add the loop
+			if not loops and v not in components[mapping[u]]:
 				cG.add_edge(mapping[u], mapping[v])
 	return cG
 
