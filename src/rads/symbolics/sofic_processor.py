@@ -21,12 +21,12 @@ def log_max_eigenvalue( S ):
 	if isinstance(S, DiGraph):
 		M = S.to_numpy_matrix()
 	# S is already a numpy matrix
-	elif isinstance(S, (numpy.matrix, numpy.ndarray)):
+	elif isinstance(S, (np.matrix, np.ndarray)):
 		M = S
-	# compute the eigenvalues, take |v| of each, and store the largest
-	# in eigmax
-	eigmax = np.absolute( np.linalg.eigvals( M ) ).max()
-	return np.log( eigmax )
+	# compute the eigenvalues
+	v = np.linalg.eigvals( M )
+	# log of the maximum modulus
+	return np.log( np.absolute( v ).max() )
 
 
 class HashableMatrix( object ):
@@ -54,6 +54,10 @@ class HashableMatrix( object ):
 		return NotImplemented
 
 	def iszero(self):
+		"""
+		Returns True iff this is the zero matrix (or the empty matrix,
+		which is the normalization of the zero matrix)
+		"""
 		return not np.any(self.mat)
 	
 	def normalize_gcd(self):
@@ -88,10 +92,10 @@ class HashableMatrix( object ):
 		#print A
 		# see https://groups.google.com/forum/#!topic/sympy/e8hcF4QAldc
 		A = np.array(sp.lambdify((), A, 'numpy')()) # convert to numpy array
-		print A
+		#print A
 		A = A[np.any(A,1),:]	# remove 0 rows
 		A = A.transpose()		# back into original dimensions
-		print A
+		#print A
 		
 		return HashableMatrix( np.matrix(A) )
 	
@@ -137,8 +141,7 @@ class SoficProcessor( object ):
 				  index_map=None,
 				  reg2gen=None,
 		#symbol_transitions=None,
-				  debug=False,
-				  max_iter = 30 ):
+				  debug=False ):
 		"""
 		Objects and methods for verifying words in a symbolic system
 		based on the given index map. Works whether symbolic system
@@ -152,12 +155,8 @@ class SoficProcessor( object ):
 		per region.
 
 		debug -- turn on debugging messages (default = False)
-
-		max_iter -- after how many iterations should we give
-		up. (default = 30)
 		"""
 
-		self.max_iter = max_iter
 		self.debug = debug
 		
 		# construct the starting graph on symbols
@@ -188,9 +187,9 @@ class SoficProcessor( object ):
 		# nodes to explore next; init with all (symbol,matrix) nodes
 		self.explore_nodes = self.mgraph.nodes()
 
-		# add the special
+		# add the special nodes
 		self.mgraph.add_node('zero')
-		self.mgraph.add_node('unexplored')
+		# self.mgraph.add_node('unexplored')
 
 		
 	def matrix_product( self, node, symbol ):
@@ -206,8 +205,19 @@ class SoficProcessor( object ):
 
 								
 		
-	def process( self ):
-		for k in range(self.max_iter):
+	def process( self, steps=20, debug=None ):
+		"""
+		Process the index information for some number of steps.
+		Stores all the nodes to explore in self.explore_nodes, so that
+		this method may be run again to pick up where it left off.
+
+		steps -- how many steps to run
+		debug -- whether to print diagnostic info
+		"""
+		if debug == None:
+			debug = self.debug
+		
+		for k in range(steps):
 			next_explore = set()
 			for node in self.explore_nodes:
 				if self.debug:
@@ -217,22 +227,20 @@ class SoficProcessor( object ):
 				# for all t out of s
 				for t in self.symbol_graph.successors(s):
 					if self.debug:
-						print "Processing transition:", (s,t)
+						print "Transition:", (s,t), self.edge_matrices[(s,t)]
 
 					# hashable matrix which is the product up to t
 					matrix = self.matrix_product(node,t)
-					if self.debug:
-						print "Matrix:", matrix
 
 					if matrix.iszero():
 						self.mgraph.add_edge(node,'zero',label=t)
 						if self.debug:
-							print "Forbidden!  (You... SHALL NOT... PASS!!)"
+							print "FORBIDDEN!  ", node, "-X->", (t,matrix)
 					else:
 						new_node = (t,matrix)
 						if new_node not in self.mgraph:
 							if self.debug:
-								print "New node!  Will explore further."
+								print "Adding new node:", new_node
 							next_explore.add(new_node)
 						self.mgraph.add_edge(node,new_node,label=t)
 						if self.debug:
@@ -242,14 +250,27 @@ class SoficProcessor( object ):
 
 			
 		# flag any remaining nodes
-		for node in self.explore_nodes:
-			self.mgraph.add_edge(node,'unexplored')
+		#		for node in self.explore_nodes:
+		#	self.mgraph.add_edge(node,'unexplored')
 
 	def entropy( self ):
+		"""
+		Return the topological entropy of the sofic shift up to the
+		current level of processing.
+		"""
 		return log_max_eigenvalue(self.mgraph.to_numpy_matrix())
+
+	def has_terminated( self ):
+		"""
+		Return whether or not the processor has more work to do.
+		"""
+		return len(self.explore_nodes)==0
 	
 	def __repr__( self ):
-		s = "SoficProcessor on " + str( len( self.symbol_graph ) ) + " symbols"
+		s = ("SoficProcessor on %i symbols, with %i states and %i transitions"
+			 % (str(len(self.symbol_graph)),
+				self.mgraph.number_of_nodes(),
+				self.mgraph.number_of_edges() ) )
 		return s
 
 
@@ -257,32 +278,6 @@ class SoficProcessor( object ):
 if __name__ == "__main__":
 
 	import numpy
-	
-	generators = numpy.matrix( [[0,0,0,1,0,0,0,0],
-								[0,0,0,0,1,0,0,0],
-								[0,0,0,0,1,0,0,0],
-								[0,0,0,0,0,1,0,0],
-								[-1,-1,0,0,0,0,0,0],
-								[0,0,0,0,0,0,-1,1],
-								[0,0,1,0,0,0,0,0],
-								[-1,0,0,0,0,0,0,0]]
-							   )
-	
-	regions = { 0 : [0],
-				1 : [1,2],
-				2 : [3],
-				3 : [4],
-				4 : [5],
-				5 : [6,7]
-				}
-
-	adjmatrix = numpy.matrix( [[0,0,1,0,0,0],
-							   [0,0,0,1,0,0],
-							   [0,0,0,0,1,0],
-							   [1,1,0,0,0,0],
-							   [0,0,0,0,0,1],
-							   [1,1,0,0,0,0]]
-							  )
 	
 	generators = numpy.matrix( [[1, 0, 1],
 								[0,-1, 1],
@@ -295,5 +290,6 @@ if __name__ == "__main__":
 							  )
 
 
-	sof = SoficProcessor( generators, regions, debug=True, max_iter=100 )
-	
+	sof = SoficProcessor( generators, regions, debug=True )
+	sof.process()
+	print "Entropy of the even shift:", sof.entropy()

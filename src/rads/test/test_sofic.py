@@ -1,25 +1,22 @@
 #!/usr/bin/python
 
+import sys
 import numpy as np
 from rads.misc import utils
-#from rads.symbolics import sofic_processor
+from rads.symbolics.sofic_processor import SoficProcessor
 
+if len(sys.argv) < 3:
+	print "usage: python test_sofic.py <generators>.mat <index map>.mat"
+	print "defaulting to 'generators.mat' and 'index_map.mat'"
+	genfile = 'generators.mat'
+	mapfile = 'index_map.mat'
+else:
+	genfile = sys.argv[1]
+	mapfile = sys.argv[2]
 
-# import sys
-# print 'Number of arguments:', len(sys.argv), 'arguments.'
-# print 'Argument List:', str(sys.argv)
-
-gens = utils.convert_matlab_gens( 'generators.mat', genname='G' )
-print
-print
-print
-print gens
-import scipy.io as spio
-cell_array = spio.loadmat( 'generators.mat' )#, squeeze_me=True )
-print cell_array
-gens = cell_array['G'].flatten().tolist()
-print gens
-index_map = utils.load_matlab_matrix( 'index_map.mat', matname='M' )
-print index_map
-#sof = SoficProcessor( index_map, gens, debug=True, max_iter=100 )
-#sof.process()
+gens = utils.convert_matlab_gens( genfile, genname='G' )
+index_map = utils.load_matlab_matrix( mapfile, matname='M' ).astype(int)
+sof = SoficProcessor( index_map, gens, debug=False, max_iter=1000 )
+sof.process()
+print sof.mgraph.edges()
+print sof.entropy()

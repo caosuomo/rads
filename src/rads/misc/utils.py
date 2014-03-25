@@ -106,16 +106,13 @@ def cell2dict( ca, genname ):
     # this should work, as long as one does not use '__' in the name
     # of the cell array.
     except KeyError:
-        print "KEY ERROR"
         name = [ k for k in keys if not k.startswith('__') ][0]
         gens = ca[name][0]
 
-    print gens
     # gens is a list of arrays, of type uint8, of shape (1,n)
     # region (r) |--> gen map
     genmap = {}
     gens = gens.flatten().tolist()
-    print gens
     
     # Remember to shift all region labels and generator labels by (-1)
     # to align with Python 0-based indexing.
