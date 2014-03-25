@@ -62,15 +62,15 @@ def load_matlab_matrix( matfile, matname=None ):
 def _extract_mat( mat ):
     keys = mat.keys()
     mat_key = filter( lambda x : not x.startswith( "__" ), keys )[0]
-    the
     return mat[ mat_key ]
 
 def convert_matlab_gens( genfile, genname='generators' ):
     """
     Convert a Matlab (R) cell array to a dictionary.
 
-    To guarantee a successful conversion, the name of the cell array
-    in Matlab (R), should be provided (defaults to 'generators'. This
+
+	To guarantee a successful conversion, the name of the cell array
+    in Matlab (R), should be provided (defaults to 'generators'). This
     allows provides an easy key to pick out in the Python dictionary
     returned by loadmat. Otherwise, there's a bit of guess work in
     cell2dict to find where the generators are stored.
@@ -106,27 +106,25 @@ def cell2dict( ca, genname ):
     # this should work, as long as one does not use '__' in the name
     # of the cell array.
     except KeyError:
+        print "KEY ERROR"
         name = [ k for k in keys if not k.startswith('__') ][0]
         gens = ca[name][0]
 
+    print gens
     # gens is a list of arrays, of type uint8, of shape (1,n)
     # region (r) |--> gen map
     genmap = {}
-    gens = gens.tolist()
+    gens = gens.flatten().tolist()
+    print gens
     
+    # Remember to shift all region labels and generator labels by (-1)
+    # to align with Python 0-based indexing.
     for r,g in enumerate( gens ):
         try:
-            genmap[ r+1 ] = g.flatten().tolist()
+            genmap[ r ] = map(lambda x: x-1, g.flatten().tolist())
         except AttributeError:
-            genmap[ r+1 ] = g[0].flatten().tolist()
-
-    # Now that we've created the hash, shift all region labels and
-    # generator labels by (-1) to align with Python 0-based indexing.
-    aligned_dict = {}
-    for key, val in genmap.items():
-        new_val = [ x-1 for x in val ]
-        aligned_dict[ key-1 ] = new_val
-    return aligned_dict # gdict
+            genmap[ r ] = map(lambda x: x-1, g[0].flatten().tolist())
+    return genmap
 
 def index_map_to_region_map( hom_mat, reg2gen ):
     """

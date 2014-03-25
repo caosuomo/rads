@@ -295,5 +295,5 @@ if __name__ == "__main__":
 							  )
 
 
-	sof = SoficProcessor( generators, regions, debug=True, max_iter=2 )
+	sof = SoficProcessor( generators, regions, debug=True, max_iter=100 )
 	
