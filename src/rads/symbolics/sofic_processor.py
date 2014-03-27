@@ -216,7 +216,10 @@ class SoficProcessor( object ):
 		"""
 		if debug == None:
 			debug = self.debug
-		
+
+			# while self.explore_nodes and steps > 0:
+			# for node in...
+			# self.explore_nodes.appond(new_node)
 		for k in range(steps):
 			next_explore = set()
 			for node in self.explore_nodes:
