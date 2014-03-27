@@ -69,16 +69,28 @@ def convert_matlab_gens( genfile, genname='generators' ):
     Convert a Matlab (R) cell array to a dictionary.
 
 
-	To guarantee a successful conversion, the name of the cell array
+    To guarantee a successful conversion, the name of the cell array
     in Matlab (R), should be provided (defaults to 'generators'). This
     allows provides an easy key to pick out in the Python dictionary
     returned by loadmat. Otherwise, there's a bit of guess work in
     cell2dict to find where the generators are stored.
     """
     cell_array = spio.loadmat( genfile )#, squeeze_me=True )
-    return cell2dict( cell_array, genname )
 
-def cell2dict( ca, genname ):
+    keys = ca.keys()
+    # there should only be one name for the cell array, the other keys
+    # should be metadata (eg., '__globals__', etc.)
+    try:
+        gens = ca[ genname ]
+    # this should work, as long as one does not use '__' in the name
+    # of the cell array.
+    except KeyError:
+        name = [ k for k in keys if not k.startswith('__') ][0]
+        gens = ca[name][0]
+
+    return cell2dict( gens )
+
+def cell2dict( ca ):
     """
     Parameters:
     -----------
@@ -98,30 +110,20 @@ def cell2dict( ca, genname ):
 
     Returns a Python dictionary
     """
-    keys = ca.keys()
-    # there should only be one name for the cell array, the other keys
-    # should be metadata (eg., '__globals__', etc.)
-    try:
-        gens = ca[ genname ]
-    # this should work, as long as one does not use '__' in the name
-    # of the cell array.
-    except KeyError:
-        name = [ k for k in keys if not k.startswith('__') ][0]
-        gens = ca[name][0]
 
     # gens is a list of arrays, of type uint8, of shape (1,n)
     # region (r) |--> gen map
-    genmap = {}
-    gens = gens.flatten().tolist()
+    keymap = {}
+    ca = ca.flatten().tolist()
     
     # Remember to shift all region labels and generator labels by (-1)
     # to align with Python 0-based indexing.
-    for r,g in enumerate( gens ):
+    for k,v in enumerate( ca ):
         try:
-            genmap[ r ] = map(lambda x: x-1, g.flatten().tolist())
+            keymap[ k ] = map(lambda x: x-1, v.flatten().tolist())
         except AttributeError:
-            genmap[ r ] = map(lambda x: x-1, g[0].flatten().tolist())
-    return genmap
+            keymap[ k ] = map(lambda x: x-1, v[0].flatten().tolist())
+    return keymap
 
 def index_map_to_region_map( hom_mat, reg2gen ):
     """

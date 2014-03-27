@@ -20,3 +20,11 @@ sof = SoficProcessor( index_map, gens, debug=False, max_iter=1000 )
 sof.process()
 print sof.mgraph.edges()
 print sof.entropy()
+
+
+# for i in range(ca.shape[0]):
+#     gens = utils.cell2dict(ca[i,0])
+#     sof = SoficProcessor(ca[i,1],gens)
+#     sof.process()
+#     print sof
+#     print sof.entropy()
