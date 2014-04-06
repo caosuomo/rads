@@ -6,19 +6,20 @@ from rads.misc import utils
 from rads.symbolics.sofic_processor import SoficProcessor
 
 if len(sys.argv) < 3:
-	print "usage: python test_sofic.py <generators>.mat <index map>.mat"
-	print "defaulting to 'generators.mat' and 'index_map.mat'"
-	genfile = 'generators.mat'
-	mapfile = 'index_map.mat'
+    print "usage: python test_sofic.py <data file> [<index_map> <generators>]"
+    print "where <index_map> and <generators> default to M and G"
+    genn = 'G'
+    mapn = 'M'
 else:
-	genfile = sys.argv[1]
-	mapfile = sys.argv[2]
+    genn = sys.argv[2]
+    mapn = sys.argv[3]
+filename = sys.argv[1]
 
-gens = utils.convert_matlab_gens( genfile, genname='G' )
-index_map = utils.load_matlab_matrix( mapfile, matname='M' ).astype(int)
-sof = SoficProcessor( index_map, gens, debug=False, max_iter=1000 )
+gens = utils.convert_matlab_gens( filename, genname=genn )
+index_map = utils.load_matlab_matrix( filename, matname=mapn ).astype(int)
+sof = SoficProcessor( index_map, gens, debug=False )
 sof.process()
-print sof.mgraph.edges()
+print sof
 print sof.entropy()
 
 
@@ -28,3 +29,12 @@ print sof.entropy()
 #     sof.process()
 #     print sof
 #     print sof.entropy()
+
+# ca = utils.load_matlab_matrix( '/home/raf/Dropbox/henon-tipping-14-run-goodruns.mat', matname='e' )
+# ents = []
+# for i in range(ca.shape[0]):
+#     sof = SoficProcessor(ca[i,1],utils.cell2dict(ca[i,0]))
+#     sof.process()
+#   ents.append(sof.entropy())
+#     print sof
+#     print ents[-1]

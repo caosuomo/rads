@@ -75,7 +75,7 @@ def convert_matlab_gens( genfile, genname='generators' ):
     returned by loadmat. Otherwise, there's a bit of guess work in
     cell2dict to find where the generators are stored.
     """
-    cell_array = spio.loadmat( genfile )#, squeeze_me=True )
+    ca = spio.loadmat( genfile )#, squeeze_me=True )
 
     keys = ca.keys()
     # there should only be one name for the cell array, the other keys

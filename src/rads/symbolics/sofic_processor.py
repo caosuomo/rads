@@ -107,23 +107,24 @@ class SoficProcessor( object ):
     
     Pseudocode for the algorithm, in slightly different notation:
 
-    MG = empty graph
-    MG.add_node('zero')
-    for e in E(G): # edges of symbol graph
-      # e[1] is the endpoint, M(e) is the matrix on the edge
-      MG.add_node([e[1],M(e)])
-    N = MG.nodes()
-
-    until N={}:
-      n = N.pop() # next node to process
-      t = n[0]
-      for (t,u) in E(G): # edges t->u in symbol graph
-        # image space of product, or the matrix itself for Lefschetz
-        M = matrix_product(n[1],(t,u))
-        if M == 0, MG.add_edge(n,'zero',label=u)
-        else:
-          if [u,M] not in MG: N.add([u,M])
-          MG.add_edge(n,[u,M],label=u)
+    INPUT: graph G on symbols with edge (s,t) labeled by M(s,t), the
+      index map matrix from region s to region t
+    OUTPUT: a graph H which is the right-resolving representation of a sofic 
+      shift semi-conjugate to the original system
+     
+    let H be a graph with nodes {[t,ech(M(s,t))] for all edges (s,t) of G}
+      where ech(M) is the column echelon form of M
+    mark all nodes of H
+     
+    loop until no marked nodes:
+      unmark some marked node [t,M]
+      for edges (t,u) in G:
+        let M' = ech(M(t,u) * M)
+        if M' is not the zero matrix:
+          if [u,M'] is not a node of H, add and mark it
+          add edge ([t,M], [u,M']) labeled 'u' to H
+ 
+    (remove nodes of H not in the graph maximal invariant set)
     """
     def __init__( self,
                   index_map=None,
@@ -211,11 +212,12 @@ class SoficProcessor( object ):
             debug = self.debug
 
         while self.explore_nodes and steps > 0:
-            steps -= 1                    # decrement step count
             node = self.explore_nodes.popleft()   # breadth-first
             if self.debug:
-                print "Exploring node:", node
+                print self
+                print "Exploring node", node
             s = node[0]               # current vertex
+            steps -= 1                    # decrement step count
 
             # for all t out of s
             for t in self.symbol_graph.successors(s):
@@ -238,7 +240,14 @@ class SoficProcessor( object ):
                     self.mgraph.add_edge(node,new_node,label=t)
                     if self.debug:
                         print "Adding edge:", node, "->", new_node
+        if self.debug:
+            if self.has_terminated():
+                print "Finished processing"
+            else:
+                print "Has not finished processing"
+            print self
 
+                        
     def entropy( self ):
         """
         Return the topological entropy of the sofic shift up to the
@@ -277,7 +286,5 @@ if __name__ == "__main__":
 
 
     sof = SoficProcessor( generators, regions, debug=True )
-    while not sof.has_terminated():
-        sof.process(1)
-        print sof
+    sof.process()
     print "Entropy of the even shift:", sof.entropy()
