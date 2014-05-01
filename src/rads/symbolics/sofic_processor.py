@@ -6,6 +6,9 @@ import sympy as sp
 from fractions import gcd
 import string
 
+def lcm(a,b):
+    return a*b // gcd(a,b)
+
 def log_max_eigenvalue( S ):
     """
     Returns max( log( | v | ) ), where v is the leading
@@ -85,6 +88,9 @@ class HashableMatrix( object ):
         """
         # swap cols and rows and row reduce
         A = sp.Matrix(self.mat).transpose().rref()[0]
+        # ensure all entries are integral by multiplying by the LCD
+        A *= reduce(lcm, map(lambda x: x.as_numer_denom()[1], # get denominators
+                             sp.utilities.iterables.flatten(A)))
         # see https://groups.google.com/forum/#!topic/sympy/e8hcF4QAldc
         A = np.array(sp.lambdify((), A, 'numpy')()) # convert to numpy array
         A = A[np.any(A,1),:].transpose()    # remove 0 rows, swap rows and columns
