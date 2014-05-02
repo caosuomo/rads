@@ -219,7 +219,7 @@ class SoficProcessor( object ):
 
         while self.explore_nodes and steps > 0:
             node = self.explore_nodes.popleft()   # breadth-first
-            if self.debug:
+            if debug:
                 print self
                 print "Exploring node", node
             s = node[0]               # current vertex
@@ -227,7 +227,7 @@ class SoficProcessor( object ):
 
             # for all t out of s
             for t in self.symbol_graph.successors(s):
-                if self.debug:
+                if debug:
                     print "Transition:", (s,t), self.edge_matrices[(s,t)]
 
                 # hashable matrix which is the product up to t
@@ -235,18 +235,18 @@ class SoficProcessor( object ):
 
                 if matrix.iszero():
                     self.mgraph.add_edge(node,'zero',label=t)
-                    if self.debug:
+                    if debug:
                         print "FORBIDDEN!  ", node, "-X->", (t,matrix)
                 else:
                     new_node = (t,matrix)
                     if new_node not in self.mgraph:
-                        if self.debug:
+                        if debug:
                             print "Adding new node:", new_node
                         self.explore_nodes.append(new_node)
                     self.mgraph.add_edge(node,new_node,label=t)
-                    if self.debug:
+                    if debug:
                         print "Adding edge:", node, "->", new_node
-        if self.debug:
+        if debug:
             if self.has_terminated():
                 print "Finished processing"
             else:
