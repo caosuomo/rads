@@ -65,6 +65,7 @@ else:
         print sys.argv
         print "Must provide path to CXSC headers using '--cxsc' arg. Aborting..."
         sys.exit(1)
+
 # build the CHomP library
 if 'chomp' in sys.argv:
     build_chomp = True
