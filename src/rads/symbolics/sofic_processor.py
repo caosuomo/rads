@@ -58,6 +58,9 @@ class HashableMatrix( object ):
     def __eq__(self, other):
         if isinstance(other, HashableMatrix):
             return np.all(self.mat == other.mat)
+        elif other is 'zero':
+            thiscouldbethebug
+            return False
         raise NotImplemented
 
     def iszero(self):
@@ -115,8 +118,8 @@ class SoficProcessor( object ):
 
     INPUT: graph G on symbols with edge (s,t) labeled by M(s,t), the
       index map matrix from region s to region t
-    OUTPUT: a graph H which is the right-resolving representation of a sofic 
-      shift semi-conjugate to the original system
+    OUTPUT: a graph H which is the right-resolving representation of
+      a sofic shift semi-conjugate to the original system
      
     let H be a graph with nodes {[t,ech(M(s,t))] for all edges (s,t) of G}
       where ech(M) is the column echelon form of M
@@ -187,7 +190,8 @@ class SoficProcessor( object ):
         self.explore_nodes = deque(self.mgraph.nodes())
 
         # add the special nodes
-        self.mgraph.add_node('zero')
+        for s in self.symbol_graph.nodes():
+            self.mgraph.add_node((s,'zero'))
         # self.mgraph.add_node('unexplored')
 
         
@@ -234,9 +238,10 @@ class SoficProcessor( object ):
                 matrix = self.matrix_product(node,t)
 
                 if matrix.iszero():
-                    self.mgraph.add_edge(node,'zero',label=t)
+                    self.mgraph.add_edge(node,(t,'zero'),label=t)
                     if debug:
-                        print "FORBIDDEN!  ", node, "-X->", (t,matrix)
+                        print "FORBIDDEN!  ", node, "->", (t,'zero')
+
                 else:
                     new_node = (t,matrix)
                     if new_node not in self.mgraph:
