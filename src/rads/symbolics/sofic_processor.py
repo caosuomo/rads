@@ -9,9 +9,9 @@ import string
 def lcm(a,b):
     return a*b // gcd(a,b)
 
-def log_max_eigenvalue( S ):
+def log_max_eigenvalue(S):
     """
-    Returns max( log( | v | ) ), where v is the leading
+    Returns max(log( | v | )), where v is the leading
     eigenvalue of M.
 
     S -- Transition graph or numpy matrix
@@ -24,12 +24,12 @@ def log_max_eigenvalue( S ):
     elif isinstance(S, (np.matrix, np.ndarray)):
         M = S
     # compute the eigenvalues
-    v = np.linalg.eigvals( M )
+    v = np.linalg.eigvals(M)
     # log of the maximum modulus
-    return np.log( np.absolute( v ).max() )
+    return np.log(np.absolute(v).max())
 
 
-class HashableMatrix( object ):
+class HashableMatrix(object):
     """
     A wrapper around a numpy matrix with a __hash__ function.
     """
@@ -58,8 +58,8 @@ class HashableMatrix( object ):
     def __eq__(self, other):
         if isinstance(other, HashableMatrix):
             return np.all(self.mat == other.mat)
-        elif other is 'zero':
-            thiscouldbethebug
+        else:
+            print self, other
             return False
         raise NotImplemented
 
@@ -97,10 +97,10 @@ class HashableMatrix( object ):
         # see https://groups.google.com/forum/#!topic/sympy/e8hcF4QAldc
         A = np.array(sp.lambdify((), A, 'numpy')()) # convert to numpy array
         A = A[np.any(A,1),:].transpose()    # remove 0 rows, swap rows and columns
-        return HashableMatrix( np.matrix(A) )
+        return HashableMatrix(np.matrix(A))
     
         
-class SoficProcessor( object ):
+class SoficProcessor(object):
     """
     Processes a given index map of generators into a sofic shift using
     VOODOO MAGIC.
@@ -135,11 +135,11 @@ class SoficProcessor( object ):
  
     (remove nodes of H not in the graph maximal invariant set)
     """
-    def __init__( self,
+    def __init__(self,
                   index_map=None,
                   reg2gen=None,
         #symbol_transitions=None,
-                  debug=False ):
+                  debug=False):
         """
         index_map -- numpy matrix of map on generators on disjoint
         regions of an attactor in phase space. Output from CHomP or
@@ -195,20 +195,20 @@ class SoficProcessor( object ):
         # self.mgraph.add_node('unexplored')
 
         
-    def matrix_product( self, node, symbol ):
+    def matrix_product(self, node, symbol):
         """
         Compute the normalized matrix product of (s,M) and t
         """
         # NOTE the order of multiplication: M is a matrix mapping into
         # region s, and E=edge_matrices[(s,t)] is mapping from s to t,
         # so we want S*M
-        return HashableMatrix( self.edge_matrices[(node[0],symbol)].mat
+        return HashableMatrix(self.edge_matrices[(node[0],symbol)].mat
                                * node[1].mat
                               ).normalized()
 
                                 
         
-    def process( self, steps=np.Inf, debug=None ):
+    def process(self, steps=np.Inf, debug=None):
         """
         Process the index information for some number of steps.
         Stores all the nodes to explore in self.explore_nodes, so that
@@ -259,20 +259,63 @@ class SoficProcessor( object ):
             print self
 
                         
-    def entropy( self ):
+    def entropy(self):
         """
         Return the topological entropy of the sofic shift up to the
         current level of processing.
         """
         return log_max_eigenvalue(self.mgraph.to_numpy_matrix())
 
-    def has_terminated( self ):
+    def num_symbols(self):
+        """
+        Return how many symbols the sofic processor is using.
+        """
+        return self.symbol_graph.number_of_nodes()
+
+    def symbols(self):
+        """
+        Return the symbol set used.
+        """
+        return range(self.num_symbols())
+
+    def has_terminated(self):
         """
         Return whether or not the processor has more work to do.
         """
         return len(self.explore_nodes)==0
 
-    def __repr__( self ):
+    def to_transitions(self):
+        """
+        Returns a DFA-like representation of the sofic shift, encoded
+        into a numpy array where A[state,symbol] = nextstate.  Here
+        (#states - 1) is the reject state, and there is no initial
+        state.
+        """
+        # all but 'zero's; nodes are (symbol, matrix)
+        accepts = filter(lambda n: n[1] is not 'zero',self.mgraph.nodes())
+        alphabet = range(self.num_symbols())
+
+        # nodes value for reject
+        reject = len(accepts)
+        
+        # transitions(node,symbol) = symbol; defalt transition: reject
+        transitions = np.full((len(accepts)+2,len(alphabet)),
+                              reject, dtype=np.int)
+
+        # mapping nodes to DFA states
+        nodehash = {n:accepts.index(n) for n in accepts}
+
+        for s,t,data in self.mgraph.edges_iter(data=True):
+            if s[1] is 'zero':
+                continue
+            if t[1] is 'zero':
+                transitions[nodehash[s],data['label']] = reject
+            else:
+                transitions[nodehash[s],data['label']] = nodehash[t]
+        return transitions
+
+        
+    def __repr__(self):
         s = ("SoficProcessor on %i symbols, with %i states and %i transitions"
              % (len(self.symbol_graph),
                 self.mgraph.number_of_nodes(),
@@ -296,6 +339,6 @@ if __name__ == "__main__":
                               )
 
 
-    sof = SoficProcessor( generators, regions, debug=True )
+    sof = SoficProcessor(generators, regions, debug=True)
     sof.process()
     print "Entropy of the even shift:", sof.entropy()
