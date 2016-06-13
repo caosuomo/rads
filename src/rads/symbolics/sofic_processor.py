@@ -1,8 +1,25 @@
+"""
+sofic_processor.py
+
+Opened: December 2012
+
+Author: Rafael Frongillo
+
+Processes a labeled Conley index representative by finding a sofic
+shift which is semiconjugate to the original system.
+"""
+
+# technically speaking we should wrap this; using only for
+# MultiDiGraph currently (the correct data structure for edge
+# presentations of sofic shifts...)
+import networkx as nx
+
 from rads.graphs.digraph import DiGraph
 from rads.graphs import algorithms
 from collections import deque
 import numpy as np
 import sympy as sp
+from DFA import DFA
 from fractions import gcd
 import string
 
@@ -190,9 +207,13 @@ class SoficProcessor(object):
         self.explore_nodes = deque(self.mgraph.nodes())
 
         # add the special nodes
-        for s in self.symbol_graph.nodes():
-            self.mgraph.add_node((s,'zero'))
+        # for s in self.symbol_graph.nodes():
+        #     self.mgraph.add_node((s,'zero'))
         # self.mgraph.add_node('unexplored')
+
+        # instead of an explicit 'zero' node, keep a list of forbidden
+        # transitions, of the form (node, symbol)
+        self.forbidden_transitions = []
 
         
     def matrix_product(self, node, symbol):
@@ -238,9 +259,9 @@ class SoficProcessor(object):
                 matrix = self.matrix_product(node,t)
 
                 if matrix.iszero():
-                    self.mgraph.add_edge(node,(t,'zero'),label=t)
+                    self.forbidden_transitions.append( (node,t) )
                     if debug:
-                        print "FORBIDDEN!  ", node, "->", (t,'zero')
+                        print "FORBIDDEN!  ", node, "->", (t,0)
 
                 else:
                     new_node = (t,matrix)
@@ -284,40 +305,60 @@ class SoficProcessor(object):
         """
         return len(self.explore_nodes)==0
 
-    def to_transitions(self):
+    def to_DFA(self):
         """
-        Returns a DFA-like representation of the sofic shift, encoded
-        into a numpy array where A[state,symbol] = nextstate.  Here
+        Returns a DFA representation of the sofic shift, encoded into
+        a numpy array where A[state,symbol] = nextstate.  Here
         (#states - 1) is the reject state, and there is no initial
         state.
         """
-        # all but 'zero's; nodes are (symbol, matrix)
-        accepts = filter(lambda n: n[1] is not 'zero',self.mgraph.nodes())
-        alphabet = range(self.num_symbols())
+        states = self.mgraph.nodes() + ['reject']
+        reject = len(states)-1 # reject state index
+        # accepts = set(range(len(states)))-set([reject]) # all but reject
 
-        # nodes value for reject
-        reject = len(accepts)
-        
-        # transitions(node,symbol) = symbol; defalt transition: reject
-        transitions = np.full((len(accepts)+2,len(alphabet)),
-                              reject, dtype=np.int)
+        # transitions(node,symbol) = symbol
+        # default transition is reject; this has the correct behavior
+        # as missing transitions should point to reject, and reject
+        # followed by any symbol gives reject
+        transitions = np.full( (len(states),self.num_symbols()),
+                               reject, dtype=np.int )
 
         # mapping nodes to DFA states
-        nodehash = {n:accepts.index(n) for n in accepts}
+        nodehash = {n:states.index(n) for n in states}
 
         for s,t,data in self.mgraph.edges_iter(data=True):
-            if s[1] is 'zero':
-                continue
-            if t[1] is 'zero':
-                transitions[nodehash[s],data['label']] = reject
-            else:
-                transitions[nodehash[s],data['label']] = nodehash[t]
-        return transitions
+            transitions[nodehash[s],data['label']] = nodehash[t]
 
-        
+        return DFA(states=states,
+                   num_symbols=self.num_symbols(),
+                   transitions=transitions,
+                   reject=reject)
+
+
+    def minimize(self):
+        d = self.to_DFA()
+        d.minimize()
+        if self.debug:
+            print 'classes', d.classes
+            print 'states', d.minimized_states
+            print 'accept indices', d.accepts
+
+        # convert to a multigraph, since there could be multiple edges
+        # between any given pair of states now
+        self.minimized_mgraph = nx.MultiDiGraph()
+        for s in d.accepts:               # accepts are just indices
+            self.minimized_mgraph.add_node(
+                frozenset(d.minimized_states[s]))   # the actual state
+        for s in range(len(d.minimized_states)):    # all state indices
+            for a in self.symbols():
+                t = d.transitions[s,a]    # t is a state index
+                if t in d.accepts:        # only add valid transitions
+                    self.minimized_mgraph.add_edge(s,t,label=a)
+
+                
     def __repr__(self):
         s = ("SoficProcessor on %i symbols, with %i states and %i transitions"
-             % (len(self.symbol_graph),
+             % (self.num_symbols(),
                 self.mgraph.number_of_nodes(),
                 self.mgraph.number_of_edges()) )
         return s
