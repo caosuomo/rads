@@ -41,7 +41,7 @@ class DFA:
         # now convert back!
         # use the fact that states == range(len(classes))
         self.num_states = len(self.classes)
-        self.transitions = np.zeros((self.num_states,len(self.symbols)))
+        self.transitions = np.zeros((self.num_states,len(self.symbols)),dtype=np.int)
         for c in range(len(self.classes)):
             for s in self.symbols:
                 self.transitions[c,s] = d.delta(c,s)
@@ -52,6 +52,22 @@ class DFA:
         self.start = d.start
         self.minimized_states = [
             [self.original_states[s] for s in c] for c in self.classes]   
+
+
+    def minimize_classes(self):
+        d = pyautDFA(states=range(self.num_states),
+                     start=0,              # doesn't matter
+                     accepts=self.accepts, # current default
+                     alphabet=self.symbols,
+                     delta=lambda state,sym: self.transitions[state,sym])
+        classes = d.mn_classes()
+
+        # now convert back!
+        # use the fact that states == range(len(classes))
+        reject = classes.index([self.reject])
+        accepts = set(range(len(classes))) - set([reject])
+        return [[self.original_states[s] for s in classes[c]]
+                for c in accepts]
 
 
 

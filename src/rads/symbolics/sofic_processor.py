@@ -329,6 +329,10 @@ class SoficProcessor(object):
         for s,t,data in self.mgraph.edges_iter(data=True):
             transitions[nodehash[s],data['label']] = nodehash[t]
 
+        if self.debug:
+            print 'DFA transitions:'
+            print transitions
+            
         return DFA(states=states,
                    num_symbols=self.num_symbols(),
                    transitions=transitions,
@@ -337,30 +341,37 @@ class SoficProcessor(object):
 
     def minimize(self):
         d = self.to_DFA()
-        d.minimize()
+        classes = d.minimize_classes()
+        # d.minimize()
         if self.debug:
-            print 'classes', d.classes
-            print 'states', d.minimized_states
-            print 'accept indices', d.accepts
+            print 'classes', classes
+        self.minimized_mgraph = algorithms.condensation_multi(self.mgraph,classes)
+        
+        # state2node = lambda s: tuple(d.minimized_states[s])
+        # # convert to a multigraph, since there could be multiple edges
+        # # between any given pair of states now
+        # self.minimized_mgraph = nx.MultiDiGraph()
+        # for s in d.accepts:               # accepts are just indices
+        #     self.minimized_mgraph.add_node( state2node(s) )
+        # for s in d.accepts:                 # all accept state indices
+        #     for a in self.symbols():
+        #         t = d.transitions[s,a]    # t is a state index
+        #         if t in d.accepts:        # only add valid transitions
+        #             self.minimized_mgraph.add_edge(state2node(s),
+        #                                            state2node(t),label=a)            
 
-        # convert to a multigraph, since there could be multiple edges
-        # between any given pair of states now
-        self.minimized_mgraph = nx.MultiDiGraph()
-        for s in d.accepts:               # accepts are just indices
-            self.minimized_mgraph.add_node(
-                frozenset(d.minimized_states[s]))   # the actual state
-        for s in range(len(d.minimized_states)):    # all state indices
-            for a in self.symbols():
-                t = d.transitions[s,a]    # t is a state index
-                if t in d.accepts:        # only add valid transitions
-                    self.minimized_mgraph.add_edge(s,t,label=a)
-
-                
+     
     def __repr__(self):
-        s = ("SoficProcessor on %i symbols, with %i states and %i transitions"
-             % (self.num_symbols(),
-                self.mgraph.number_of_nodes(),
-                self.mgraph.number_of_edges()) )
+        if hasattr(self,'minimized_mgraph'):
+            s = ("SoficProcessor on %i symbols, with %i states and %i transitions"
+                 % (self.num_symbols(),
+                    self.minimized_mgraph.number_of_nodes(),
+                    self.minimized_mgraph.number_of_edges()) )
+        else:
+            s = ("SoficProcessor on %i symbols, with %i states and %i transitions"
+                 % (self.num_symbols(),
+                    self.mgraph.number_of_nodes(),
+                    self.mgraph.number_of_edges()) )
         return s
 
 
