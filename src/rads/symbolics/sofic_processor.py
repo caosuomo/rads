@@ -64,7 +64,7 @@ class HashableMatrix(object):
         return hash(str(self.mat))
 
     def __repr__(self):
-        s = str(self.mat.tolist())
+        s = str(self.mat.astype(np.int).tolist())
         s = string.replace(s,",","")
         s = string.replace(s,"[[","[")
         s = string.replace(s,"] [","; ")
@@ -374,6 +374,18 @@ class SoficProcessor(object):
                     self.mgraph.number_of_edges()) )
         return s
 
+
+    def index_map_to_latex_graph(self):
+        latex = ""
+        for e in self.symbol_graph.edges_iter():
+            s = str(self.edge_matrices[e])
+            s = string.replace(s,"H","")
+            s = string.replace(s,"[","{")
+            s = string.replace(s,"]","}")
+            latex += ( "\path (%d) edge node {\matmat%s} (%d);"
+                       % (e[0],s,e[1]) )
+            latex += '\n'
+        return latex
 
         
 if __name__ == "__main__":
