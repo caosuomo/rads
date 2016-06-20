@@ -382,12 +382,36 @@ class SoficProcessor(object):
             s = string.replace(s,"H","")
             s = string.replace(s,"[","{")
             s = string.replace(s,"]","}")
-            latex += ( "\path (%d) edge node {\matmat%s} (%d);"
-                       % (e[0],s,e[1]) )
+            if e[0]==e[1]:
+                bend = "loop right"
+            else:
+                bend = "bend right"
+            latex += ( "\path (%d) edge[%s] node[Y] {\matmat%s} (%d);"
+                       % (e[0]+1,bend,s,e[1]+1) )
             latex += '\n'
         return latex
 
-        
+    def sofic_shift_to_latex_graph(self):
+        latex = ""
+        g = self.mgraph.graph
+        nodes = g.nodes()
+        pos = nx.graphviz_layout(g)
+        for i in range(len(nodes)):
+            n = nodes[i]
+            s = str(n[1])
+            s = string.replace(s,"H","")
+            s = string.replace(s,"[","{")
+            s = string.replace(s,"]","}")
+            latex += ( "\\node[W] (%d-%d) at (%f,%f) {$\\left\\{%d, \\matmat%s\\right\\}$};\n"
+                       % (n[0]+1,i,pos[n][0],pos[n][1],n[0]+1,s) )
+
+        for e in g.edges_iter():
+            latex += ( "\\path (%d-%d) edge (%d-%d);\n"
+                       % (e[0][0]+1,nodes.index(e[0]),
+                          e[1][0]+1,nodes.index(e[1])) )
+        return latex
+
+    
 if __name__ == "__main__":
 
     import numpy
