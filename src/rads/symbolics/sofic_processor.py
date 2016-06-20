@@ -305,6 +305,26 @@ class SoficProcessor(object):
         """
         return len(self.explore_nodes)==0
 
+    def take_periodic_closure(self):
+        """
+        Removes edges between distinct strongly-connected components
+        of the underlying vertex shift, and then removes any nodes
+        with no edges.  Should be called before minimize().
+        """
+        comps = list(nx.strongly_connected_components(self.mgraph.graph))
+        node2comp = {n:c for c in range(len(comps)) for n in comps[c]}
+            
+        for e in self.mgraph.graph.edges():
+            if not node2comp[e[0]] == node2comp[e[1]]:
+                print 'edge between components:', e
+                self.mgraph.graph.remove_edge(*e)
+
+        for n in self.mgraph.graph.nodes():
+            # no outgoing edges means no incoming edges either
+            if not self.mgraph.graph.successors(n):
+                self.mgraph.graph.remove_node(n)
+
+                
     def to_DFA(self):
         """
         Returns a DFA representation of the sofic shift, encoded into
