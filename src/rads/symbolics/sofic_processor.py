@@ -242,6 +242,9 @@ class SoficProcessor(object):
         if debug == None:
             debug = self.debug
 
+        # hack to figure out "real" step count
+        # stepcount = len(self.explore_nodes)
+        
         while self.explore_nodes and steps > 0:
             node = self.explore_nodes.popleft()   # breadth-first
             if debug:
@@ -249,6 +252,10 @@ class SoficProcessor(object):
                 print "Exploring node", node
             s = node[0]               # current vertex
             steps -= 1                    # decrement step count
+            # stepcount -= 1
+            # if stepcount == 0:
+            #     stepcount = len(self.explore_nodes)
+            #     print 'STEP.  nodes left:', stepcount
 
             # for all t out of s
             for t in self.symbol_graph.successors(s):
@@ -316,7 +323,7 @@ class SoficProcessor(object):
             
         for e in self.mgraph.graph.edges():
             if not node2comp[e[0]] == node2comp[e[1]]:
-                print 'edge between components:', e
+                # print 'edge between components:', e
                 self.mgraph.graph.remove_edge(*e)
 
         for n in self.mgraph.graph.nodes():
@@ -411,19 +418,24 @@ class SoficProcessor(object):
             latex += '\n'
         return latex
 
-    def sofic_shift_to_latex_graph(self):
+    def sofic_shift_to_latex_graph(self,layout=nx.graphviz_layout,just_symbols=False):
         latex = ""
         g = self.mgraph.graph
         nodes = g.nodes()
-        pos = nx.graphviz_layout(g)
+        pos = layout(g)
         for i in range(len(nodes)):
             n = nodes[i]
-            s = str(n[1])
-            s = string.replace(s,"H","")
-            s = string.replace(s,"[","{")
-            s = string.replace(s,"]","}")
-            latex += ( "\\node[W] (%d-%d) at (%f,%f) {$\\left\\{%d, \\matmat%s\\right\\}$};\n"
-                       % (n[0]+1,i,pos[n][0],pos[n][1],n[0]+1,s) )
+            if just_symbols:
+                nodestr = str(n[0]+1)
+            else:
+                s = str(n[1])
+                s = string.replace(s,"H","")
+                s = string.replace(s,"[","{")
+                s = string.replace(s,"]","}")
+                nodestr = ( "$\\!\\left\\{%d, \\matmat%s\\right\\}\\!$"
+                            % (n[0]+1,s) )
+            latex += ( "\\node (%d-%d) at (%f,%f) {%s};\n"
+                       % (n[0]+1,i,pos[n][0],pos[n][1],nodestr) )
 
         for e in g.edges_iter():
             latex += ( "\\path (%d-%d) edge (%d-%d);\n"
