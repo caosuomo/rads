@@ -18,4 +18,6 @@ print sof
 print 'entropy:', sof.entropy()
 # SoficProcessor on 41 symbols, with 68 states and 127 transitions
 # entropy: 0.571595590383
-# up from STD: Theorem 4.4. The topological entropy for the standard map f ε for ε = 2 is bounded below by 0.54518888942276.
+# up from STD: Theorem 4.4. The topological entropy for the standard map for eps = 2 is bounded below by 0.54518888942276.
+
+# 5/7/2017 TODO: minimize?  (point being: we get a better number with a smaller description...)
